@@ -1,0 +1,35 @@
+{
+  "product": {
+    "name": "ICM",
+    "longName": "Incentive Compensation Management",
+    "applicationId": "icm",
+    "tokenPrefix": "ICM"
+  },
+  "tags": {
+    "automations": ["icm"],
+    "entityTypes": ["icm"],
+    "test": "icmkit-test"
+  },
+  "entities": {
+    "prefix": "icm",
+    "typesInterfaceFile": "docs/api/icm-types.ts",
+    "interfaceBaseName": "Icm",
+    "archivable": []
+  },
+  "pages": {
+    "applicationId": "icm"
+  },
+  "_notes": [
+    "This file is the ONLY place product-specific identifiers live. Scripts read it",
+    "through scripts/kit-config.mjs; nothing else may hardcode a tag or app id.",
+    "",
+    "UNVERIFIED as of 2026-09-02: applicationId 'icm' and the tags below are",
+    "PLACEHOLDERS chosen by convention from the Axis kit (app id 'axis-no-code',",
+    "tags 'axisNocode'). Before the first build, confirm the real values against the",
+    "platform and correct them here:",
+    "  node scripts/ua.mjs search --tag icm      (do any ICM automations exist?)",
+    "  node scripts/ua.mjs types --tag icm       (do any ICM object types exist?)",
+    "A wrong applicationId does not error - it silently matches nothing, which is",
+    "the single most expensive mistake in the Axis repo's history (axis-qa, 2026-08-22)."
+  ]
+}

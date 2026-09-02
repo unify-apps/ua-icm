@@ -1,0 +1,14 @@
+# Secrets - cookies and tokens live here, never commit
+.env.local
+.env*.local
+
+# AgentOps session artifacts
+.agents/
+
+# raw copilot stream logs
+.agent-logs/
+
+# graphify output: regenerated from the repo, large, and not review material
+graphify-out/
+
+.DS_Store
