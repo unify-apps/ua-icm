@@ -12,3 +12,8 @@
 graphify-out/
 
 .DS_Store
+
+# The seed for the NEXT kit, not a description of this one. Kept in the repo so
+# it is at hand while building and can absorb what this project teaches, but
+# ignored so it never ships in a PR or gets reviewed as ICM documentation.
+KIT-BOOTSTRAP.md

@@ -49,7 +49,16 @@ Format: `**Q**: … · asked <date> of <name> · **blocks**: … · **answer**: 
 8. **Numeric types.** What does a UnifyApps storage `number` property return
    into a Groovy node — `Double`, `BigDecimal`, or `String`? · asked — ·
    **blocks**: every money field; see the PROBE in
-   `docs/model/money-and-time.md` · **answer**: —
+   `docs/model/money-and-time.md` · **ANSWERED 2026-09-03**: **both, chosen by
+   the value.** Below 10^7 a `number` arrives as `java.math.BigDecimal`; at or
+   above 10^7 it arrives as `java.lang.Double`. An `integer` is an `Integer`
+   up to `Integer.MAX_VALUE` and a `Long` past it. Since Groovy promotes
+   `BigDecimal + Double` to `Double`, one row over ₹1 crore silently makes an
+   exact sum inexact. Rule adopted: every amount is coerced with
+   `new BigDecimal(String.valueOf(v))` at the boundary, and money is never
+   stored in an `integer` field. Evidence in `notes/runtime-facts.md`; probed
+   with the throwaway `KitTestNumeric` object and the numeric-probe workflow,
+   both tagged `icmkit-test`.
 9. **CAS semantics.** Does `update_records` SINGLE mode genuinely fail on a
    stale version rather than overwriting? The period claim depends on it. ·
    asked — · **blocks**: concurrency guard for calculation runs · **answer**: —

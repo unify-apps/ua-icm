@@ -1,0 +1,12 @@
+{
+  "id": "Title",
+  "name": "Title",
+  "pluralName": "Titles",
+  "description": "A job title a Position can carry. Referenced by PositionAttribute rather than by Position directly, because a seat's title is effective-dated - a seat can be re-levelled mid-year without rewriting history.",
+  "nameField": "name",
+  "uniqueKeyFields": ["titleCode"],
+  "properties": {
+    "titleCode": { "type": "string", "required": true, "uniqueKey": true, "searchable": true, "title": "Title Code" },
+    "name":      { "type": "string", "required": true, "searchable": true }
+  }
+}

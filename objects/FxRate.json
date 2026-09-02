@@ -1,0 +1,15 @@
+{
+  "id": "FxRate",
+  "name": "FxRate",
+  "pluralName": "FxRates",
+  "description": "The rate that converts one Currency into the base currency FOR ONE PERIOD. Deliberately its own object rather than a field on Currency: a rate is a fact about a currency AND a point in time, and recalculating March must use March's rate, not today's. A rate stored on Currency would silently rewrite history every time finance updated it.",
+  "nameField": "name",
+  "uniqueKeyFields": [],
+  "properties": {
+    "name":       { "type": "string",       "required": true, "searchable": true },
+    "currencyId": { "type": "fk:Currency",  "required": true },
+    "periodId":   { "type": "fk:Period",    "required": true },
+    "rateToBase": { "type": "number",       "required": true, "title": "Rate To Base" },
+    "source":     { "type": "string" }
+  }
+}

@@ -13,6 +13,68 @@ export interface IcmRecordSystemFields {
   lastModifiedBy?: number;
 }
 
+/** `Currency` — storage object. UNIQUE INDEX on `code` — a duplicate write is a raw E11000 at RUN time, so pre-check before writing. */
+export interface CurrencyProperties {
+  /** UNIQUE (duplicate write = E11000 at RUN time) */
+  code: string;
+  name: string;
+  symbol?: string;
+  minorUnits?: number;
+  isBase?: boolean;
+  active?: boolean;
+}
+export interface Currency extends IcmRecordSystemFields {
+  properties: CurrencyProperties;
+}
+
+/** `FxRate` — storage object. */
+export interface FxRateProperties {
+  name: string;
+  /** FK -> Currency */
+  currencyId: string;
+  /** FK -> Period */
+  periodId: string;
+  rateToBase: number;
+  source?: string;
+}
+export interface FxRate extends IcmRecordSystemFields {
+  properties: FxRateProperties;
+}
+
+/** `Payee` — storage object. UNIQUE INDEX on `employeeId` — a duplicate write is a raw E11000 at RUN time, so pre-check before writing. */
+export interface PayeeProperties {
+  /** UNIQUE (duplicate write = E11000 at RUN time) */
+  employeeId: string;
+  name: string;
+  email?: string;
+  /** FK -> USER */
+  userId?: string;
+  currency: string;
+  hireDate?: number;
+  terminationDate?: number;
+  status: string;
+  /** FK -> Currency */
+  currencyId?: string;
+}
+export interface Payee extends IcmRecordSystemFields {
+  properties: PayeeProperties;
+}
+
+/** `PayeePositionAssignment` — storage object. */
+export interface PayeePositionAssignmentProperties {
+  name: string;
+  /** FK -> Payee */
+  payeeId: string;
+  /** FK -> Position */
+  positionId: string;
+  effectiveStart: number;
+  effectiveEnd?: number;
+  allocationPct?: number;
+}
+export interface PayeePositionAssignment extends IcmRecordSystemFields {
+  properties: PayeePositionAssignmentProperties;
+}
+
 /** `Period` — storage object. UNIQUE INDEX on `name` — a duplicate write is a raw E11000 at RUN time, so pre-check before writing. */
 export interface PeriodProperties {
   /** UNIQUE (duplicate write = E11000 at RUN time) */
@@ -26,6 +88,55 @@ export interface PeriodProperties {
 }
 export interface Period extends IcmRecordSystemFields {
   properties: PeriodProperties;
+}
+
+/** `Position` — storage object. UNIQUE INDEX on `positionCode` — a duplicate write is a raw E11000 at RUN time, so pre-check before writing. */
+export interface PositionProperties {
+  /** UNIQUE (duplicate write = E11000 at RUN time) */
+  positionCode: string;
+  name: string;
+  active?: boolean;
+}
+export interface Position extends IcmRecordSystemFields {
+  properties: PositionProperties;
+}
+
+/** `PositionAttribute` — storage object. */
+export interface PositionAttributeProperties {
+  name: string;
+  /** FK -> Position */
+  positionId: string;
+  /** FK -> Title */
+  titleId?: string;
+  territory?: string;
+  effectiveStart: number;
+  effectiveEnd?: number;
+  /** FK -> Territory */
+  territoryId?: string;
+}
+export interface PositionAttribute extends IcmRecordSystemFields {
+  properties: PositionAttributeProperties;
+}
+
+/** `Territory` — storage object. UNIQUE INDEX on `territoryCode` — a duplicate write is a raw E11000 at RUN time, so pre-check before writing. */
+export interface TerritoryProperties {
+  /** UNIQUE (duplicate write = E11000 at RUN time) */
+  territoryCode: string;
+  name: string;
+  active?: boolean;
+}
+export interface Territory extends IcmRecordSystemFields {
+  properties: TerritoryProperties;
+}
+
+/** `Title` — storage object. UNIQUE INDEX on `titleCode` — a duplicate write is a raw E11000 at RUN time, so pre-check before writing. */
+export interface TitleProperties {
+  /** UNIQUE (duplicate write = E11000 at RUN time) */
+  titleCode: string;
+  name: string;
+}
+export interface Title extends IcmRecordSystemFields {
+  properties: TitleProperties;
 }
 
 /** `icmPeriod` — storage object. UNIQUE INDEX on `name` — a duplicate write is a raw E11000 at RUN time, so pre-check before writing. */
@@ -45,11 +156,27 @@ export interface IcmPeriod extends IcmRecordSystemFields {
 
 /** Every ICM storage object, by its object_type string. */
 export type IcmObjectType =
+  | "Currency"
+  | "FxRate"
+  | "Payee"
+  | "PayeePositionAssignment"
   | "Period"
+  | "Position"
+  | "PositionAttribute"
+  | "Territory"
+  | "Title"
   | "icmPeriod";
 
 export interface IcmObjectMap {
+  Currency: Currency;
+  FxRate: FxRate;
+  Payee: Payee;
+  PayeePositionAssignment: PayeePositionAssignment;
   Period: Period;
+  Position: Position;
+  PositionAttribute: PositionAttribute;
+  Territory: Territory;
+  Title: Title;
   icmPeriod: IcmPeriod;
 }
 

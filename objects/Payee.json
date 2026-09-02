@@ -1,0 +1,50 @@
+{
+  "id": "Payee",
+  "name": "Payee",
+  "pluralName": "Payees",
+  "description": "A person who can be paid incentive compensation. The bridge from a platform user to the comp world. A payee holds a Position over a date range (PayeePositionAssignment); credit attaches to the POSITION and resolves to the payee who held it on the transaction's close date. Currency is a LOOKUP to Currency, not a loose three-letter string: a typo cannot silently create a second currency that sums separately.",
+  "nameField": "name",
+  "uniqueKeyFields": [
+    "employeeId"
+  ],
+  "piiFields": [
+    "email"
+  ],
+  "properties": {
+    "employeeId": {
+      "type": "string",
+      "required": true,
+      "uniqueKey": true,
+      "searchable": true,
+      "title": "Employee Id"
+    },
+    "name": {
+      "type": "string",
+      "required": true,
+      "searchable": true
+    },
+    "email": {
+      "type": "string",
+      "searchable": true
+    },
+    "userId": {
+      "type": "fk:USER",
+      "title": "Platform User"
+    },
+    "currencyId": {
+      "type": "fk:Currency",
+      "required": true,
+      "title": "Currency"
+    },
+    "hireDate": {
+      "type": "date"
+    },
+    "terminationDate": {
+      "type": "date"
+    },
+    "status": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

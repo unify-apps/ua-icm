@@ -1,0 +1,13 @@
+{
+  "id": "Territory",
+  "name": "Territory",
+  "pluralName": "Territories",
+  "description": "A named sales territory a Position can carry. A lookup rather than a free-text string on PositionAttribute, because credit rules match on territory - and a rule matching 'WEST' against a seat typed 'West' pays nobody, silently.",
+  "nameField": "name",
+  "uniqueKeyFields": ["territoryCode"],
+  "properties": {
+    "territoryCode": { "type": "string",  "required": true, "uniqueKey": true, "searchable": true, "title": "Territory Code" },
+    "name":          { "type": "string",  "required": true, "searchable": true },
+    "active":        { "type": "boolean" }
+  }
+}

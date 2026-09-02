@@ -1,0 +1,13 @@
+{
+  "id": "Position",
+  "name": "Position",
+  "pluralName": "Positions",
+  "description": "A SEAT in the org - the unit that gets credited and quota'd, deliberately separate from the person filling it. Almost every fact about a seat (its title, its territory, its occupant, its parent) is effective-dated in another object, because a seat outlives its occupants and history must stay answerable as of any date.",
+  "nameField": "name",
+  "uniqueKeyFields": ["positionCode"],
+  "properties": {
+    "positionCode": { "type": "string",  "required": true, "uniqueKey": true, "searchable": true, "title": "Position Code" },
+    "name":         { "type": "string",  "required": true, "searchable": true },
+    "active":       { "type": "boolean" }
+  }
+}

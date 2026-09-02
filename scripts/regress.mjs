@@ -15,6 +15,11 @@
 //   - a case may be {"name", "entityCreate": {"entityType", "properties":
 //     {...}}}: raw fixture create; the created record (incl. id) becomes the
 //     case's output for {{case:<name>:id}} chaining;
+//   - a case may be {"name", "entityFind": {"entityType", "filters": {prop:
+//     value}}}: looks a seeded fixture up by its BUSINESS key and records it as
+//     the case's output, so payloads can chain {{case:<name>:id}} without ever
+//     hardcoding a platform id (ids differ per environment and per reseed).
+//     Zero matches and >1 match both fail;
 //   - a case may be {"name", "entityDelete": {"entityType", "filters": {prop:
 //     value}}} instead of a workflow run: it searches records matching ALL
 //     filters (values resolve {{case:..}} refs) and hard-deletes each match
@@ -203,6 +208,34 @@ async function runSuite(workflowId) {
         if (!hits.length) throw new Error("cleanup matched zero records");
         for (const h of hits) await api("/api/entity/create-update-or-delete/hierarchical", { entity: { entityType, id: h.id }, requestType: "DELETED" });
         console.log(`  pass ${cs.name} (deleted ${hits.length} ${entityType})`);
+      } catch (e) {
+        failed++;
+        console.log(`  FAIL ${cs.name}: ${e.message}`);
+      }
+      continue;
+    }
+    if (cs.entityFind) {
+      // {"name", "entityFind": {"entityType", "filters": {prop: value}}} -
+      // look a fixture up by its BUSINESS key and record it as the case's
+      // output, so later payloads chain {{case:<name>:id}}.
+      //
+      // The point is that a suite never hardcodes a platform id. Ids are minted
+      // per environment and per reseed, so a suite pinned to one is green on
+      // the machine that wrote it and red everywhere else. Fixtures are seeded
+      // by scripts/fixtures.mjs and found here by the key a human recognises.
+      //
+      // Zero matches and MORE THAN ONE both fail: a fixture that silently
+      // duplicated would otherwise let the suite assert against an arbitrary
+      // one of them.
+      try {
+        const { entityType, filters } = cs.entityFind;
+        const query = { op: "AND", values: Object.entries(filters).map(([k, v]) => ({ field: `properties.${k}`, op: "EQUAL", values: [resolve(v)] })) };
+        const found = await api(`/api/entity/${entityType}`, { filter: query, page: { limit: 10, offset: 0 } });
+        const hits = found.response?.objects ?? found.objects ?? [];
+        if (hits.length === 0) throw new Error(`no ${entityType} matching ${JSON.stringify(filters)} - is the fixture family seeded? (node scripts/fixtures.mjs seed <family>)`);
+        if (hits.length > 1) throw new Error(`${hits.length} ${entityType} records match ${JSON.stringify(filters)} - a fixture duplicated`);
+        outputs[cs.name] = hits[0];
+        console.log(`  pass ${cs.name} (found ${entityType} ${hits[0].id})`);
       } catch (e) {
         failed++;
         console.log(`  FAIL ${cs.name}: ${e.message}`);

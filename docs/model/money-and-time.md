@@ -5,11 +5,11 @@ automation. This file is the extra contract that applies because this product
 computes people's pay. A bug in an issue tracker is an annoyance; a bug here is
 someone's mortgage payment, and it is found by the person it shortchanged.
 
-**Status: doctrine, not yet proven on this platform.** The rules below are what
-the design must satisfy. Each one needs a probe against the UnifyApps runtime
-before it is treated as fact, and the probe result lands in
-`notes/runtime-facts.md` with its date. The rules marked **PROBE** have no
-result yet.
+**Status: doctrine, partly proven.** The rules below are what the design must
+satisfy. Each one needs a probe against the UnifyApps runtime before it is
+treated as fact, and the probe result lands in `notes/runtime-facts.md` with its
+date. The numeric-type question is **answered** (2026-09-03, see below); the
+rules still marked **PROBE** have no result yet.
 
 ## Money
 
@@ -17,24 +17,40 @@ result yet.
 
 `0.1 + 0.2` is `0.30000000000000004` in Groovy as in everything else, and a
 commission run that sums a hundred thousand credits will visibly disagree with
-the finance team's spreadsheet. Two workable options; pick one and use it
-everywhere, because mixing them is worse than either:
+the finance team's spreadsheet. Two options were on the table — minor units as
+integers, or `BigDecimal` with an explicit scale and rounding mode. **The second
+was chosen on 2026-09-03**, and the probe below is why the first would have been
+a trap rather than the boring safe choice it looks like.
 
-- **Minor units as integers** — store cents (or the currency's minor unit) in an
-  integer field. Exact, boring, and the arithmetic is plain addition. Costs a
-  conversion at every UI boundary and a decision for currencies with three
-  decimal places.
-- **`BigDecimal` in Groovy with an explicit scale and rounding mode** — Groovy's
-  `1.10` literal is already a `BigDecimal`, so this is more natural than it
-  sounds, but only if every value entering the computation is parsed with
-  `new BigDecimal(String)` and never via a double.
+**ANSWERED 2026-09-03 by probe, and the answer is worse than either option.**
+A storage `number` property comes back as a `BigDecimal` *or* a `Double`
+**depending on its value**: below 10^7 it is a `BigDecimal`, at or above 10^7 it
+is a `Double`. In rupees that cliff is **₹1 crore** — inside the normal range of
+a quota or a period total, not an edge case. An `integer` property does the same
+thing at `Integer.MAX_VALUE` (Integer below, Long above). Full evidence, the
+ladder of probed values, and the reasoning are in `notes/runtime-facts.md`.
 
-**PROBE, before the first calculation node is built:** what does a UnifyApps
-storage `number` property actually hold, and what comes back into a Groovy node
-— a `Double`, a `BigDecimal`, or a `String`? Write a record with
-`0.1`/`0.2`/`12345678.91`, read it back, sum it in a code node, and record the
-exact types and values in `notes/runtime-facts.md`. Every rule below depends on
-that answer, and no money field gets designed until it exists.
+**The decision this forces (2026-09-03): amounts are `number` in storage and
+`BigDecimal` in code, always, via one coercion helper.**
+
+```groovy
+static BigDecimal dec(v) {
+    if (v == null) return BigDecimal.ZERO
+    if (v instanceof BigDecimal) return v
+    return new BigDecimal(String.valueOf(v))
+}
+```
+
+Every amount passes through `dec()` before it meets an operator. The reason is
+not tidiness: Groovy promotes `BigDecimal + Double` to `Double`, so one row over
+₹1 crore silently turns an exact fold into binary floating point and poisons
+every value after it. Bare arithmetic on a fetched amount is a review finding
+with no exemption — "this field is always small" is a claim about data, and data
+changes.
+
+**Money never goes in an `integer` field.** 2,147,483,647 paise is ₹2.14 crore,
+and past it the runtime type changes under you. This is why the minor-units
+design was rejected for this product.
 
 ### Rounding is a decision, made once, written down
 

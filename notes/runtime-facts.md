@@ -1020,3 +1020,87 @@ against orbit while building `icmPeriod` and `ICM | Check Period Writable`.
   Two habits follow: **snapshot immediately after any create** (that snapshot is
   what made the restore a non-event), and **check the node count on the next
   fetch** rather than trusting the create's 200.
+
+## A storage `number` returns a DIFFERENT Java type depending on its VALUE (ICM, 2026-09-03)
+
+**This is the most expensive fact in this file for a product that computes pay,
+and it answers open question 8.** It was found by a probe, not inferred: object
+`KitTestNumeric` (tag `icmkit-test`), ten rows written through
+`/api/entity/create-update-or-delete/hierarchical`, read back by
+`storage_by_unifyapps_fetch_records` and interrogated in a
+`code_by_unifyapps_groovy` node with `getClass().getName()`.
+
+The schema declares one type. The runtime hands back two, chosen by magnitude:
+
+| stored value | `number` property arrives as |
+|---|---|
+| `0.1`, `0.2`, `123.45`, `12345.67`, `1234567.89`, `9999999.99` | **`java.math.BigDecimal`** |
+| `10000000.00`, `12345678.91`, `99999999.99`, `1000000000.55` | **`java.lang.Double`** |
+
+**The cliff is at 10^7.** `9999999.99` is a BigDecimal; `10000000.00` is a
+Double. In rupees that boundary is **₹1 crore** — squarely inside the range of
+real quotas, payouts and period totals, not an exotic edge.
+
+An `integer` property has the same disease one boundary further out:
+
+| stored value | `integer` property arrives as |
+|---|---|
+| `12345` … `2147483647` | **`java.lang.Integer`** |
+| `2147483648`, `9999999999` | **`java.lang.Long`** |
+
+It widens exactly at `Integer.MAX_VALUE`.
+
+### Why this is dangerous rather than merely untidy
+
+Groovy's numeric promotion means **`BigDecimal + Double` is a `Double`**. So a
+single row over ₹1 crore silently converts an otherwise-exact sum to binary
+floating point, and every value after it in that fold inherits the error. The
+type depends on the *data*, so the same automation is exact on Monday's dataset
+and wrong on Friday's, and the symptom is a one-paisa discrepancy on one
+person's statement and nowhere else. Nothing errors. Nothing logs.
+
+The same run confirmed the two halves of the classic trap, so there is no doubt
+about which side we want to be on:
+
+```
+GROOVY LITERAL 0.1 + 0.2   = 0.3                 <java.math.BigDecimal>   == 0.3 ? true
+GROOVY DOUBLE  0.1d + 0.2d = 0.30000000000000004 <java.lang.Double>
+```
+
+Groovy decimal literals are already `BigDecimal`, which is on our side. The
+platform's storage layer is not.
+
+### The rule that follows, and it is not optional
+
+**Every amount read out of storage is coerced at the boundary before it touches
+an operator**, with one helper used everywhere:
+
+```groovy
+// The ONLY way an amount enters the arithmetic. Handles both types the
+// platform may hand us, including the E-notation a Double stringifies to.
+static BigDecimal dec(v) {
+    if (v == null) return BigDecimal.ZERO
+    if (v instanceof BigDecimal) return v
+    return new BigDecimal(String.valueOf(v))
+}
+```
+
+`new BigDecimal(String.valueOf(x))` is proven to recover both cases — the
+probe's `1.234567891E7` Double parsed back to exactly `1234567891.00` after
+×100, because `BigDecimal(String)` accepts scientific notation. Bare arithmetic
+on a fetched property is a review finding, every time, with no "but this field
+is always small" exemption: the field being always small is a claim about data,
+and data changes.
+
+Three corollaries:
+
+- **Never store money in an `integer` field.** 2,147,483,647 paise is ₹2.14
+  crore, and past it the type silently changes. This is independent confirmation
+  that the minor-units-as-integer design would have been a trap in this currency.
+- **`compile_static: false`** on the Groovy node is what lets `dec()` accept
+  either type. Turning static compilation on would need the signature widened.
+- Storing amounts as **strings** removes the cliff entirely
+  (`new BigDecimal(storedString)` was exact for every row) but forfeits numeric
+  sorting and analytics aggregation on money columns. We keep `number` + `dec()`;
+  if a future finding shows a value where `String.valueOf` does not round-trip,
+  revisit this trade.

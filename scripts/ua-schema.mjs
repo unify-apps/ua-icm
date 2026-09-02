@@ -4,6 +4,12 @@
 // object's schema. It never removes or retypes anything.
 //
 //   node scripts/ua-schema.mjs add-fields <objectType> <name:type> [<name:type>...]
+//
+// <type> is string | number | integer | boolean | date | fk:<Type> | fk:USER.
+// A fk: field is a real LOOKUP: it writes the property's foreignKey, the
+// builder's LookupWidget and metadata.referenceKeys together, because a lookup
+// missing any one of the three renders as a text box and stores a string that
+// resolves to nothing.
 //   node scripts/ua-schema.mjs add-fields --all-archivable          (the trash fields)
 //
 // Mechanics, probed 2026-08-23:
@@ -19,6 +25,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { config, ENTITY_TAGS } from "./kit-config.mjs";
+import { expandField } from "./field-types.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const die = (m) => { console.error(`error: ${m}`); process.exit(1); };
@@ -44,8 +51,6 @@ async function api(pathname, body) {
   return JSON.parse(text);
 }
 
-const titleOf = (n) => n.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase()).trim();
-
 // The two fields the deletion pipeline needs on everything archivable.
 const TRASH_FIELDS = [
   ["archivedVia", "string"],  // "<type>:<id>" of the entity whose deletion caused this; empty = deleted directly
@@ -63,7 +68,26 @@ async function addFields(objectType, fields) {
   const added = [];
   for (const [name, type] of fields) {
     if (name in props) continue;                       // idempotent: never retype an existing field
-    props[name] = { type, title: titleOf(name), filterable: true };
+    const { prop, reference, lookup, isDate } = expandField(name, { type }, die);
+
+    // Both halves of the definition must agree. `schema.schema` is what the
+    // runtime reads; `input.schema` is what the BUILDER renders. Writing only
+    // one gives a field that works in automations and is invisible on screen.
+    props[name] = prop;
+    if (def.input?.schema?.properties) def.input.schema.properties[name] = prop;
+
+    // A lookup is three things in agreement, not one. Without the layout entry
+    // the builder draws a free-text box that stores an unresolvable string.
+    if (lookup && def.input?.layout) def.input.layout[name] = lookup;
+    if (reference) {
+      def.metadata.referenceKeys ??= [];
+      if (!def.metadata.referenceKeys.some((r) => r.key === `properties.${name}`))
+        def.metadata.referenceKeys.push({ key: `properties.${name}`, referenceType: reference });
+    }
+    if (isDate) {
+      def.metadata.dateFields ??= [];
+      if (!def.metadata.dateFields.includes(name)) def.metadata.dateFields.push(name);
+    }
     added.push(name);
   }
   if (added.length === 0) {
@@ -76,16 +100,22 @@ async function addFields(objectType, fields) {
   }
   await api("/api/entity-type/update", def);
 
+  // Re-READ rather than trust the update's response: a write that reports
+  // success and did not land is the failure mode this whole kit is built around.
   const after = await api(`/api/entity-type?entityType=${encodeURIComponent(objectType)}`);
   const now = after.schema?.schema?.properties ?? {};
   const missing = added.filter((n) => !(n in now));
   if (missing.length) die(`${objectType}: wrote but ${missing.join(", ")} did not land`);
+  for (const n of added) {
+    const fk = now[n]?.foreignKey?.reference;
+    console.log(`    ${n}${fk ? `  -> lookup to ${fk}` : ""}`);
+  }
   console.log(`  ${objectType.padEnd(28)} added ${added.join(", ")}  (v${def.version} -> v${after.version})`);
 }
 
 const [cmd, ...rest] = process.argv.slice(2);
 if (cmd !== "add-fields" || rest.length === 0) {
-  die('usage: ua-schema.mjs add-fields <objectType> <name:type>... | add-fields --all-archivable');
+  die('usage: ua-schema.mjs add-fields <objectType> <name:type>... | add-fields --all-archivable\n  types: string|number|integer|boolean|date|fk:<Type>|fk:USER');
 }
 
 if (rest[0] === "--all-archivable") {
@@ -94,7 +124,8 @@ if (rest[0] === "--all-archivable") {
 } else {
   const [objectType, ...specs] = rest;
   const fields = specs.map((s) => {
-    const [n, t] = s.split(":");
+    const i = s.indexOf(":");
+    const n = s.slice(0, i), t = s.slice(i + 1);   // "currencyId:fk:Currency" -> ["currencyId", "fk:Currency"]
     if (!n || !t) die(`bad field spec "${s}", want name:type`);
     return [n, t];
   });

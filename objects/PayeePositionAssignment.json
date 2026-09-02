@@ -1,0 +1,16 @@
+{
+  "id": "PayeePositionAssignment",
+  "name": "PayeePositionAssignment",
+  "pluralName": "PayeePositionAssignments",
+  "description": "Who held which seat, over which date range. The join that turns a credit on a Position into money for a Payee. Overlapping rows for the same position, or for the same payee, mean a deal pays twice - Mongo cannot express 'no overlapping ranges' as an index, so it is an automation guard with its own status and its own regression case, never a schema promise.",
+  "nameField": "name",
+  "uniqueKeyFields": [],
+  "properties": {
+    "name":           { "type": "string",      "required": true, "searchable": true },
+    "payeeId":        { "type": "fk:Payee",    "required": true },
+    "positionId":     { "type": "fk:Position", "required": true },
+    "effectiveStart": { "type": "date",        "required": true },
+    "effectiveEnd":   { "type": "date" },
+    "allocationPct":  { "type": "number" }
+  }
+}

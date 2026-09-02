@@ -1,0 +1,33 @@
+{
+  "id": "PositionAttribute",
+  "name": "PositionAttribute",
+  "pluralName": "PositionAttributes",
+  "description": "What a Position WAS, over a date range: its title and its territory. Effective-dated, so a credit rule asking 'what territory was seat POS-07 in on 2026-03-14' gets the answer that was true then, not the answer that is true now. Exactly one row must match any given date - two matches is a data bug the calculation raises rather than picks between. Territory is a LOOKUP to Territory: credit rules match on it, and a rule matching 'WEST' against a seat typed 'West' pays nobody, silently.",
+  "nameField": "name",
+  "uniqueKeyFields": [],
+  "properties": {
+    "name": {
+      "type": "string",
+      "required": true,
+      "searchable": true
+    },
+    "positionId": {
+      "type": "fk:Position",
+      "required": true
+    },
+    "titleId": {
+      "type": "fk:Title"
+    },
+    "territoryId": {
+      "type": "fk:Territory",
+      "title": "Territory"
+    },
+    "effectiveStart": {
+      "type": "date",
+      "required": true
+    },
+    "effectiveEnd": {
+      "type": "date"
+    }
+  }
+}

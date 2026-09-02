@@ -1,0 +1,198 @@
+{
+  "family": "KITFIX-SEATS",
+  "note": "Fixture family for ICM | Resolve Seat Occupant. Every record's business key starts with KITFIX- so it can never be confused with, or matched by, real comp data. ICM safety rule: fixtures are participants and seats of our own invention, never real pay data.",
+  "prefixField": {
+    "Payee": "employeeId",
+    "Title": "titleCode",
+    "Position": "positionCode",
+    "PositionAttribute": "name",
+    "PayeePositionAssignment": "name",
+    "Currency": "code",
+    "Territory": "territoryCode"
+  },
+  "records": {
+    "Currency": [
+      {
+        "$ref": "CUR_INR",
+        "code": "KITFIX-INR",
+        "name": "KITFIX-Indian Rupee",
+        "symbol": "\u20b9",
+        "minorUnits": 2,
+        "isBase": true,
+        "active": true
+      },
+      {
+        "$ref": "CUR_USD",
+        "code": "KITFIX-USD",
+        "name": "KITFIX-US Dollar",
+        "symbol": "$",
+        "minorUnits": 2,
+        "isBase": false,
+        "active": true
+      }
+    ],
+    "Territory": [
+      {
+        "$ref": "TER_WEST",
+        "territoryCode": "KITFIX-WEST",
+        "name": "KITFIX-West",
+        "active": true
+      },
+      {
+        "$ref": "TER_EAST",
+        "territoryCode": "KITFIX-EAST",
+        "name": "KITFIX-East",
+        "active": true
+      }
+    ],
+    "Title": [
+      {
+        "$ref": "T_AE",
+        "titleCode": "KITFIX-T-AE",
+        "name": "KITFIX-Account Executive"
+      }
+    ],
+    "Payee": [
+      {
+        "$ref": "P_ASHA",
+        "employeeId": "KITFIX-E001",
+        "name": "KITFIX-Asha Rao",
+        "email": "kitfix.asha@example.invalid",
+        "status": "ACTIVE",
+        "currencyId": "@CUR_INR",
+        "currency": "KITFIX-INR"
+      },
+      {
+        "$ref": "P_BHAVNA",
+        "employeeId": "KITFIX-E002",
+        "name": "KITFIX-Bhavna Iyer",
+        "email": "kitfix.bhavna@example.invalid",
+        "status": "ACTIVE",
+        "currencyId": "@CUR_INR",
+        "currency": "KITFIX-INR"
+      },
+      {
+        "$ref": "P_CHANDRA",
+        "employeeId": "KITFIX-E003",
+        "name": "KITFIX-Chandra Nair",
+        "email": "kitfix.chandra@example.invalid",
+        "status": "ACTIVE",
+        "currencyId": "@CUR_USD",
+        "currency": "KITFIX-USD"
+      },
+      {
+        "$ref": "P_GONE",
+        "employeeId": "KITFIX-E004",
+        "name": "KITFIX-Deepa Gone",
+        "email": "kitfix.deepa@example.invalid",
+        "status": "TERMINATED",
+        "terminationDate": "2026-02-28",
+        "currencyId": "@CUR_INR",
+        "currency": "KITFIX-INR"
+      }
+    ],
+    "Position": [
+      {
+        "$ref": "POS_CLOSED",
+        "positionCode": "KITFIX-POS-01",
+        "name": "KITFIX-West AE Seat (closed range)",
+        "active": true
+      },
+      {
+        "$ref": "POS_OPEN",
+        "positionCode": "KITFIX-POS-02",
+        "name": "KITFIX-East AE Seat (open ended)",
+        "active": true
+      },
+      {
+        "$ref": "POS_CONTESTED",
+        "positionCode": "KITFIX-POS-03",
+        "name": "KITFIX-Contested Seat (overlap bug)",
+        "active": true
+      },
+      {
+        "$ref": "POS_EMPTY",
+        "positionCode": "KITFIX-POS-04",
+        "name": "KITFIX-Never Filled Seat",
+        "active": true
+      },
+      {
+        "$ref": "POS_GHOST",
+        "positionCode": "KITFIX-POS-05",
+        "name": "KITFIX-Dangling Payee Seat",
+        "active": true
+      },
+      {
+        "$ref": "POS_RETIRED",
+        "positionCode": "KITFIX-POS-06",
+        "name": "KITFIX-Retired Seat (inactive today)",
+        "active": false
+      }
+    ],
+    "PositionAttribute": [
+      {
+        "name": "KITFIX-POS-01 attrs 2026",
+        "positionId": "@POS_CLOSED",
+        "titleId": "@T_AE",
+        "effectiveStart": "2026-01-01",
+        "territoryId": "@TER_WEST"
+      },
+      {
+        "name": "KITFIX-POS-02 attrs 2026",
+        "positionId": "@POS_OPEN",
+        "titleId": "@T_AE",
+        "effectiveStart": "2026-01-01",
+        "territoryId": "@TER_EAST"
+      }
+    ],
+    "PayeePositionAssignment": [
+      {
+        "name": "KITFIX-Asha in POS-01 Jan-Mar",
+        "payeeId": "@P_ASHA",
+        "positionId": "@POS_CLOSED",
+        "effectiveStart": "2026-01-01",
+        "effectiveEnd": "2026-03-31",
+        "allocationPct": 100
+      },
+      {
+        "name": "KITFIX-Bhavna in POS-02 open",
+        "payeeId": "@P_BHAVNA",
+        "positionId": "@POS_OPEN",
+        "effectiveStart": "2026-02-01",
+        "allocationPct": 100
+      },
+      {
+        "name": "KITFIX-Asha in POS-03 Jan-Jun",
+        "payeeId": "@P_ASHA",
+        "positionId": "@POS_CONTESTED",
+        "effectiveStart": "2026-01-01",
+        "effectiveEnd": "2026-06-30",
+        "allocationPct": 100
+      },
+      {
+        "name": "KITFIX-Chandra in POS-03 Mar-Apr",
+        "payeeId": "@P_CHANDRA",
+        "positionId": "@POS_CONTESTED",
+        "effectiveStart": "2026-03-01",
+        "effectiveEnd": "2026-04-30",
+        "allocationPct": 100
+      },
+      {
+        "name": "KITFIX-ghost in POS-05 open",
+        "payeeId": "e_000000000000000000000000",
+        "positionId": "@POS_GHOST",
+        "effectiveStart": "2026-01-01",
+        "allocationPct": 100
+      },
+      {
+        "name": "KITFIX-Deepa in POS-06 Jan-Feb",
+        "payeeId": "@P_GONE",
+        "positionId": "@POS_RETIRED",
+        "effectiveStart": "2026-01-01",
+        "effectiveEnd": "2026-02-28",
+        "allocationPct": 100
+      }
+    ]
+  },
+  "_deadFieldNote": "Payee.currency (plain string) is DEAD but still marked required in the live schema, so every fixture must fill it even though nothing reads it. currencyId is the real field. This is the visible cost of retyping-by-addition and the argument for recreating Payee cleanly - see docs/architecture.md 'Now'."
+}
