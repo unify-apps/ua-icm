@@ -1,0 +1,15 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html",              "x": 0,    "y": 0,    "w": 1440, "h": 900, "title": "My earnings — rep" },
+    { "file": "Statement.dc.html",         "x": 1560, "y": 0,    "w": 1440, "h": 900, "title": "Why is this the number? — drill-down" },
+    { "file": "SeatDirectory.dc.html",     "x": 0,    "y": 1060, "w": 1440, "h": 900, "title": "Seat directory — comp ops" },
+    { "file": "CalculationConsole.dc.html","x": 1560, "y": 1060, "w": 1440, "h": 900, "title": "Calculation console — comp admin" }
+  ],
+  "annotations": [
+    { "id": "ds-note", "x": 0, "y": -150, "w": 620,
+      "text": "UnifyApps Design System, as published.\nWorkspace ground is brand-secondary-25 #fbfaf9 (warm sand), not cool gray.\nBrand green = identity + CTAs + selected state, never a status band.\nStatus is glyph + 14px label, no pill: green #39A147 / amber / red #a8503a.\nType: Geist UI · Geist Mono for money and codes · Spectral display." },
+    { "id": "money-note", "x": 1560, "y": -150, "w": 620,
+      "text": "Every amount carries its currency and an as-of date - the money doctrine in docs/model/money-and-time.md.\nExplainability is the product: payout -> earning -> rate band -> credits -> transaction, and the drill-down artboard walks the whole chain." }
+  ],
+  "launch": { "view": "canvas" }
+}

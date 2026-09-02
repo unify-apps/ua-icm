@@ -1,0 +1,241 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Spectral:wght@400;500;600&display=swap">
+  <style>
+    :root{
+      --gray-25:#fefdfb; --gray-50:#f7f5f3; --gray-100:#f2f0ee; --gray-200:#edebe8;
+      --gray-300:#dbd6d1; --gray-400:#b4ada7; --gray-500:#9f9993; --gray-600:#6a6662;
+      --gray-700:#4a4745; --gray-800:#2f2e2d; --gray-900:#201f1e; --gray-950:#151414;
+      --brand-25:#f5f7f5; --brand-50:#e9efe8; --brand-100:#c2cbc4; --brand-500:#112d06;
+      --brand-solid:#386633; --brand-line:#4d8547;
+      --sec-25:#fbfaf9; --sec-50:#f9f6f1; --sec-100:#f6f1ea; --sec-200:#efe8dc; --sec-300:#ede4d4;
+      --err-25:#faf0f0; --err-50:#f6e2e0; --err-300:#dc7b74; --err-500:#b72318; --err-700:#7a1710;
+      --warn-25:#fdf0e3; --warn-50:#fbe5d0; --warn-300:#f4b271; --warn-700:#9d5206;
+      --succ-25:#eef5f0; --succ-50:#e3efe6; --succ-300:#76b086; --succ-500:#016b1d; --succ-700:#014713;
+      --status-live:#39A147; --status-draft:#6A6662; --status-paused:#a8503a;
+      --text-primary:#201f1e; --text-secondary:#4a4745; --text-tertiary:#6a6662; --text-quaternary:#9f9993;
+      --bg-primary:#ffffff; --bg-secondary:#fbfaf9; --bg-tertiary:#f2f0ee;
+      --border-primary:#dbd6d1; --border-secondary:#edebe8;
+    }
+    *{box-sizing:border-box;}
+    body{margin:0;font-family:Geist,'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg-secondary);color:var(--text-primary);-webkit-font-smoothing:antialiased;}
+    a{color:var(--brand-solid);text-decoration:none;} a:hover{color:var(--brand-500);}
+    .mono{font-family:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums;}
+    .serif{font-family:Spectral,Georgia,'Times New Roman',serif;}
+  </style>
+</helmet>
+
+<div style="display:flex;height:900px;width:1440px;overflow:hidden;">
+
+  <!-- rail -->
+  <div style="width:216px;flex-shrink:0;background:var(--sec-25);border-right:1px solid var(--border-secondary);display:flex;flex-direction:column;">
+    <div style="height:56px;display:flex;align-items:center;gap:9px;padding:0 18px;border-bottom:1px solid var(--border-secondary);">
+      <div style="width:22px;height:22px;border-radius:5px;background:var(--brand-500);display:flex;align-items:center;justify-content:center;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#e9efe8" stroke-width="2.1" stroke-linecap="round"><path d="M4 19V6M4 19h16M8 15V9M12 15V5M16 15v-4M20 15V8"/></svg>
+      </div>
+      <span style="font-size:13.5px;font-weight:600;letter-spacing:-0.01em;">Compensation</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:1px;padding:12px 10px;">
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:6px;background:var(--brand-50);color:var(--brand-500);font-size:13px;font-weight:500;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        My earnings
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:6px;color:var(--text-secondary);font-size:13px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>
+        Statements
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:6px;color:var(--text-secondary);font-size:13px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+        My plan
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:6px;color:var(--text-secondary);font-size:13px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Disputes
+      </div>
+      <div style="height:1px;background:var(--border-secondary);margin:11px 10px;"></div>
+      <div style="font-size:10.5px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-quaternary);padding:5px 10px 6px;">Comp ops</div>
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:6px;color:var(--text-secondary);font-size:13px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        Seat directory
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:6px;color:var(--text-secondary);font-size:13px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/></svg>
+        Calculation runs
+      </div>
+    </div>
+    <div style="margin-top:auto;padding:14px;border-top:1px solid var(--border-secondary);display:flex;align-items:center;gap:9px;">
+      <div style="width:27px;height:27px;border-radius:50%;background:var(--sec-300);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:600;color:var(--gray-800);">AR</div>
+      <div style="min-width:0;">
+        <div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Asha Rao</div>
+        <div style="font-size:10.5px;color:var(--text-quaternary);">Account Executive</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- main -->
+  <div style="flex-grow:1;display:flex;flex-direction:column;min-width:0;background:var(--bg-secondary);">
+
+    <div style="height:56px;flex-shrink:0;background:var(--bg-primary);border-bottom:1px solid var(--border-secondary);display:flex;align-items:center;justify-content:space-between;padding:0 24px;">
+      <div style="display:flex;align-items:baseline;gap:11px;">
+        <span style="font-size:15px;font-weight:600;letter-spacing:-0.012em;">My earnings</span>
+        <span style="font-size:12.5px;color:var(--text-tertiary);">FY26 Q1 · Jan–Mar 2026</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;">
+        <div style="display:flex;align-items:center;gap:7px;height:31px;padding:0 11px;border:1px solid var(--border-primary);border-radius:6px;background:var(--bg-primary);font-size:12.5px;color:var(--text-secondary);">
+          FY26 Q1
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;height:31px;padding:0 12px;border-radius:6px;background:var(--brand-solid);color:#fff;font-size:12.5px;font-weight:500;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12M7 11l5 4 5-4M4 20h16"/></svg>
+          Statement
+        </div>
+      </div>
+    </div>
+
+    <div style="flex-grow:1;overflow:hidden;padding:22px 24px;display:flex;flex-direction:column;gap:18px;">
+
+      <!-- headline -->
+      <div style="display:grid;grid-template-columns:1.55fr 1fr 1fr;gap:14px;">
+
+        <div style="background:var(--brand-500);border-radius:10px;padding:19px 21px;display:flex;flex-direction:column;gap:2px;position:relative;overflow:hidden;">
+          <div style="font-size:11px;font-weight:500;letter-spacing:0.045em;text-transform:uppercase;color:var(--brand-100);">Projected payout · FY26 Q1</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-top:7px;">
+            <span class="mono" style="font-size:36px;font-weight:500;color:#fff;letter-spacing:-0.028em;line-height:1;">₹8,42,150</span>
+            <span class="mono" style="font-size:13px;color:var(--brand-100);">INR</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:7px;margin-top:11px;">
+            <span style="display:inline-flex;align-items:center;gap:4px;height:21px;padding:0 8px;border-radius:5px;background:rgba(233,239,232,0.14);color:var(--brand-100);font-size:11px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+              ₹1,04,300 since last run
+            </span>
+            <span style="font-size:11px;color:var(--brand-100);opacity:0.75;">as of 3 Sep 2026, 09:14 IST</span>
+          </div>
+          <div style="font-size:11.5px;color:var(--brand-100);opacity:0.8;margin-top:9px;line-height:1.45;">Not final. The period is <span style="color:#fff;font-weight:500;">OPEN</span> — numbers move as deals close.</div>
+        </div>
+
+        <div style="background:var(--bg-primary);border:1px solid var(--border-secondary);border-radius:10px;padding:17px 19px;display:flex;flex-direction:column;">
+          <div style="font-size:11px;font-weight:500;letter-spacing:0.045em;text-transform:uppercase;color:var(--text-quaternary);">Attainment</div>
+          <div style="display:flex;align-items:baseline;gap:5px;margin-top:8px;">
+            <span class="mono" style="font-size:29px;font-weight:500;letter-spacing:-0.025em;line-height:1;">118.4</span>
+            <span class="mono" style="font-size:15px;color:var(--text-tertiary);">%</span>
+          </div>
+          <div style="margin-top:13px;height:6px;border-radius:3px;background:var(--gray-100);position:relative;overflow:hidden;">
+            <div style="position:absolute;inset:0 15.5% 0 0;background:var(--status-live);border-radius:3px;"></div>
+            <div style="position:absolute;top:-3px;bottom:-3px;left:84.5%;width:1.5px;background:var(--gray-700);"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--text-tertiary);">
+            <span class="mono">₹1,42,10,000 credited</span>
+            <span class="mono">quota ₹1,20,00,000</span>
+          </div>
+          <div style="margin-top:auto;padding-top:12px;font-size:11.5px;color:var(--text-tertiary);line-height:1.45;">Quota prorated over <span style="color:var(--text-secondary);">90 of 90 days</span> in one seat.</div>
+        </div>
+
+        <div style="background:var(--bg-primary);border:1px solid var(--border-secondary);border-radius:10px;padding:17px 19px;display:flex;flex-direction:column;">
+          <div style="font-size:11px;font-weight:500;letter-spacing:0.045em;text-transform:uppercase;color:var(--text-quaternary);">Paid to date</div>
+          <div style="display:flex;align-items:baseline;gap:6px;margin-top:8px;">
+            <span class="mono" style="font-size:29px;font-weight:500;letter-spacing:-0.025em;line-height:1;">₹5,18,400</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:7px;margin-top:14px;">
+            <div style="display:flex;justify-content:space-between;font-size:11.5px;">
+              <span style="color:var(--text-tertiary);">Jan 2026</span><span class="mono" style="color:var(--text-secondary);">₹2,41,900</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11.5px;">
+              <span style="color:var(--text-tertiary);">Feb 2026</span><span class="mono" style="color:var(--text-secondary);">₹2,76,500</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11.5px;">
+              <span style="color:var(--text-tertiary);">Mar 2026</span><span class="mono" style="color:var(--text-quaternary);">pending close</span>
+            </div>
+          </div>
+          <div style="margin-top:auto;padding-top:12px;font-size:11.5px;color:var(--text-tertiary);line-height:1.45;">True-up at quarter close: <span class="mono" style="color:var(--text-secondary);">₹3,23,750</span></div>
+        </div>
+      </div>
+
+      <!-- components -->
+      <div style="background:var(--bg-primary);border:1px solid var(--border-secondary);border-radius:10px;overflow:hidden;flex-grow:1;display:flex;flex-direction:column;min-height:0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 19px 13px;border-bottom:1px solid var(--border-secondary);">
+          <div style="display:flex;align-items:baseline;gap:9px;">
+            <span style="font-size:13.5px;font-weight:600;letter-spacing:-0.008em;">Earnings by component</span>
+            <span style="font-size:11.5px;color:var(--text-quaternary);">Enterprise AE — India, v3</span>
+          </div>
+          <span style="font-size:11.5px;color:var(--text-tertiary);">Every row opens the credits behind it</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:2.1fr 1fr 0.9fr 1fr 1.05fr 30px;gap:14px;padding:8px 19px;background:var(--gray-50);border-bottom:1px solid var(--border-secondary);font-size:10.5px;font-weight:600;letter-spacing:0.055em;text-transform:uppercase;color:var(--text-quaternary);">
+          <span>Component</span><span style="text-align:right;">Credit base</span><span style="text-align:right;">Rate</span><span style="text-align:right;">Earned QTD</span><span style="text-align:right;">Payable now</span><span></span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:2.1fr 1fr 0.9fr 1fr 1.05fr 30px;gap:14px;padding:13px 19px;align-items:center;border-bottom:1px solid var(--gray-100);">
+          <div>
+            <div style="font-size:13px;font-weight:500;">New business commission</div>
+            <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">Tiered · 3 bands · marginal</div>
+          </div>
+          <span class="mono" style="text-align:right;font-size:12.5px;color:var(--text-secondary);">₹1,08,40,000</span>
+          <span class="mono" style="text-align:right;font-size:12.5px;color:var(--text-secondary);">8.0 → 12.0%</span>
+          <span class="mono" style="text-align:right;font-size:12.5px;color:var(--text-secondary);">₹6,21,400</span>
+          <span class="mono" style="text-align:right;font-size:13px;font-weight:500;">₹2,48,900</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" stroke-linecap="round" style="justify-self:end;"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+
+        <div style="display:grid;grid-template-columns:2.1fr 1fr 0.9fr 1fr 1.05fr 30px;gap:14px;padding:13px 19px;align-items:center;border-bottom:1px solid var(--gray-100);">
+          <div>
+            <div style="font-size:13px;font-weight:500;">Renewal commission</div>
+            <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">Flat rate on renewal credit</div>
+          </div>
+          <span class="mono" style="text-align:right;font-size:12.5px;color:var(--text-secondary);">₹33,70,000</span>
+          <span class="mono" style="text-align:right;font-size:12.5px;color:var(--text-secondary);">4.0%</span>
+          <span class="mono" style="text-align:right;font-size:12.5px;color:var(--text-secondary);">₹1,34,800</span>
+          <span class="mono" style="text-align:right;font-size:13px;font-weight:500;">₹54,000</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" stroke-linecap="round" style="justify-self:end;"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+
+        <div style="display:grid;grid-template-columns:2.1fr 1fr 0.9fr 1fr 1.05fr 30px;gap:14px;padding:13px 19px;align-items:center;border-bottom:1px solid var(--gray-100);">
+          <div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-size:13px;font-weight:500;">Q1 accelerator SPIF</span>
+              <span style="display:inline-flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--warn-700)" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/></svg><span style="font-size:14px;font-weight:500;color:var(--warn-700);">Held</span></span>
+            </div>
+            <div style="font-size:11px;color:var(--warn-700);margin-top:2px;">Pays on collection — 2 invoices unpaid</div>
+          </div>
+          <span class="mono" style="text-align:right;font-size:12.5px;color:var(--text-secondary);">₹18,20,000</span>
+          <span class="mono" style="text-align:right;font-size:12.5px;color:var(--text-secondary);">2.5%</span>
+          <span class="mono" style="text-align:right;font-size:12.5px;color:var(--text-secondary);">₹45,500</span>
+          <span class="mono" style="text-align:right;font-size:13px;color:var(--text-quaternary);">—</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--warn-700)" stroke-width="2" stroke-linecap="round" style="justify-self:end;"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+
+        <div style="display:grid;grid-template-columns:2.1fr 1fr 0.9fr 1fr 1.05fr 30px;gap:14px;padding:13px 19px;align-items:center;">
+          <div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-size:13px;font-weight:500;">Churn clawback</span>
+              <span style="display:inline-flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--status-paused)" stroke-width="2.3" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.2M12 16.3h.01"/></svg><span style="font-size:14px;font-weight:500;color:var(--status-paused);">Reversal</span></span>
+            </div>
+            <div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">Nimbus Retail refunded 14 Feb</div>
+          </div>
+          <span class="mono" style="text-align:right;font-size:12.5px;color:var(--text-secondary);">−₹9,40,000</span>
+          <span class="mono" style="text-align:right;font-size:12.5px;color:var(--text-secondary);">8.0%</span>
+          <span class="mono" style="text-align:right;font-size:12.5px;color:var(--err-500);">−₹75,200</span>
+          <span class="mono" style="text-align:right;font-size:13px;font-weight:500;color:var(--err-500);">−₹75,200</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" stroke-linecap="round" style="justify-self:end;"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+
+        <div style="margin-top:auto;display:grid;grid-template-columns:2.1fr 1fr 0.9fr 1fr 1.05fr 30px;gap:14px;padding:13px 19px;align-items:center;background:var(--gray-50);border-top:1px solid var(--border-secondary);">
+          <span style="font-size:12.5px;font-weight:600;">Total payable · FY26 Q1</span>
+          <span></span><span></span>
+          <span class="mono" style="text-align:right;font-size:12.5px;color:var(--text-tertiary);">₹7,26,500</span>
+          <span class="mono" style="text-align:right;font-size:14.5px;font-weight:500;letter-spacing:-0.015em;">₹2,27,700</span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

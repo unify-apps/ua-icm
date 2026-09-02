@@ -17,3 +17,12 @@ graphify-out/
 # it is at hand while building and can absorb what this project teaches, but
 # ignored so it never ships in a PR or gets reviewed as ICM documentation.
 KIT-BOOTSTRAP.md
+
+# Wires the ua-agent-devkit page-builder MCP server into a session here.
+# Carries a live platform session cookie, so it is machine-local, never committed.
+.mcp.json
+
+# Seeded design canvases are large generated bundles - the .dc.html sources beside
+# them are the reviewable artefact.
+designs/*.html
+!designs/*.dc.html

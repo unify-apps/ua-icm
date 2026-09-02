@@ -1,0 +1,190 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Spectral:wght@400;500;600&display=swap">
+  <style>
+    :root{
+      --gray-25:#fefdfb; --gray-50:#f7f5f3; --gray-100:#f2f0ee; --gray-200:#edebe8;
+      --gray-300:#dbd6d1; --gray-400:#b4ada7; --gray-500:#9f9993; --gray-600:#6a6662;
+      --gray-700:#4a4745; --gray-800:#2f2e2d; --gray-900:#201f1e;
+      --brand-25:#f5f7f5; --brand-50:#e9efe8; --brand-100:#c2cbc4; --brand-500:#112d06;
+      --brand-solid:#386633; --brand-line:#4d8547;
+      --sec-25:#fbfaf9; --sec-50:#f9f6f1; --sec-100:#f6f1ea; --sec-200:#efe8dc; --sec-300:#ede4d4;
+      --err-25:#faf0f0; --err-50:#f6e2e0; --err-300:#dc7b74; --err-500:#b72318; --err-700:#7a1710;
+      --warn-25:#fdf0e3; --warn-50:#fbe5d0; --warn-300:#f4b271; --warn-700:#9d5206;
+      --succ-25:#eef5f0; --succ-50:#e3efe6; --succ-300:#76b086; --succ-700:#014713;
+      --status-live:#39A147; --status-draft:#6A6662; --status-paused:#a8503a;
+      --text-primary:#201f1e; --text-secondary:#4a4745; --text-tertiary:#6a6662; --text-quaternary:#9f9993;
+      --bg-primary:#ffffff; --bg-secondary:#fbfaf9;
+      --border-primary:#dbd6d1; --border-secondary:#edebe8;
+    }
+    *{box-sizing:border-box;}
+    body{margin:0;font-family:Geist,'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg-secondary);color:var(--text-primary);-webkit-font-smoothing:antialiased;}
+    a{color:var(--brand-solid);text-decoration:none;} a:hover{color:var(--brand-500);}
+    .mono{font-family:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums;}
+    .serif{font-family:Spectral,Georgia,'Times New Roman',serif;}
+  </style>
+</helmet>
+
+<div style="display:flex;flex-direction:column;height:900px;width:1440px;overflow:hidden;background:var(--bg-secondary);">
+
+  <div style="height:56px;flex-shrink:0;background:var(--bg-primary);border-bottom:1px solid var(--border-secondary);display:flex;align-items:center;justify-content:space-between;padding:0 24px;">
+    <div style="display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--text-tertiary);">
+      <span>Statements</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+      <span>FY26 Q1</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+      <span style="color:var(--text-primary);font-weight:500;">New business commission</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:5px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--status-live)" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.2l2.4 2.4 4.6-4.9"/></svg>
+      <span style="font-size:14px;font-weight:500;color:var(--text-secondary);">Published</span>
+    </div>
+  </div>
+
+  <div style="flex-grow:1;padding:22px 24px;display:flex;flex-direction:column;gap:15px;min-height:0;overflow:hidden;">
+
+    <div style="display:flex;align-items:baseline;gap:12px;">
+      <span class="serif" style="font-size:23px;font-weight:600;letter-spacing:-0.014em;">Why is this ₹2,48,900?</span>
+      <span style="font-size:12.5px;color:var(--text-tertiary);">Every number below is one step down. Nothing here is a summary you cannot open.</span>
+    </div>
+
+    <!-- step 1 -->
+    <div style="background:var(--bg-primary);border:1px solid var(--border-secondary);border-radius:10px;padding:16px 19px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="mono" style="width:19px;height:19px;border-radius:50%;background:var(--brand-500);color:#fff;font-size:10.5px;display:flex;align-items:center;justify-content:center;">1</span>
+          <span style="font-size:13.5px;font-weight:600;">The earning</span>
+        </div>
+        <span class="mono" style="font-size:11.5px;color:var(--text-quaternary);">run RUN-2026Q1-0147 · 3 Sep 2026 09:14 IST</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4, minmax(0,1fr));gap:1px;background:var(--border-secondary);border:1px solid var(--border-secondary);border-radius:8px;overflow:hidden;margin-top:13px;">
+        <div style="background:var(--bg-primary);padding:12px 14px;">
+          <div style="font-size:10.5px;font-weight:600;letter-spacing:0.055em;text-transform:uppercase;color:var(--text-quaternary);">Earned to date</div>
+          <div class="mono" style="font-size:17px;margin-top:5px;">₹6,21,400</div>
+        </div>
+        <div style="background:var(--bg-primary);padding:12px 14px;">
+          <div style="font-size:10.5px;font-weight:600;letter-spacing:0.055em;text-transform:uppercase;color:var(--text-quaternary);">Already paid</div>
+          <div class="mono" style="font-size:17px;margin-top:5px;color:var(--text-tertiary);">−₹3,72,500</div>
+        </div>
+        <div style="background:var(--bg-primary);padding:12px 14px;">
+          <div style="font-size:10.5px;font-weight:600;letter-spacing:0.055em;text-transform:uppercase;color:var(--text-quaternary);">Cap applied</div>
+          <div style="font-size:14px;margin-top:7px;color:var(--text-tertiary);">None — 118% of 150% ceiling</div>
+        </div>
+        <div style="background:var(--brand-25);padding:12px 14px;">
+          <div style="font-size:10.5px;font-weight:600;letter-spacing:0.055em;text-transform:uppercase;color:var(--brand-solid);">Payable now</div>
+          <div class="mono" style="font-size:17px;font-weight:500;margin-top:5px;color:var(--brand-500);">₹2,48,900</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- step 2 -->
+    <div style="background:var(--bg-primary);border:1px solid var(--border-secondary);border-radius:10px;padding:16px 19px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="mono" style="width:19px;height:19px;border-radius:50%;background:var(--brand-500);color:#fff;font-size:10.5px;display:flex;align-items:center;justify-content:center;">2</span>
+        <span style="font-size:13.5px;font-weight:600;">The rate that produced it</span>
+        <span style="font-size:12px;color:var(--text-tertiary);">Marginal tiering — each band is paid on the slice inside it, then summed</span>
+      </div>
+      <div style="display:grid;grid-template-columns:0.9fr 1.2fr 0.7fr 1fr 1fr;gap:14px;padding:8px 13px;background:var(--sec-50);border-radius:6px;margin-top:13px;font-size:10.5px;font-weight:600;letter-spacing:0.055em;text-transform:uppercase;color:var(--text-quaternary);">
+        <span>Band</span><span>Attainment slice</span><span style="text-align:right;">Rate</span><span style="text-align:right;">Credit in band</span><span style="text-align:right;">Earned</span>
+      </div>
+      <div style="display:grid;grid-template-columns:0.9fr 1.2fr 0.7fr 1fr 1fr;gap:14px;padding:10px 13px;align-items:center;border-bottom:1px solid var(--gray-100);font-size:12.5px;">
+        <span class="mono" style="color:var(--text-tertiary);">1</span><span style="color:var(--text-secondary);">0 – 100%</span>
+        <span class="mono" style="text-align:right;">8.0%</span><span class="mono" style="text-align:right;color:var(--text-secondary);">₹1,20,00,000</span><span class="mono" style="text-align:right;">₹4,80,000</span>
+      </div>
+      <div style="display:grid;grid-template-columns:0.9fr 1.2fr 0.7fr 1fr 1fr;gap:14px;padding:10px 13px;align-items:center;border-bottom:1px solid var(--gray-100);font-size:12.5px;background:var(--brand-25);">
+        <span class="mono" style="color:var(--brand-solid);font-weight:500;">2</span><span style="color:var(--brand-500);font-weight:500;">100 – 125% &nbsp;· you are here</span>
+        <span class="mono" style="text-align:right;font-weight:500;">12.0%</span><span class="mono" style="text-align:right;color:var(--text-secondary);">₹22,10,000</span><span class="mono" style="text-align:right;font-weight:500;">₹2,65,200</span>
+      </div>
+      <div style="display:grid;grid-template-columns:0.9fr 1.2fr 0.7fr 1fr 1fr;gap:14px;padding:10px 13px;align-items:center;font-size:12.5px;color:var(--text-quaternary);">
+        <span class="mono">3</span><span>125 – 150%</span>
+        <span class="mono" style="text-align:right;">16.0%</span><span class="mono" style="text-align:right;">not reached</span><span class="mono" style="text-align:right;">—</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:11px;padding:9px 13px;background:var(--sec-50);border-radius:6px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-quaternary)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <span style="font-size:11.5px;color:var(--text-tertiary);">Each band is rounded once, then the bands are summed — so these three lines add to the total exactly, with no drift.</span>
+      </div>
+    </div>
+
+    <!-- step 3 -->
+    <div style="background:var(--bg-primary);border:1px solid var(--border-secondary);border-radius:10px;overflow:hidden;flex-grow:1;display:flex;flex-direction:column;min-height:0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 19px 13px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="mono" style="width:19px;height:19px;border-radius:50%;background:var(--brand-500);color:#fff;font-size:10.5px;display:flex;align-items:center;justify-content:center;">3</span>
+          <span style="font-size:13.5px;font-weight:600;">The 34 deals credited to you</span>
+        </div>
+        <span style="font-size:12px;color:var(--text-tertiary);">Sorted by credit · showing 4</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1.7fr 1fr 0.9fr 0.85fr 1fr 30px;gap:14px;padding:8px 19px;background:var(--sec-50);border-top:1px solid var(--border-secondary);border-bottom:1px solid var(--border-secondary);font-size:10.5px;font-weight:600;letter-spacing:0.055em;text-transform:uppercase;color:var(--text-quaternary);">
+        <span>Account</span><span style="text-align:right;">Deal value</span><span>Closed</span><span style="text-align:right;">Your split</span><span style="text-align:right;">Credit</span><span></span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.7fr 1fr 0.9fr 0.85fr 1fr 30px;gap:14px;padding:11px 19px;align-items:center;border-bottom:1px solid var(--gray-100);font-size:12.5px;">
+        <div><div style="font-weight:500;">Meridian Logistics</div><div class="mono" style="font-size:11px;color:var(--text-quaternary);margin-top:2px;">SFDC · 0061a00000XyZq</div></div>
+        <span class="mono" style="text-align:right;color:var(--text-secondary);">₹42,00,000</span>
+        <span class="mono" style="color:var(--text-tertiary);">18 Feb</span>
+        <span class="mono" style="text-align:right;color:var(--text-secondary);">100%</span>
+        <span class="mono" style="text-align:right;font-weight:500;">₹42,00,000</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" stroke-linecap="round" style="justify-self:end;"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+      <div style="display:grid;grid-template-columns:1.7fr 1fr 0.9fr 0.85fr 1fr 30px;gap:14px;padding:11px 19px;align-items:center;border-bottom:1px solid var(--gray-100);font-size:12.5px;">
+        <div><div style="font-weight:500;">Kaveri Textiles</div><div class="mono" style="font-size:11px;color:var(--text-quaternary);margin-top:2px;">SFDC · 0061a00000XyMk</div></div>
+        <span class="mono" style="text-align:right;color:var(--text-secondary);">₹58,00,000</span>
+        <span class="mono" style="color:var(--text-tertiary);">27 Feb</span>
+        <span class="mono" style="text-align:right;color:var(--text-secondary);">50%</span>
+        <span class="mono" style="text-align:right;font-weight:500;">₹29,00,000</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" stroke-linecap="round" style="justify-self:end;"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+      <div style="display:grid;grid-template-columns:1.7fr 1fr 0.9fr 0.85fr 1fr 30px;gap:14px;padding:11px 19px;align-items:center;border-bottom:1px solid var(--gray-100);font-size:12.5px;">
+        <div><div style="font-weight:500;">Ashwin Foods</div><div class="mono" style="font-size:11px;color:var(--text-quaternary);margin-top:2px;">SFDC · 0061a00000Xz4b</div></div>
+        <span class="mono" style="text-align:right;color:var(--text-secondary);">₹19,40,000</span>
+        <span class="mono" style="color:var(--text-tertiary);">6 Mar</span>
+        <span class="mono" style="text-align:right;color:var(--text-secondary);">100%</span>
+        <span class="mono" style="text-align:right;font-weight:500;">₹19,40,000</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" stroke-linecap="round" style="justify-self:end;"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+      <div style="display:grid;grid-template-columns:1.7fr 1fr 0.9fr 0.85fr 1fr 30px;gap:14px;padding:11px 19px;align-items:center;font-size:12.5px;">
+        <div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-weight:500;">Nimbus Retail</span>
+            <span style="display:inline-flex;align-items:center;gap:4px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--status-paused)" stroke-width="2.3" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.2M12 16.3h.01"/></svg>
+              <span style="font-size:14px;font-weight:500;color:var(--status-paused);">Reversed</span>
+            </span>
+          </div>
+          <div class="mono" style="font-size:11px;color:var(--text-quaternary);margin-top:2px;">SFDC · 0061a00000Xw8p · refund 14 Feb</div>
+        </div>
+        <span class="mono" style="text-align:right;color:var(--text-secondary);">−₹9,40,000</span>
+        <span class="mono" style="color:var(--text-tertiary);">3 Jan</span>
+        <span class="mono" style="text-align:right;color:var(--text-secondary);">100%</span>
+        <span class="mono" style="text-align:right;font-weight:500;color:var(--status-paused);">−₹9,40,000</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" stroke-linecap="round" style="justify-self:end;"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+
+      <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding:12px 19px;background:var(--sec-50);border-top:1px solid var(--border-secondary);">
+        <span style="font-size:12.5px;color:var(--text-tertiary);">30 more deals</span>
+        <div style="display:flex;align-items:baseline;gap:9px;">
+          <span style="font-size:12.5px;font-weight:600;">Total credited</span>
+          <span class="mono" style="font-size:14.5px;font-weight:500;letter-spacing:-0.015em;">₹1,42,10,000</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:9px;">
+      <div style="display:flex;align-items:center;gap:6px;height:31px;padding:0 13px;border-radius:6px;border:1px solid var(--border-primary);background:var(--bg-primary);font-size:12.5px;color:var(--text-secondary);">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Something looks wrong — raise a dispute
+      </div>
+      <span style="font-size:11.5px;color:var(--text-quaternary);">A dispute quotes this run and these credits, so nobody has to reconstruct the question.</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
