@@ -2,6 +2,15 @@
   "appsUsed": [],
   "createdTime": 1788377460777,
   "deleted": false,
+  "deployedVersion": 1,
+  "deploymentState": {
+    "deployedAt": 1788381321115,
+    "deployedBy": 22816,
+    "deployedDefinitionId": "6a988888873a4a6394ba9db7",
+    "status": "DEPLOYED",
+    "version": 1,
+    "workflowVersion": 1
+  },
   "description": "Given a Position and a date, says who held that seat on that date - or names exactly why the question has no single answer. Spec: docs/automations/resolve-seat-occupant.md. NOT for the calculation path; the engine does this fold in memory.",
   "edges": [
     {
@@ -162,9 +171,9 @@
   "id": "6a9879742ada0c631031e64b",
   "lastModifiedBy": 22816,
   "lastPlatformUpdateBy": 22816,
-  "lastPlatformUpdateOn": 1788378015771,
+  "lastPlatformUpdateOn": 1788381321115,
   "lcName": "icm | resolve seat occupant",
-  "modifiedTime": 1788378015771,
+  "modifiedTime": 1788381321115,
   "name": "ICM | Resolve Seat Occupant",
   "nodes": [
     {

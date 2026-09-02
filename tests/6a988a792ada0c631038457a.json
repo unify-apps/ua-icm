@@ -1,0 +1,208 @@
+{
+  "name": "ICM | List Seats",
+  "fixtures": "tests/fixtures/seats.json - seed with: node scripts/fixtures.mjs seed seats",
+  "note": "Read-only suite, safe to re-run. Every occupancy case isolates ONE seat with `search` first, so nothing depends on row order - a suite that assumed seats.0 was a particular seat would pass today and go flaky the moment another seat is added.",
+  "cases": [
+    {
+      "name": "OK - every input blank, the payload real callers actually send",
+      "payload": { "search": "", "asOfDate": "", "limit": "", "offset": "", "includeOccupancy": "" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "success", "equals": true },
+        { "path": "limit", "equals": 50 },
+        { "path": "offset", "equals": 0 },
+        { "path": "occupancyResolved", "equals": true },
+        { "path": "seats", "type": "array", "minLen": 6 },
+        { "path": "asOfDate", "type": "string", "minLen": 10 }
+      ]
+    },
+    {
+      "name": "OK - search matches a positionCode, and total reflects the filter (proves the OR group narrows SERVER-side)",
+      "payload": { "search": "KITFIX-POS-01", "asOfDate": "2026-02-15", "limit": "", "offset": "", "includeOccupancy": "" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "total", "equals": 1 },
+        { "path": "seats.0.positionCode", "equals": "KITFIX-POS-01" },
+        { "path": "hasMore", "equals": false }
+      ]
+    },
+    {
+      "name": "OK - search matches a NAME in a different case (ICONTAINS is case-insensitive)",
+      "payload": { "search": "contested seat", "asOfDate": "2026-02-15", "limit": "", "offset": "", "includeOccupancy": "" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "total", "equals": 1 },
+        { "path": "seats.0.positionCode", "equals": "KITFIX-POS-03" }
+      ]
+    },
+    {
+      "name": "OK - search matches nothing: empty is a result, not an error",
+      "payload": { "search": "ZZZ-NO-SUCH-SEAT-ANYWHERE", "asOfDate": "", "limit": "", "offset": "", "includeOccupancy": "" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "success", "equals": true },
+        { "path": "total", "equals": 0 },
+        { "path": "seats", "type": "array", "maxLen": 0 },
+        { "path": "counts.total", "equals": 0 }
+      ]
+    },
+
+    {
+      "name": "OCCUPIED - a date inside a closed assignment range",
+      "payload": { "search": "KITFIX-POS-01", "asOfDate": "2026-02-15", "limit": "", "offset": "", "includeOccupancy": "" },
+      "checks": [
+        { "path": "seats.0.occupancy", "equals": "OCCUPIED" },
+        { "path": "seats.0.employeeId", "equals": "KITFIX-E001" },
+        { "path": "seats.0.payeeName", "equals": "KITFIX-Asha Rao" },
+        { "path": "seats.0.matchCount", "equals": 1 },
+        { "path": "counts.occupied", "equals": 1 }
+      ]
+    },
+    {
+      "name": "OCCUPIED - open-ended assignment (the case a server-side effectiveEnd filter would break)",
+      "payload": { "search": "KITFIX-POS-02", "asOfDate": "2026-08-20", "limit": "", "offset": "", "includeOccupancy": "" },
+      "checks": [
+        { "path": "seats.0.occupancy", "equals": "OCCUPIED" },
+        { "path": "seats.0.employeeId", "equals": "KITFIX-E002" },
+        { "path": "seats.0.matchCount", "equals": 1 }
+      ]
+    },
+    {
+      "name": "VACANT - the date is before the assignment starts",
+      "payload": { "search": "KITFIX-POS-01", "asOfDate": "2025-12-31", "limit": "", "offset": "", "includeOccupancy": "" },
+      "checks": [
+        { "path": "seats.0.occupancy", "equals": "VACANT" },
+        { "path": "seats.0.payeeId", "equals": "" },
+        { "path": "seats.0.matchCount", "equals": 0 },
+        { "path": "counts.vacant", "equals": 1 }
+      ]
+    },
+    {
+      "name": "VACANT - a seat nobody ever filled",
+      "payload": { "search": "KITFIX-POS-04", "asOfDate": "2026-02-15", "limit": "", "offset": "", "includeOccupancy": "" },
+      "checks": [
+        { "path": "seats.0.occupancy", "equals": "VACANT" },
+        { "path": "seats.0.positionCode", "equals": "KITFIX-POS-04" }
+      ]
+    },
+    {
+      "name": "CONFLICT - two assignments cover the date, and no payee is named",
+      "payload": { "search": "KITFIX-POS-03", "asOfDate": "2026-03-14", "limit": "", "offset": "", "includeOccupancy": "" },
+      "checks": [
+        { "path": "seats.0.occupancy", "equals": "CONFLICT" },
+        { "path": "seats.0.matchCount", "equals": 2 },
+        { "path": "seats.0.payeeId", "equals": "" },
+        { "path": "seats.0.employeeId", "equals": "" },
+        { "path": "counts.conflict", "equals": 1 }
+      ]
+    },
+    {
+      "name": "OCCUPIED - a TERMINATED payee still held the seat back then",
+      "payload": { "search": "KITFIX-POS-06", "asOfDate": "2026-01-20", "limit": "", "offset": "", "includeOccupancy": "" },
+      "checks": [
+        { "path": "seats.0.occupancy", "equals": "OCCUPIED" },
+        { "path": "seats.0.employeeId", "equals": "KITFIX-E004" }
+      ]
+    },
+    {
+      "name": "OCCUPIED - a dangling payeeId leaves the seat occupied but unnamed, it does not crash",
+      "payload": { "search": "KITFIX-POS-05", "asOfDate": "2026-02-15", "limit": "", "offset": "", "includeOccupancy": "" },
+      "checks": [
+        { "path": "seats.0.occupancy", "equals": "OCCUPIED" },
+        { "path": "seats.0.matchCount", "equals": 1 },
+        { "path": "seats.0.payeeName", "equals": "" }
+      ]
+    },
+
+    {
+      "name": "OK - includeOccupancy false skips the fold entirely",
+      "payload": { "search": "KITFIX-POS-01", "asOfDate": "2026-02-15", "limit": "", "offset": "", "includeOccupancy": "false" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "occupancyResolved", "equals": false },
+        { "path": "seats.0.occupancy", "equals": "UNKNOWN" },
+        { "path": "seats.0.payeeId", "equals": "" },
+        { "path": "counts.occupied", "equals": 0 }
+      ]
+    },
+    {
+      "name": "OK - a boolean never set is MISSING, not false: an unticked seat still reads active",
+      "payload": { "search": "KITFIX-POS-01", "asOfDate": "2026-02-15", "limit": "", "offset": "", "includeOccupancy": "" },
+      "checks": [{ "path": "seats.0.active", "type": "boolean" }]
+    },
+
+    {
+      "name": "OK - first page of two, hasMore is true",
+      "payload": { "search": "KITFIX-POS", "asOfDate": "2026-02-15", "limit": "2", "offset": "0", "includeOccupancy": "" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "limit", "equals": 2 },
+        { "path": "offset", "equals": 0 },
+        { "path": "seats", "maxLen": 2 },
+        { "path": "total", "min": 6 },
+        { "path": "hasMore", "equals": true },
+        { "path": "counts.total", "equals": 2 }
+      ]
+    },
+    {
+      "name": "OK - the last page reports hasMore false",
+      "payload": { "search": "KITFIX-POS", "asOfDate": "2026-02-15", "limit": "50", "offset": "0", "includeOccupancy": "" },
+      "checks": [
+        { "path": "hasMore", "equals": false },
+        { "path": "total", "min": 6 }
+      ]
+    },
+    {
+      "name": "OK - an offset past the end is an empty page, not an error",
+      "payload": { "search": "KITFIX-POS", "asOfDate": "2026-02-15", "limit": "10", "offset": "500", "includeOccupancy": "" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "seats", "maxLen": 0 },
+        { "path": "hasMore", "equals": false }
+      ]
+    },
+    {
+      "name": "OK - limit is clamped to the 200 ceiling rather than trusted",
+      "payload": { "search": "KITFIX-POS-01", "asOfDate": "", "limit": "9999", "offset": "", "includeOccupancy": "" },
+      "checks": [{ "path": "limit", "equals": 200 }]
+    },
+
+    {
+      "name": "INVALID_INPUT - unparseable date",
+      "payload": { "search": "", "asOfDate": "not-a-date", "limit": "", "offset": "", "includeOccupancy": "" },
+      "checks": [
+        { "path": "status", "equals": "INVALID_INPUT" },
+        { "path": "success", "equals": false },
+        { "path": "seats", "maxLen": 0 },
+        { "path": "message", "minLen": 1 }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - a date-shaped string that is not a real day",
+      "payload": { "search": "", "asOfDate": "2026-02-30", "limit": "", "offset": "", "includeOccupancy": "" },
+      "checks": [{ "path": "status", "equals": "INVALID_INPUT" }]
+    },
+    {
+      "name": "INVALID_INPUT - limit is not a number",
+      "payload": { "search": "", "asOfDate": "", "limit": "abc", "offset": "", "includeOccupancy": "" },
+      "checks": [
+        { "path": "status", "equals": "INVALID_INPUT" },
+        { "path": "message", "minLen": 1 }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - offset is not a number",
+      "payload": { "search": "", "asOfDate": "", "limit": "", "offset": "-5", "includeOccupancy": "" },
+      "checks": [{ "path": "status", "equals": "INVALID_INPUT" }]
+    },
+    {
+      "name": "OK - epoch milliseconds are accepted as the second date form",
+      "payload": { "search": "KITFIX-POS-01", "asOfDate": "1771113600000", "limit": "", "offset": "", "includeOccupancy": "" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "asOfDate", "equals": "2026-02-15" },
+        { "path": "seats.0.occupancy", "equals": "OCCUPIED" }
+      ]
+    }
+  ]
+}

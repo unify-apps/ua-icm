@@ -36,7 +36,15 @@ catastrophic.
 
 | token | why this page calls it | statuses this page must handle |
 |---|---|---|
-| `ICM \| Resolve Seat Occupant` (`6a9879742ada0c631031e64b`) | the only source of "who held this seat on that date" | `RESOLVED` · `VACANT` · `AMBIGUOUS` · `POSITION_NOT_FOUND` · `PAYEE_NOT_FOUND` · `INVALID_INPUT` |
+| `ICM \| List Seats` (`6a988a792ada0c631038457a`) | the seat picker, the filter chips and the counts — **and each seat's occupancy for the chosen date, resolved in bulk** | `OK` · `INVALID_INPUT` |
+| `ICM \| Resolve Seat Occupant` (`6a9879742ada0c631031e64b`) | the detail panel for the one seat the user selected | `RESOLVED` · `VACANT` · `AMBIGUOUS` · `POSITION_NOT_FOUND` · `PAYEE_NOT_FOUND` · `INVALID_INPUT` |
+
+**Why two callables and not one.** `List Seats` answers "what is the state of
+these 50 seats" in three fetches; `Resolve Seat Occupant` answers "tell me
+everything about this ONE seat" including the payee's currency and the exact
+assignment window. Calling the second once per row would be the per-item-loop
+trap; calling only the first would leave the detail panel without the fields it
+shows. The list is the sweep, the detail is the drill.
 
 The automation's spec (`docs/automations/resolve-seat-occupant.md`) names this
 page in its **Callers** row. Both sides, or the dependency is invisible — nothing
@@ -82,10 +90,13 @@ form rather than its money form:
   only useful next question and a page that says "there are 2" without saying
   which two has moved the problem rather than surfaced it
 
-This is a dead end today: `Resolve Seat Occupant` returns `matchCount` but not
-the conflicting rows themselves. **Saying so is the point** — it is a known gap
-with a named fix (add a `conflicts[]` array to the callable's result), not a
-detail to discover during the build.
+This is a dead end today: neither callable returns the conflicting rows
+themselves — `Resolve Seat Occupant` returns `matchCount`, and `List Seats`
+returns `occupancy: "CONFLICT"` with the same count. **Saying so is the point**
+— it is a known gap with a named fix (a `conflicts[]` array on
+`Resolve Seat Occupant`'s result), not a detail to discover mid-build. Until it
+lands, the conflict panel says how many and names the seat, and the two people
+are found by opening the assignments.
 
 ## Money and dates on screen
 
@@ -104,13 +115,14 @@ spec and must not be re-implemented here.
 
 ## Open questions
 
-1. **How does the seat picker get its list of seats?** The layer rule says pages
-   call callables, and no "list seats" callable exists. Either one is built
-   (`ICM | List Positions`, paged and searchable) or a read-only data source over
-   `Position` is allowed for pick-lists specifically. **Owner: needs a decision
-   before the build starts** — it is the first real test of how absolute the
-   layer rule is, and answering it during the build means answering it by
-   accident.
+1. ~~**How does the seat picker get its list of seats?**~~ **ANSWERED
+   2026-09-03: build the callable.** `ICM | List Seats`
+   (`6a988a792ada0c631038457a`) exists, paged and searchable, and the layer rule
+   stays absolute — **no data source over `Position` is created for this page,
+   deliberately.** The decision was taken before the build rather than during
+   it, which was the point of writing it down. If a data source over a comp
+   object ever appears in this app, `get_data_sources` will show it and the rule
+   was abandoned quietly.
 2. **Should `AMBIGUOUS` be actionable from here** — a "fix assignments" link, or
    is that a separate comp-ops screen? Owner: product.
 3. **Does anyone need seat *history*** ("show every occupant this seat has had")
