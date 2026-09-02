@@ -1,20 +1,38 @@
 # Page | Seat Directory
 
-**Built state**: **specified, not built.** The build runs **here** —
-`/start <builder-url>` → build → update this file → `/done` — via
-`scripts/page.mjs`, which drives the devkit's own bin scripts so the snapshot
-and `/restore` guarantees are unchanged. Nothing has been created in the builder
-yet, so the "Platform page id" and "Devkit session" rows below are deliberately
-empty rather than guessed.
+**Built state (2026-09-03)**: **PARTLY BUILT — structure yes, data no.**
+The page exists at `/seat-directory` with 14 blocks: header, the as-of control
+bound to a page variable, the seat-list panel with its empty state, and the
+three outcome banners. Every colour, size and spacing value is a design-system
+token (`bg-workspace`, `text-tertiary`, `text-xsm`, `gap-lg`), not a hex copied
+from the mockup.
 
-Its callable, `ICM | Resolve Seat Occupant`, **is deployed** as of 2026-09-03,
-so this page has something real to call.
+**It cannot fetch yet, and the cause is not in this repo.** Creating the data
+source that calls `ICM | List Seats` is refused by the platform:
+
+```
+ENTITY_TYPE with id e_data_source_deployed not found
+  … check if you have the permissions to view this e_data_source_deployed
+```
+
+Reproduced twice, with a minimal payload and with both `page` and `app` scope,
+so it is not the config. It is the same fault behind the
+`forbidden datasource: not found` warning that every save on this app returns.
+`get_data_sources` reads fine and returns an empty list; the app has **zero**
+data sources, which is itself the symptom. **Someone with workspace admin needs
+to provision / grant the data-source entity type on orbit for this user.**
+
+Until then the page renders its structure and its empty state, and the wiring is
+one `create_data_source` call plus one layer of bindings — the layout was built
+so that call drops into it rather than reshaping it.
 
 | field | value |
 |---|---|
-| Route / id | `seat-directory` in app `sales-commission-management` |
-| Platform page id | — not built |
-| Devkit session | — not built |
+| Route / id | `/seat-directory` in app `sales-commission-management` |
+| Platform page id | `e_6a988d297f7cff32ea8e8a4a` — what `/start` and `/restore` act on |
+| Devkit session | `sessions/sarthak-ray/2026-09-03-0225-session` |
+| Page variables | `var_jqj3Z` seatSearch · `var_xIGkZ` asOfDate · `var_ccGER` selectedPositionId |
+| Key blocks | `b_DQZ7E` pageHeader · `b_1rH11` asOfControls · `b_EBwtj` seatListPanel · `b_V22z8` answerPanel |
 | Audience | comp ops, and comp admins |
 | Purpose | Answer "who held this seat on this date, and who holds it now" — and make a broken assignment visible instead of letting it surface later as a wrong payout. |
 | Authorization | Any authenticated user of the app. **This page shows org structure, never money** — no amount, quota, attainment or payout appears on it. That is why it can be open, and it is the reason the callable it uses is open too. The moment a money column is wanted here, this row and the callable's Authorization row both change together, or the change is refused. |
