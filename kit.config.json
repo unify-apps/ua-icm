@@ -2,33 +2,39 @@
   "product": {
     "name": "ICM",
     "longName": "Incentive Compensation Management",
-    "applicationId": "icm",
+    "applicationId": "sales-commission-management",
     "tokenPrefix": "ICM"
   },
   "tags": {
-    "automations": ["icm"],
-    "entityTypes": ["icm"],
+    "automations": [
+      "icm"
+    ],
+    "entityTypes": [
+      "icm"
+    ],
     "test": "icmkit-test"
   },
   "entities": {
-    "prefix": "icm",
+    "prefix": "",
     "typesInterfaceFile": "docs/api/icm-types.ts",
     "interfaceBaseName": "Icm",
-    "archivable": []
+    "archivable": [],
+    "_prefixNote": "Object names carry NO product prefix (Period, not icmPeriod). Membership is by the tags above, never by name \u2014 gen-types.mjs filters on tags."
   },
   "pages": {
-    "applicationId": "icm"
+    "applicationId": "sales-commission-management"
   },
   "_notes": [
     "This file is the ONLY place product-specific identifiers live. Scripts read it",
     "through scripts/kit-config.mjs; nothing else may hardcode a tag or app id.",
     "",
-    "UNVERIFIED as of 2026-09-02: applicationId 'icm' and the tags below are",
-    "PLACEHOLDERS chosen by convention from the Axis kit (app id 'axis-no-code',",
-    "tags 'axisNocode'). Before the first build, confirm the real values against the",
-    "platform and correct them here:",
-    "  node scripts/ua.mjs search --tag icm      (do any ICM automations exist?)",
-    "  node scripts/ua.mjs types --tag icm       (do any ICM object types exist?)",
+    "CONFIRMED 2026-09-02 against orbit: the `icm` tag was unused, so it is ours.",
+    "The platform was greenfield - 0 automations and 0 object types carried it.",
+    "Every ICM asset - object, automation, page - carries the `icm` tag.",
+    "",
+    "The application is `sales-commission-management` on orbit:",
+    "  https://orbit.uat.unifyapps.com/p/0/interfaces/sales-commission-management",
+    "",
     "A wrong applicationId does not error - it silently matches nothing, which is",
     "the single most expensive mistake in the Axis repo's history (axis-qa, 2026-08-22)."
   ]

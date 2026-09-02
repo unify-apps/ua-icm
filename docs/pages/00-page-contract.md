@@ -1,12 +1,41 @@
 # ICM application pages — shared contract
 
-**Status: intent, not proven.** The Axis kit never modelled application pages,
-so there is no tooling here yet and no proven API path for reading or writing a
-page from outside the builder (open question 10 in `notes/open-questions.md`).
-Until that is answered, pages are built by hand in the UnifyApps builder and
-this folder is where their contracts are agreed FIRST — same discipline as
-automations, same reason: a page is a caller, and callers that were never
-specified are how contracts drift.
+**Status: the tooling works (proven 2026-09-02).** Pages are built through the
+**`ua-agent-devkit`**, which runs `www/packages/llm-tools` as a local MCP server
+bound to one platform. Open question 10 is answered: there is no plain REST path
+for a page, and there does not need to be — the devkit's typed tools are the
+supported route, and they refuse a bad write instead of rendering an empty
+screen.
+
+This folder stays the place a page's contract is agreed FIRST — same discipline
+as automations, same reason: a page is a caller, and callers that were never
+specified are how contracts drift. The tools build the page; this folder is the
+only record of what it depends on.
+
+## How a page actually gets built
+
+Pages are built in a Claude Code session opened **in the devkit folder**, not
+here. The three commands that matter:
+
+| command | what it does |
+|---|---|
+| `/start <builder-url>` | snapshots the page BEFORE any edit — page, interface, data sources |
+| `/done "note"` | writes the session record and commits it: what was asked, what happened, where it went wrong, plus a full trace of every tool call |
+| `/restore` | puts the page back exactly as it was at `/start` |
+
+**`/restore` is the only per-page undo that exists.** The platform's own version
+history restores the WHOLE app, not one page. A page edited without `/start` has
+no small way back — so `/start` is not optional.
+
+### The rule that keeps this repo honest
+
+**The page spec in this folder is written or updated BEFORE `/done`.** The build
+happens in the devkit; the record of what the page depends on lives here, and
+nowhere else. Treat it exactly like the automation rule that the spec updates in
+the same commit as the build — same discipline, two repos.
+
+Setup for the devkit lives in its own README. One clone serves one platform;
+ours is bound to **orbit** on port 3002.
 
 ## A page is a caller, and that is the whole point of specifying it
 

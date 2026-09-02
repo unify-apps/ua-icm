@@ -10,7 +10,7 @@
 // from kit.config.json. Nothing here is product-specific.
 import fs from "node:fs";
 import path from "node:path";
-import { ROOT, config, ENTITY_PREFIX, ENTITY_TAGS } from "./kit-config.mjs";
+import { ROOT, config, ENTITY_TAGS } from "./kit-config.mjs";
 
 const TYPES = path.join(ROOT, "snapshots/orbit/entity-types");
 const OUT = path.join(ROOT, config.entities.typesInterfaceFile);
@@ -65,7 +65,10 @@ const entities = [];
 for (const f of files.sort()) {
   const j = JSON.parse(fs.readFileSync(path.join(TYPES, f), "utf8"));
   const name = j.name || f.replace(/\.json$/, "");
-  if (!name.toLowerCase().startsWith(ENTITY_PREFIX.toLowerCase())) continue;
+  // Membership is by TAG, never by name (object names carry no product prefix).
+  // Snapshots are already tag-filtered by `snap-types --tag`, so this is a guard
+  // against a stray file rather than the primary filter.
+  if (!(j.tags ?? []).some((t) => ENTITY_TAGS.includes(t))) continue;
   const sc = j.schema?.schema || j.schema || {};
   const props = sc.properties || {};
   const required = new Set(sc.required || []);
@@ -96,8 +99,8 @@ for (const f of files.sort()) {
 }
 
 if (!entities.length) {
-  console.error(`error: no snapshots matched the entity prefix "${ENTITY_PREFIX}" (kit.config.json).`);
-  console.error(`       ${files.length} snapshot file(s) present. Either the prefix is wrong or \`${SNAP_CMD}\` has not run.`);
+  console.error(`error: no snapshots carried any of the entity tags ${JSON.stringify(ENTITY_TAGS)} (kit.config.json).`);
+  console.error(`       ${files.length} snapshot file(s) present. Either the tags are wrong or \`${SNAP_CMD}\` has not run.`);
   process.exit(1);
 }
 

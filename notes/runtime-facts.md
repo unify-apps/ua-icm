@@ -961,3 +961,62 @@ not-linked case with `SUCCESS` / `removedCount 1`.
 part of the contract whenever two callables write the same family. Either give
 each suite its own records, or reset the family between them
 (`fixtures.mjs reset-projmem`). Recorded in both suites' notes.
+
+## First facts proven in THIS repo (ICM, 2026-09-02)
+
+The four below are ours, not inherited. Each was produced by a real call
+against orbit while building `icmPeriod` and `ICM | Check Period Writable`.
+
+- **Automations can be CREATED with their nodes in ONE call.** `POST
+  /api/workflow-definition/saveAndReturnViolations?strict=true` with a body
+  carrying `name`, `tags`, `nodes`, `edges` and NO `id` created a 7-node
+  callable, returned the minted id, and reported `violations: []` in the same
+  response. The Axis kit's clone-then-copilot-rebuild ceremony is NOT required.
+  Its warning that a raw create yields an unfetchable workflow did not
+  reproduce — most likely their body was incomplete.
+- **Object types can be CREATED the same way.** `POST /api/entity-type` with a
+  full definition (`id`, `name`, `pluralName`, `lcName`, `tags`, `input`,
+  `schema`, `metadata`) returned 200 and the type appeared under `types --tag`.
+  Copy the body shape from an existing entity-type snapshot; the metadata block
+  has ~40 keys and omitting them is untested.
+- **`fields` projections on `storage_by_unifyapps_fetch_records` MUST carry the
+  `properties.` prefix.** `fields: ["name","status"]` returned rows with NO
+  properties at all — `{deleted, id, standard, version}` and nothing else. No
+  error, no warning; the IF that read `properties.status` simply saw nothing and
+  took the false branch, so the automation answered NOT_WRITABLE for an OPEN
+  period. `fields: ["id","properties.name","properties.status"]` fixed it. Bare
+  field names are silently dropped. (Same class of failure as the system-field
+  alias trap already recorded above.)
+- **`groupId` encodes the BRANCH PATH, and getting it wrong silently destroys
+  the graph.** This is the single most expensive thing learned on day one.
+  Every node carries a `groupId`. Nodes at the top level use `root_id-1`, but a
+  node living inside an IF branch carries the whole nesting path:
+
+  ```
+  root_id-1                              top level
+  n_IfA@root_id-1@y                      the YES branch of n_IfA
+  n_IfA@root_id-1@n                      the NO branch of n_IfA
+  n_IfB@n_IfA@root_id-1@n@y              YES of n_IfB, which is inside NO of n_IfA
+  ```
+
+  IF ids stack on the LEFT innermost-first; branch letters (`y`/`n`) stack on
+  the RIGHT outermost-first, so the two halves read toward each other. Verified
+  against `Axis | Fetch Team Member Records` (three nested IFs).
+
+  **What happens if every node is left at `root_id-1`** (proven 2026-09-02 on
+  `ICM | Check Period Writable`): the create returns 200, the validator says
+  `clean`, and TEST RUNS EXECUTE EVERY NODE CORRECTLY — but the builder cannot
+  lay the graph out. It renders only as far as the first branch, shows a dangling
+  `+`, and the platform then PRUNES the unrenderable nodes: a verified 7-node
+  create read back as **4 nodes** minutes later, with the three nodes downstream
+  of the second IF gone. Nothing in the kit wrote to it in that window.
+
+  So: a green test run and a clean validate prove NOTHING about groupId. The
+  runtime, the validator and the builder are three different layers, and this
+  defect is visible only in the third — a human opening the automation, or the
+  node count dropping on the next fetch. Setting the paths correctly fixed it
+  and the 7 nodes have held since.
+
+  Two habits follow: **snapshot immediately after any create** (that snapshot is
+  what made the restore a non-event), and **check the node count on the next
+  fetch** rather than trusting the create's 200.
