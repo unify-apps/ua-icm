@@ -8,6 +8,8 @@ built, same as an automation spec. -->
 | field | value |
 |---|---|
 | Route / id | |
+| Platform page id | `e_…` — from the builder URL; what `/start` and `/restore` act on |
+| Devkit session | `sessions/<who>/<timestamp>-session` in `ua-agent-devkit` |
 | Audience | participant / manager / comp admin / finance / comp ops |
 | Purpose | one sentence: the decision or task this page serves |
 | Authorization | who may open it; what a user who may not see this data gets. The refusal happens in the CALLABLE, not in the page |
@@ -41,3 +43,9 @@ every figure.
 ## Open questions
 
 Named, with who owes the answer.
+
+---
+
+<!-- Before running /done in the devkit: everything above is filled in, and every
+callable named in "Callables it invokes" has this page in its spec's Callers row.
+The build is in the devkit; this file is the only record of the dependency. -->

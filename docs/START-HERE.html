@@ -1,0 +1,361 @@
+<title>ICM Kit Orientation</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --paper:#F5F7F9; --surface:#FFFFFF; --sunk:#EAEEF2;
+    --ink:#141C24; --ink-soft:#43535F; --muted:#6E8091;
+    --line:#D5DDE4; --line-soft:#E4EAEF;
+    --intend:#7A4FA3; --intend-bg:#F0EAF7;
+    --is:#1F5FA0;     --is-bg:#E8F0F8;
+    --proof:#0F6F65;  --proof-bg:#E2F1EE;
+    --learn:#92650A;  --learn-bg:#F7F0DF;
+    --act:#A33A32;    --act-bg:#F8E9E7;
+    --shadow:0 1px 2px rgba(20,28,36,.06), 0 8px 24px -12px rgba(20,28,36,.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#0E151B; --surface:#161F27; --sunk:#1D2831;
+      --ink:#EDF2F6; --ink-soft:#B4C2CD; --muted:#8698A7;
+      --line:#2C3945; --line-soft:#232E38;
+      --intend:#BFA0DC; --intend-bg:#241B31;
+      --is:#7FB2E4;     --is-bg:#16283A;
+      --proof:#5BC4B5;  --proof-bg:#10302D;
+      --learn:#DCB055;  --learn-bg:#302716;
+      --act:#E58A80;    --act-bg:#331E1C;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#0E151B; --surface:#161F27; --sunk:#1D2831;
+    --ink:#EDF2F6; --ink-soft:#B4C2CD; --muted:#8698A7;
+    --line:#2C3945; --line-soft:#232E38;
+    --intend:#BFA0DC; --intend-bg:#241B31;
+    --is:#7FB2E4;     --is-bg:#16283A;
+    --proof:#5BC4B5;  --proof-bg:#10302D;
+    --learn:#DCB055;  --learn-bg:#302716;
+    --act:#E58A80;    --act-bg:#331E1C;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
+  }
+  * { box-sizing:border-box; }
+  body {
+    background:var(--paper); color:var(--ink);
+    font-family:"IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    line-height:1.55; -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:1040px; margin:0 auto; padding:52px 24px 96px; display:flex; flex-direction:column; gap:60px; }
+  h1,h2,h3 { font-family:Archivo, ui-sans-serif, system-ui, sans-serif; text-wrap:balance; margin:0; }
+  .eyebrow { font-family:"IBM Plex Mono", ui-monospace, monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:500; }
+  header { display:flex; flex-direction:column; gap:14px; }
+  header h1 { font-size:clamp(36px,6vw,58px); font-weight:800; letter-spacing:-.03em; line-height:1.02; }
+  .lede { font-size:clamp(17px,2.1vw,20px); color:var(--ink-soft); max-width:62ch; }
+  .lede b { color:var(--ink); font-weight:600; }
+  .stamp {
+    font-family:"IBM Plex Mono", monospace; font-size:11.5px; color:var(--muted);
+    border-top:1px solid var(--line); padding-top:11px; margin-top:3px;
+  }
+  section { display:flex; flex-direction:column; gap:20px; }
+  .sec-head { display:flex; flex-direction:column; gap:7px; }
+  .sec-head h2 { font-size:clamp(23px,3.3vw,31px); font-weight:700; letter-spacing:-.02em; }
+  .sec-head p { margin:0; color:var(--ink-soft); max-width:68ch; font-size:15.5px; }
+  code {
+    font-family:"IBM Plex Mono", monospace; font-size:12.5px;
+    background:var(--sunk); padding:1px 5px; border-radius:4px; color:var(--ink);
+  }
+
+  /* five questions */
+  .five { display:grid; grid-template-columns:repeat(5,1fr); gap:11px; }
+  .fq { border-radius:11px; padding:15px 14px 17px; border:1.5px solid; display:flex; flex-direction:column; gap:5px; }
+  .fq .f { font-family:"IBM Plex Mono", monospace; font-size:11.5px; font-weight:600; }
+  .fq .q { font-family:Archivo; font-weight:800; font-size:14.5px; letter-spacing:-.01em; line-height:1.2; }
+  .fq p { margin:0; font-size:12.5px; color:var(--ink-soft); line-height:1.45; }
+  .f-intend { background:var(--intend-bg); border-color:color-mix(in srgb,var(--intend) 35%,var(--line)); }
+  .f-intend .f,.f-intend .q { color:var(--intend); }
+  .f-is { background:var(--is-bg); border-color:color-mix(in srgb,var(--is) 35%,var(--line)); }
+  .f-is .f,.f-is .q { color:var(--is); }
+  .f-proof { background:var(--proof-bg); border-color:color-mix(in srgb,var(--proof) 35%,var(--line)); }
+  .f-proof .f,.f-proof .q { color:var(--proof); }
+  .f-learn { background:var(--learn-bg); border-color:color-mix(in srgb,var(--learn) 35%,var(--line)); }
+  .f-learn .f,.f-learn .q { color:var(--learn); }
+  .f-act { background:var(--act-bg); border-color:color-mix(in srgb,var(--act) 35%,var(--line)); }
+  .f-act .f,.f-act .q { color:var(--act); }
+
+  /* folder rows */
+  .folders { display:flex; flex-direction:column; gap:9px; }
+  .grp { display:flex; flex-direction:column; gap:8px; }
+  .glabel { font-family:"IBM Plex Mono", monospace; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; font-weight:600; padding-top:9px; }
+  .g-intend .glabel { color:var(--intend); } .g-is .glabel { color:var(--is); }
+  .g-proof .glabel { color:var(--proof); } .g-learn .glabel { color:var(--learn); }
+  .g-act .glabel { color:var(--act); }
+  .row {
+    display:grid; grid-template-columns:225px 1fr; gap:18px;
+    background:var(--surface); border:1.5px solid var(--line); border-left-width:4px;
+    border-radius:10px; padding:13px 17px; box-shadow:var(--shadow);
+  }
+  .g-intend .row { border-left-color:var(--intend); } .g-is .row { border-left-color:var(--is); }
+  .g-proof .row { border-left-color:var(--proof); } .g-learn .row { border-left-color:var(--learn); }
+  .g-act .row { border-left-color:var(--act); }
+  .row .path { font-family:"IBM Plex Mono", monospace; font-size:12.5px; font-weight:600; word-break:break-word; }
+  .row .path em { display:block; font-family:"IBM Plex Sans"; font-style:normal; font-weight:400; font-size:12px; color:var(--muted); margin-top:3px; }
+  .row .what { font-size:14px; color:var(--ink-soft); }
+  .row .what b { color:var(--ink); font-weight:600; }
+
+  /* roads */
+  .roads { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .road {
+    border-radius:12px; border:1.5px solid; background:var(--surface);
+    box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column;
+  }
+  .road .top { padding:14px 17px 12px; border-bottom:1.5px solid; display:flex; flex-direction:column; gap:3px; }
+  .road .num { font-family:"IBM Plex Mono", monospace; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; font-weight:600; }
+  .road .name { font-family:Archivo; font-weight:700; font-size:17px; letter-spacing:-.01em; color:var(--ink); }
+  .road .body { padding:15px 17px 18px; display:flex; flex-direction:column; gap:11px; flex:1; }
+  .road .builds { font-family:Archivo; font-weight:700; font-size:15px; color:var(--ink); }
+  .road p { margin:0; font-size:13.5px; color:var(--ink-soft); }
+  .road .cmd {
+    font-family:"IBM Plex Mono", monospace; font-size:11.5px; background:var(--sunk);
+    border-radius:6px; padding:8px 10px; color:var(--ink-soft); overflow-x:auto; white-space:nowrap;
+  }
+  .r-rest { border-color:color-mix(in srgb,var(--is) 40%,var(--line)); }
+  .r-rest .top { background:var(--is-bg); border-bottom-color:color-mix(in srgb,var(--is) 30%,var(--line)); }
+  .r-rest .num { color:var(--is); }
+  .r-mcp { border-color:color-mix(in srgb,var(--proof) 40%,var(--line)); }
+  .r-mcp .top { background:var(--proof-bg); border-bottom-color:color-mix(in srgb,var(--proof) 30%,var(--line)); }
+  .r-mcp .num { color:var(--proof); }
+
+  /* generic panel */
+  .panel {
+    border:1.5px solid var(--line); border-radius:12px; background:var(--surface);
+    padding:21px 24px; display:flex; flex-direction:column; gap:10px; box-shadow:var(--shadow);
+  }
+  .panel h3 { font-size:18px; font-weight:700; letter-spacing:-.01em; }
+  .panel p { margin:0; font-size:14.5px; color:var(--ink-soft); }
+  .panel p b { color:var(--ink); font-weight:600; }
+  .panel.warn { background:var(--act-bg); border-color:color-mix(in srgb,var(--act) 35%,var(--line)); }
+  .panel.note { background:var(--is-bg); border-color:color-mix(in srgb,var(--is) 35%,var(--line)); }
+  .panel ul { margin:0; padding-left:20px; display:flex; flex-direction:column; gap:6px; }
+  .panel li { font-size:14.5px; color:var(--ink-soft); }
+  .panel li b { color:var(--ink); font-weight:600; }
+
+  /* table */
+  .tablewrap { overflow-x:auto; border:1.5px solid var(--line); border-radius:12px; background:var(--surface); box-shadow:var(--shadow); }
+  table { border-collapse:collapse; width:100%; min-width:600px; }
+  th,td { text-align:left; padding:13px 17px; border-bottom:1px solid var(--line-soft); vertical-align:top; font-size:14px; }
+  thead th {
+    font-family:"IBM Plex Mono", monospace; font-size:10.5px; letter-spacing:.13em; text-transform:uppercase;
+    color:var(--muted); font-weight:600; background:var(--sunk); border-bottom:1.5px solid var(--line);
+  }
+  tbody tr:last-child td { border-bottom:none; }
+  td.a { font-family:"IBM Plex Mono", monospace; font-size:12.5px; font-weight:600; white-space:nowrap; }
+  .pill { display:inline-block; font-family:"IBM Plex Mono", monospace; font-size:10.5px; font-weight:600; letter-spacing:.04em; padding:3px 9px; border-radius:20px; white-space:nowrap; }
+  .p-live { background:var(--proof-bg); color:var(--proof); }
+  .p-draft { background:var(--learn-bg); color:var(--learn); }
+  .p-none { background:var(--act-bg); color:var(--act); }
+
+  /* pipeline */
+  .pipe { display:grid; grid-template-columns:repeat(5,1fr); gap:0; }
+  .step { background:var(--surface); border:1.5px solid var(--line); border-right:none; padding:15px 15px 17px; display:flex; flex-direction:column; gap:6px; }
+  .step:first-child { border-radius:11px 0 0 11px; }
+  .step:last-child { border-right:1.5px solid var(--line); border-radius:0 11px 11px 0; }
+  .step .n { font-family:"IBM Plex Mono", monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; font-weight:600; color:var(--is); }
+  .step h3 { font-size:15px; font-weight:700; letter-spacing:-.01em; }
+  .step p { margin:0; font-size:12.5px; color:var(--ink-soft); line-height:1.45; }
+
+  .closer {
+    border-top:2px solid var(--ink); padding-top:20px; font-family:Archivo; font-weight:700;
+    font-size:clamp(19px,2.5vw,24px); letter-spacing:-.02em; text-wrap:balance; max-width:50ch;
+  }
+  .closer span { color:var(--muted); }
+
+  @media (max-width:860px) {
+    .five { grid-template-columns:1fr 1fr; }
+    .roads { grid-template-columns:1fr; }
+    .row { grid-template-columns:1fr; gap:5px; }
+    .pipe { grid-template-columns:1fr; }
+    .step { border-right:1.5px solid var(--line); border-radius:11px; margin-bottom:10px; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">ua-icm · read this first</div>
+    <h1>ICM Kit Orientation</h1>
+    <p class="lede">This repo builds the <b>Incentive Compensation Management</b> product on UnifyApps — its objects, its automations, and its application pages — driven from Claude Code. Ten minutes here saves you a day.</p>
+    <div class="stamp">Last updated 2026-09-03 · lives at docs/START-HERE.html · update it when the shape of the repo changes</div>
+  </header>
+
+  <!-- ============ WHAT THIS REPO IS ============ -->
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">The one idea</div>
+      <h2>This repo is not the product</h2>
+      <p>The product lives on the UnifyApps platform. This repo is <b>the written record of it, plus the tools to change it</b> — so anyone (or any Claude session) can read what is true, make a change, and prove the change landed.</p>
+    </div>
+    <div class="panel note">
+      <h3>Which means the docs are load-bearing, not decoration</h3>
+      <p>Reading <code>docs/</code> start to finish must land you on the <b>current</b> state of the product. A spec that no longer matches what is deployed is <b>a bug, not a stale doc</b> — so the spec updates in the same commit as the build.</p>
+      <p>And when a doc and a snapshot disagree, <b>the snapshot wins and the doc is the thing that is wrong.</b></p>
+    </div>
+  </section>
+
+  <!-- ============ FOLDERS ============ -->
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">How it's organised</div>
+      <h2>Five questions, five kinds of folder</h2>
+      <p>Once you know which question a folder answers, you always know where a thing goes.</p>
+    </div>
+    <div class="five">
+      <div class="fq f-intend"><div class="f">docs/</div><div class="q">What we INTEND</div><p>Agreed before anything is built. Prose, not code.</p></div>
+      <div class="fq f-is"><div class="f">snapshots/</div><div class="q">What IS</div><p>Copies of what the platform actually holds.</p></div>
+      <div class="fq f-proof"><div class="f">tests/</div><div class="q">PROOF it works</div><p>One suite per automation. No suite, no deploy.</p></div>
+      <div class="fq f-learn"><div class="f">notes/</div><div class="q">What we LEARNED</div><p>Platform facts, each dated and sourced.</p></div>
+      <div class="fq f-act"><div class="f">scripts/</div><div class="q">How we ACT</div><p>The only things that touch the platform.</p></div>
+    </div>
+
+    <div class="folders">
+      <div class="grp g-intend">
+        <div class="glabel">What we intend — write this first, always</div>
+        <div class="row"><div class="path">docs/model/<em>the data</em></div><div class="what">What an ICM <b>object</b> is and the rules a schema cannot enforce. <code>00-domain-model.md</code> is the objects; <code>money-and-time.md</code> is the money and period doctrine; <code>glossary.md</code> is the shared vocabulary.</div></div>
+        <div class="row"><div class="path">docs/automations/<em>backend specs</em></div><div class="what">One file per automation: what it takes in and returns in <b>every</b> outcome. <code>00-shared-contract.md</code> holds what they all inherit — written once, because a rule copied into ten specs drifts in ten places.</div></div>
+        <div class="row"><div class="path">docs/pages/<em>screen specs</em></div><div class="what"><b>Load-bearing.</b> Nothing on the platform records that a page depends on an automation, so if the dependency is not written here it does not exist anywhere.</div></div>
+        
+        <div class="row"><div class="path">docs/api/<em>contracts + curls</em></div><div class="what"><code>platform-endpoints.md</code> is every platform call we know, as curl, with provenance marked on each one.</div></div>
+      </div>
+
+      <div class="grp g-is">
+        <div class="glabel">What is — the truth, and the shape library</div>
+        <div class="row"><div class="path">snapshots/orbit/<em>automations + entity-types</em></div><div class="what">One JSON per asset, pulled off the platform. Two jobs: the <b>restore point</b> when a change goes wrong, and the <b>library of working node shapes</b> you copy from instead of guessing. Snapshot immediately after any create.</div></div>
+      </div>
+
+      <div class="grp g-proof">
+        <div class="glabel">Proof — what makes "it works" a fact instead of a claim</div>
+        <div class="row"><div class="path">tests/<em>one per automation</em></div><div class="what">Named <code>&lt;workflowId&gt;.json</code>. <b><code>deploy.mjs</code> refuses to ship an automation without a green one</b> — there is deliberately no bypass flag.</div></div>
+      </div>
+
+      <div class="grp g-learn">
+        <div class="glabel">What we learned — the most valuable folder here</div>
+        <div class="row"><div class="path">notes/runtime-facts.md<em>how the platform behaves</em></div><div class="what">Dug out of the actual backend source. Filter dialects, silent-failure traps, what a bulk fetch does past its limit. <b>Every claim carries a date and a source.</b></div></div>
+        <div class="row"><div class="path">notes/open-questions.md<em>what we don't know</em></div><div class="what">Numbered questions that block something, each naming who owes the answer. A question nobody owns gets answered the expensive way — by whoever builds first.</div></div>
+      </div>
+
+      <div class="grp g-act">
+        <div class="glabel">How we act — read the header comment of any script</div>
+        <div class="row"><div class="path">scripts/ua.mjs<em>read-only</em></div><div class="what">Cannot change anything, by design. <code>whoami</code>, <code>search</code>, <code>fetch</code>, <code>snap</code>, <code>validate</code>, <code>inventory</code>, <code>drift</code>, <code>registry</code>.</div></div>
+        <div class="row"><div class="path">scripts/testrun.mjs · regress.mjs<em>run it</em></div><div class="what">Run a draft and see every node's real output. These <b>execute against real data</b> — same care as a live run.</div></div>
+        <div class="row"><div class="path">scripts/deploy.mjs<em>the gate</em></div><div class="what">The only sanctioned deploy. Four mechanical checks, then it <b>verifies by reading the deployment state back</b> — a 200 is never treated as proof.</div></div>
+      </div>
+
+      <div class="grp g-intend">
+        <div class="glabel">Two root files you'll touch constantly</div>
+        <div class="row"><div class="path">kit.config.json<em>the identifiers</em></div><div class="what">App id, tags, object prefix — <b>the only place they live.</b> A wrong app id does not error; it silently matches nothing.</div></div>
+        <div class="row"><div class="path">docs/architecture.md<em>the living map</em></div><div class="what">Every asset with its id and status, what calls what, and <b>Now / Next / Done</b> — one diagram, updated in the same commit as the work.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ROADS ============ -->
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">How assets get built</div>
+      <h2>Two roads to the platform</h2>
+      <p>Everything we build is an object, an automation, or a page. Objects and automations go one way; pages go another. Both use the same <code>_at</code> cookie, and both run entirely on your own machine.</p>
+    </div>
+    <div class="roads">
+      <div class="road r-rest">
+        <div class="top"><div class="num">Road 1 · the workhorse</div><div class="name">Scripts → REST</div></div>
+        <div class="body">
+          <div class="builds">Objects and automations</div>
+          <div class="cmd">POST /api/workflow-definition/</div>
+          <p>Plain HTTPS. Write the whole thing as JSON and post it — <b>an automation can be created with all its nodes in one call</b>, which also returns every validation error. Proven 2026-09-02.</p>
+          <p>Copy every node shape from a snapshot of the same node type — including its <code>groupId</code> branch path. <b>Never guess a shape:</b> a wrong groupId passes validate, runs green, and then silently prunes nodes.</p>
+        </div>
+      </div>
+      <div class="road r-mcp">
+        <div class="top"><div class="num">Road 2 · your local server</div><div class="name">Devkit → MCP</div></div>
+        <div class="body">
+          <div class="builds">Application pages</div>
+          <div class="cmd">bin/serve start · :3002</div>
+          <p>Pages are built in a Claude Code session opened <b>in the <code>ua-agent-devkit</code> folder</b>, using 35 typed tools that refuse a bad write.</p>
+          <p><code>/start</code> snapshots the page, <code>/done</code> records the session, <code>/restore</code> undoes it. <b><code>/restore</code> is the only per-page undo that exists</b> — the platform's own history restores the whole app.</p>
+        </div>
+      </div>
+    </div>
+    <div class="panel warn">
+      <h3>Why a page needs different tooling than an automation</h3>
+      <p>An automation is <b>one JSON document</b> — post it and the validator tells you every mistake. A page is <b>115 block types where almost nothing errors at runtime</b>: a broken binding renders empty, a bad id is a silent no-op, a denied permission hides rather than warning.</p>
+      <p>So for pages, <b>correctness happens at write time or never.</b> That is what the typed tools are for, and why there is no raw REST path worth using.</p>
+    </div>
+  </section>
+
+  <!-- ============ THE PIPELINE ============ -->
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">The working procedure</div>
+      <h2>Nothing gets built without a spec first</h2>
+      <p>Steps 1 and 2 produce a <b>file</b>, not a paragraph in chat. Chat gets lost; a spec file is what the next person reads.</p>
+    </div>
+    <div class="pipe">
+      <div class="step"><div class="n">Step 1</div><h3>Contract</h3><p>Agree exactly what it takes in and returns in every outcome, like an API endpoint. Written into <code>docs/</code>.</p></div>
+      <div class="step"><div class="n">Step 2</div><h3>Design</h3><p>Node list, error paths, what existing callables to reuse, and a row-count estimate at real scale.</p></div>
+      <div class="step"><div class="n">Step 3</div><h3>Build</h3><p>Write the JSON, copying node shapes from snapshots. Snapshot again immediately after.</p></div>
+      <div class="step"><div class="n">Step 4</div><h3>Test</h3><p>A regression suite in <code>tests/</code>, green. Plus <code>validate</code> and <code>lint</code> clean — three different layers.</p></div>
+      <div class="step"><div class="n">Step 5</div><h3>Critique</h3><p>Audit it like a staff engineer. Every finding stands on a runtime fact or a measured number, never a hunch.</p></div>
+    </div>
+  </section>
+
+  <!-- ============ SAFETY ============ -->
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">Read this before you run anything</div>
+      <h2>The rules that are not negotiable</h2>
+    </div>
+    <div class="panel warn">
+      <ul>
+        <li><b>Orbit (UAT) is where we work.</b> Tool is production and is read-only unless a human says otherwise.</li>
+        <li><b>Never deploy, delete or publish without an explicit human yes</b> in the conversation. Editing a draft is fine; shipping is a separate, gated act.</li>
+        <li><b>Never test against real pay data.</b> Fixtures are loudly-named participants and periods of our own. A test run that recalculates a real period, or writes a real payout, is the one mistake in this repo that reaches someone's bank account.</li>
+        <li><b>Schema changes change the data model for everyone</b>, and a property can never be retyped once records exist. Adding is easy; removing is a product decision.</li>
+        <li><b>Verify writes by re-reading.</b> <code>{"success": true}</code> is a claim about the call, not about the data.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ WHAT EXISTS ============ -->
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">Current state · 2026-09-02</div>
+      <h2>What exists today</h2>
+      <p>The platform was greenfield: zero ICM automations and zero ICM objects before this. The live map — every asset, what it calls, and what is still planned — is <code>docs/architecture.md</code>.</p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Asset</th><th>Kind</th><th>State</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="a">Period</td><td>object</td><td><span class="pill p-live">live</span></td><td>6 fields, <code>name</code> unique, self-FK. Object names carry <b>no prefix</b> — membership is by the <code>icm</code> tag.</td></tr>
+          <tr><td class="a">ICM | Check Period Writable</td><td>automation</td><td><span class="pill p-draft">draft only</span></td><td>7 nodes, runs green on every branch. No spec and no suite yet, so it cannot deploy.</td></tr>
+          <tr><td class="a">sales-commission-management</td><td>application</td><td><span class="pill p-live">exists</span></td><td>The app pages get built into. No pages yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="panel">
+      <h3>Nothing is deployed</h3>
+      <p>Callers only ever reach the <b>deployed</b> copy, so as of today nothing here is reachable by anything. The authority on what is live is <code>deploymentState</code> on the workflow record — not the inventory column, and not a deploy call's 200.</p>
+    </div>
+  </section>
+
+  <!-- ============ GRAPHIFY ============ -->
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">One tool that confuses everyone</div>
+      <h2>graphify does not refresh itself</h2>
+    </div>
+    <div class="panel">
+      <p>There are two hooks in <code>.claude/settings.json</code>, but they rebuild nothing — they fire before a search and <b>nudge you to query the graph instead of grepping blindly</b>. Refreshing is manual: <code>graphify update .</code> after code changes (pure parsing, no model, free), or <code>/graphify --update</code> after doc changes.</p>
+      <p>Output lands in <code>graphify-out/</code>, which is git-ignored on purpose so nobody reviews it as if it were a document. And it reads <b>this repo</b> — so it tells you what the docs say, not what the platform holds. <b>A navigation aid, never evidence.</b></p>
+    </div>
+  </section>
+
+  <div class="closer">Intend it in <span>docs/</span>, prove it in <span>tests/</span>, record what is real in <span>snapshots/</span>. <span>Everything else is a tool for moving between those three.</span></div>
+
+</div>

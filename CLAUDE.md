@@ -264,11 +264,22 @@ usual answer) or ask. Never guess a field into existence.
 
 ## Application pages
 
-The third pillar, and the one the Axis kit never modelled. There is no proven
-API path for reading or writing a page from outside the builder yet (open
-question 10), so pages are built by hand in the builder and their contracts are
-agreed first in `docs/pages/`. Read `docs/pages/00-page-contract.md` before
-specifying one.
+The third pillar, and the one the Axis kit never modelled. Pages are built
+through **`ua-agent-devkit`**, which runs `www/packages/llm-tools` as a local
+MCP server (35 typed page-builder tools) bound to one platform — ours is orbit
+on port 3002. Open question 10 is answered: there is no plain REST path for a
+page and none is needed. Read `docs/pages/00-page-contract.md` before specifying
+one.
+
+The build happens in a Claude Code session opened **in the devkit folder**, not
+here: `/start <builder-url>` snapshots the page first, `/done "note"` writes the
+session record, `/restore` puts it back. **`/restore` is the only per-page undo
+that exists** — the platform's own version history restores the WHOLE app — so
+`/start` is not optional.
+
+**The page spec in `docs/pages/` is written or updated BEFORE `/done`.** The
+build lives in the devkit; the record of what a page depends on lives here, and
+nowhere else.
 
 Two things carry over into automation work regardless:
 - **A page is a caller.** Its dependency on a callable is recorded nowhere but
@@ -390,6 +401,13 @@ not deployed".
   the TOP level (a `conditions:` wrapper = silently always false); every BRANCH
   arm needs non-empty filters; nodes after a branch join carry the branch node's
   PARENT groupId, not `...@default`.
+- **`groupId` branch paths — the day-one trap.** A node inside an IF branch
+  carries the nesting path, NOT `root_id-1`: `n_IfA@root_id-1@y` for the yes arm,
+  `n_IfB@n_IfA@root_id-1@n@y` one level deeper. Leaving everything at root
+  passes validate AND runs green in a test, then renders as a dangling `+` in
+  the builder and the platform PRUNES the unrenderable nodes on the next write.
+  See `notes/runtime-facts.md`. Always eyeball the builder after a hand-built
+  graph, and check the node count on the next fetch.
 - **Hand-made edges carry the builder's vocabulary.** IF edges are named
   `yes`/`no`, branch edges by branch id; every arm's last node has an explicit
   `next` edge to the join node. Never invent edge `id` fields.
