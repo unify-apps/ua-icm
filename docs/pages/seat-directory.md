@@ -26,6 +26,23 @@ Until then the page renders its structure and its empty state, and the wiring is
 one `create_data_source` call plus one layer of bindings — the layout was built
 so that call drops into it rather than reshaping it.
 
+**Verified in the live preview** (`/preview/seat-directory`), not assumed: the
+page renders, the binding resolves (`{{ var_xIGkZ['value'] }}` shows
+`2026-03-14`), and the two `visibility: false` state banners are correctly
+absent from the DOM. Two defects were found by looking and are fixed:
+
+- `borderRadius: "rounded-lg"` **is not a token.** It was stored without
+  complaint and computed to `0px`. The "lg" preset is `rounded-3xl` (10px);
+  `get_style_options` is the list, and now it reads 10px.
+- `startDecorator: "CheckCircle"` and `"MinusCircle"` **are not icon names.**
+  The first logged `Icon not found`; the second matched nothing at all and would
+  have rendered silently. They are `SvgCheckCircle` and `SvgCircleDotted`,
+  resolved with `get_icon_options`.
+
+Both are the same failure: a plausible-looking value written into a key that
+takes a fixed registry. Nothing refuses it and nothing logs it — the block just
+keeps rendering the default. Resolve every token and icon from its own tool.
+
 | field | value |
 |---|---|
 | Route / id | `/seat-directory` in app `sales-commission-management` |
@@ -143,7 +160,18 @@ spec and must not be re-implemented here.
    was abandoned quietly.
 2. **Should `AMBIGUOUS` be actionable from here** — a "fix assignments" link, or
    is that a separate comp-ops screen? Owner: product.
-3. **Does anyone need seat *history*** ("show every occupant this seat has had")
+3. **The app is not on the UnifyApps Design System.** Measured from the live
+   page: the ground is `oklch(0.995 0.002 250)` and the title
+   `oklch(0.25 0.03 255)` — hue ~250-255 is the COOL palette. The published
+   design system is warm (`brand-secondary-25` `#fbfaf9`, gray-900 `#201f1e`),
+   and its own note says the 2026 retheme "moved it off cool gray". So the
+   tokens this page stores are right and resolve correctly — they just resolve
+   against the app's current theme, which is the pre-retheme one. Making the app
+   match the design system is a THEME-level change (theme manager, app theme
+   `e_6a8e91f922e51f30962be140`), not a per-block one, and doing it there fixes
+   every page at once. Owner: needs a decision — it is not something to patch
+   block by block.
+4. **Does anyone need seat *history*** ("show every occupant this seat has had")
    rather than one date at a time? That is a different callable, not a bigger
    response from this one.
 
