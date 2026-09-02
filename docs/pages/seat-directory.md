@@ -1,9 +1,14 @@
 # Page | Seat Directory
 
-**Built state**: **specified, not built.** The build happens in a Claude Code
-session opened in `ua-agent-devkit` (`/start` → build → update this file →
-`/done`). Nothing has been created in the builder yet, so the "Platform page id"
-and "Devkit session" rows below are deliberately empty rather than guessed.
+**Built state**: **specified, not built.** The build runs **here** —
+`/start <builder-url>` → build → update this file → `/done` — via
+`scripts/page.mjs`, which drives the devkit's own bin scripts so the snapshot
+and `/restore` guarantees are unchanged. Nothing has been created in the builder
+yet, so the "Platform page id" and "Devkit session" rows below are deliberately
+empty rather than guessed.
+
+Its callable, `ICM | Resolve Seat Occupant`, **is deployed** as of 2026-09-03,
+so this page has something real to call.
 
 | field | value |
 |---|---|

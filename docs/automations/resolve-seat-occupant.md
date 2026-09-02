@@ -1,9 +1,16 @@
 # ICM | Resolve Seat Occupant
 
-**Built state (2026-09-03)**: **draft v1, 19 nodes.** `ua.mjs validate` clean ·
-`lint.mjs` clean · suite `tests/6a9879742ada0c631031e64b.json` **24/24 green**.
-**NOT DEPLOYED** — callers only ever reach the deployed copy, so nothing can
-call this yet. Deploying needs an explicit human yes.
+**Built state (2026-09-03)**: **v1, 19 nodes — DEPLOYED.** `ua.mjs validate`
+clean · `lint.mjs` clean · suite `tests/6a9879742ada0c631031e64b.json`
+**24/24 green**. Deployed by Sarthak on 2026-09-03; verified by reading
+`deploymentState` back, not by trusting the deploy call:
+`status: DEPLOYED`, `workflowVersion: 1`, matching the record's own `version: 1`
+— so the deployed copy IS the current draft and callers reach this behaviour.
+
+**It is live, which changes the rules for editing it.** From here on a change to
+this automation is a change to something callers already depend on: the draft
+may move freely, but the moment it is redeployed every caller sees the new
+contract. Walk the Changes table below before touching it.
 
 | field | value |
 |---|---|
