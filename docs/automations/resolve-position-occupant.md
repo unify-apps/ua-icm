@@ -1,11 +1,19 @@
-# ICM | Resolve Seat Occupant
+# ICM | Resolve Position Occupant
 
-**Built state (2026-09-03)**: **v1, 19 nodes — DEPLOYED.** `ua.mjs validate`
+**Built state (2026-09-03)**: **v2, 19 nodes — DEPLOYED.** `ua.mjs validate`
 clean · `lint.mjs` clean · suite `tests/6a9879742ada0c631031e64b.json`
 **24/24 green**. Deployed by Sarthak on 2026-09-03; verified by reading
 `deploymentState` back, not by trusting the deploy call:
-`status: DEPLOYED`, `workflowVersion: 1`, matching the record's own `version: 1`
+`status: DEPLOYED`, `workflowVersion: 2`, matching the record's own draft
 — so the deployed copy IS the current draft and callers reach this behaviour.
+
+**Renamed 2026-09-03.** This was `ICM | Resolve Seat Occupant`. The name changed
+and so did the user-visible `message` text — `Seat KITFIX-POS-01 was …` now reads
+`Position KITFIX-POS-01 was …`. The result FIELDS are unchanged, so no caller's
+bindings moved; the suite asserts no message text, which is why the rename cost
+nothing there. The Positions page shows these messages verbatim in its
+"could not be answered" banner, so the wording is user-facing and is part of the
+contract in practice even though nothing tests it.
 
 **It is live, which changes the rules for editing it.** From here on a change to
 this automation is a change to something callers already depend on: the draft
@@ -14,16 +22,16 @@ contract. Walk the Changes table below before touching it.
 
 | field | value |
 |---|---|
-| Token / name | `ICM \| Resolve Seat Occupant` (`6a9879742ada0c631031e64b`), tags from `kit.config.json` (`icm`), CALLABLE |
-| Purpose | Given a `Position` and a date, say who held that seat **on that date** — or say precisely why the question has no single answer. |
+| Token / name | `ICM \| Resolve Position Occupant` (`6a9879742ada0c631031e64b`), tags from `kit.config.json` (`icm`), CALLABLE |
+| Purpose | Given a `Position` and a date, say who held that position **on that date** — or say precisely why the question has no single answer. |
 | Replaces | Nothing yet. Today the question is unanswerable: `PayeePositionAssignment` was created 2026-09-03 and nothing reads it. |
-| Callers | **Pages** — `docs/pages/seat-directory.md` (specified, not built), and any screen that shows "who owns this account/territory as of …". **Not the calculation engine** — see the loud note below. |
-| Authorization | **Open to any authenticated caller, deliberately.** It returns org structure (who sits in which seat), not money. No amount, no quota, no payout field appears in its response. The moment a money field is added here, this row changes and the callable needs a caller check — that is written into the Changes table so the omission is not silent. |
+| Callers | **Pages** — `docs/pages/positions.md` (specified, not built), and any screen that shows "who owns this account/territory as of …". **Not the calculation engine** — see the loud note below. |
+| Authorization | **Open to any authenticated caller, deliberately.** It returns org structure (who sits in which position), not money. No amount, no quota, no payout field appears in its response. The moment a money field is added here, this row changes and the callable needs a caller check — that is written into the Changes table so the omission is not silent. |
 
 ## This callable is NOT for the calculation path
 
 Worth saying before anything else, because the mistake would be natural and
-expensive. Resolving one seat costs one call. The engine resolves a seat for
+expensive. Resolving one position costs one call. The engine resolves a position for
 *every transaction* — hundreds of thousands in a quarter — so calling this per
 transaction is exactly the "API call inside a per-item loop" that
 `CLAUDE.md` forbids and that turns a 30-second run into an overnight one.
@@ -96,7 +104,7 @@ Always `status`, `success`, `message`. Everything else is present only on
 | status | success | meaning | what the caller should do |
 |---|---|---|---|
 | `RESOLVED` | true | exactly one assignment covers the date | show the payee |
-| `VACANT` | false | the seat exists, nobody held it that day | show "unoccupied on <date>" — this is normal, not an error |
+| `VACANT` | false | the position exists, nobody held it that day | show "unoccupied on <date>" — this is normal, not an error |
 | `AMBIGUOUS` | false | 2+ assignments cover the date — a data bug | show both, and route to whoever fixes assignments. `matchCount` says how many |
 | `POSITION_NOT_FOUND` | false | no `Position` with that id | the caller sent a stale id |
 | `PAYEE_NOT_FOUND` | false | the assignment points at a `Payee` that does not exist | dangling FK; FK constraints are not enforced on this object |
@@ -106,7 +114,7 @@ Result fields: `status`, `success`, `message`, `asOfDate` (echoed, normalised to
 `YYYY-MM-DD`), `asOfEpoch`, `positionId`, `positionCode`, `positionName`,
 `payeeId`, `employeeId`, `payeeName`, `payeeCurrency` (the CODE, joined from
 the `Currency` lookup), `payeeCurrencySymbol`, `effectiveStart`,
-`effectiveEnd` (empty string when open-ended — the seat is still held),
+`effectiveEnd` (empty string when open-ended — the position is still held),
 `allocationPct`, `matchCount`.
 
 `required` is `["status", "success", "message", "matchCount"]` and nothing more.
@@ -125,9 +133,9 @@ four questions are answered per fetch.
 3. **`n_FtPos`** fetch `Position`.
    - **sent**: `id EQUAL {{ positionId }}`, `limit 1`, fields
      `id, properties.positionCode, properties.name`.
-   - **not sent**: `active` — the flow answers a historical question, and a seat
+   - **not sent**: `active` — the flow answers a historical question, and a position
      being closed today does not change who sat in it in March. Filtering on it
-     would silently return `POSITION_NOT_FOUND` for every retired seat.
+     would silently return `POSITION_NOT_FOUND` for every retired position.
    - **when**: always. **not called**: never.
 4. **`n_FtAsg`** fetch `PayeePositionAssignment`.
    - **sent**: `positionId EQUAL` AND `effectiveStart LESS_THAN_EQUAL asOfEpoch`,
@@ -139,11 +147,11 @@ four questions are answered per fetch.
      match an `EQUAL ""` filter (`notes/runtime-facts.md`, proven 2026-08-25) —
      so a server-side `effectiveEnd >= asOf OR effectiveEnd is blank` would
      silently drop exactly the rows that matter most: the people currently in
-     the seat. The `effectiveStart` half is still applied server-side because it
+     the position. The `effectiveStart` half is still applied server-side because it
      is safe and it is what keeps the row count small.
    - **when**: always. **not called**: never.
-   - **limit 200**: one seat's assignment history. A seat changing hands 200
-     times is not a real seat, but silence past the limit is how a bulk fetch
+   - **limit 200**: one position's assignment history. A position changing hands 200
+     times is not a real position, but silence past the limit is how a bulk fetch
      lies, so `n_Pick` compares `total` against the rows it received and returns
      `AMBIGUOUS` with a truncation message rather than a confident wrong answer.
 5. **`n_Ids`** Groovy — *"Collect the candidate payee ids for one bulk lookup"*.
@@ -155,7 +163,7 @@ four questions are answered per fetch.
    - **sent**: `id IN {{ payeeIds }}`, fields `id, properties.employeeId,
      properties.name, properties.currency`.
    - **not sent**: `status`, `terminationDate` — a terminated payee still held
-     the seat in March and still gets paid for it. Filtering them out would
+     the position in March and still gets paid for it. Filtering them out would
      silently rewrite history.
    - **when**: always (the sentinel makes the empty case safe). **not called**: never.
 7. **`n_FtCur`** fetch `Currency` — *"Resolve the payee's currency lookup to its code"*.
@@ -206,17 +214,17 @@ return the same answer.
 |---|---|---|---|
 | `Position`, `PayeePositionAssignment`, `Payee` objects | create | **cascade** — created 2026-09-03 in this same commit, specs in `objects/`, snapshots refreshed | `ua.mjs snap-types --tag icm` diff; a renamed field breaks the fetch's `fields` projection and the suite goes red |
 | The calculation engine's in-memory as-of fold | create (future) | **accepted** — the same rule will exist twice, once here and once in Groovy, for the performance reason stated above | the engine's fixtures reuse this suite's cases; if the two disagree, one of them fails |
-| `docs/model/00-domain-model.md` (participant-centric `icmHierarchy` / `icmPlanAssignment`) | change the contract | **cascade** — the model doc is now wrong and is rewritten seat-centric in this commit | the doc names objects; `types --tag icm` lists what exists; a name in the doc that is not in that list is the bug |
-| `docs/architecture.md` register and map | change the contract | **cascade** — updated in this commit | the file's own rule: an asset not in the register is not done |
+| `docs/model/00-domain-model.md` (participant-centric `icmHierarchy` / `icmPlanAssignment`) | change the contract | **cascade** — the model doc is now wrong and is rewritten position-centric in this commit | the doc names objects; `types --tag icm` lists what exists; a name in the doc that is not in that list is the bug |
+| `docs/architecture.html` register and map | change the contract | **cascade** — updated in this commit | the file's own rule: an asset not in the register is not done |
 | Pages that will call this | create (future) | **unaffected today** — no page exists. The first one that does gets a row in `docs/pages/` naming this token | `docs/pages/` is the only record; a callable with no page listing it and a page in the builder is drift |
 | Authorization | create | **accepted** — open to any authenticated caller because the response carries no money. Written into the Authorization row with the trigger that would change it | a reviewer adding an amount field to the result must cross this row; the suite asserts the result field list |
-| `Title` / `PositionAttribute` | create | **unaffected** — created alongside, but this flow does not read them. A seat's title is a separate question from its occupant | — |
+| `Title` / `PositionAttribute` | create | **unaffected** — created alongside, but this flow does not read them. A position's title is a separate question from its occupant | — |
 
 ## Tests
 
 `tests/6a9879742ada0c631031e64b.json` — **24 cases, all green 2026-09-03.**
-Every status has a case. The fixture family is `tests/fixtures/seats.json`,
-seeded by `node scripts/fixtures.mjs seed seats`; every record's business key
+Every status has a case. The fixture family is `tests/fixtures/positions.json`,
+seeded by `node scripts/fixtures.mjs seed positions`; every record's business key
 starts with `KITFIX-` so it can never be confused with real data.
 
 **No case hardcodes a platform id.** Each one finds its fixture by business key
@@ -227,7 +235,7 @@ that wrote it. The suite is read-only and safe to re-run.
 | case | asserts |
 |---|---|
 | happy path — date inside a closed range | `RESOLVED`, the right `payeeId`, `matchCount: 1` |
-| happy path — open-ended assignment (no `effectiveEnd`) | `RESOLVED`. **The case that matters most**: it is the one a server-side `effectiveEnd` filter would have broken, and it would have broken for the people currently in seats |
+| happy path — open-ended assignment (no `effectiveEnd`) | `RESOLVED`. **The case that matters most**: it is the one a server-side `effectiveEnd` filter would have broken, and it would have broken for the people currently in positions |
 | date one day before `effectiveStart` | `VACANT` |
 | date one day after `effectiveEnd` | `VACANT` |
 | exactly on `effectiveStart` / exactly on `effectiveEnd` | `RESOLVED` both — boundaries are inclusive, asserted rather than assumed |
@@ -238,7 +246,7 @@ that wrote it. The suite is read-only and safe to re-run.
 | `asOfDate` as epoch millis | `RESOLVED` — the second accepted input form |
 | `asOfDate` = "not-a-date" | `INVALID_INPUT` |
 | `asOfDate` = "2026-02-30" (date-shaped, not a real day) | `INVALID_INPUT` — a regex alone would have passed this |
-| a seat held by a TERMINATED payee | `RESOLVED` — history does not change because someone left |
+| a position held by a TERMINATED payee | `RESOLVED` — history does not change because someone left |
 | a payee paid in a different currency | `RESOLVED` with **that payee's** code, proving the join picks the right row rather than the first |
 
 ## Notes
@@ -254,7 +262,7 @@ that wrote it. The suite is read-only and safe to re-run.
   one-line change here and a rewrite of every fixture — decide it before the
   first real assignment is loaded, not after.
 - **Open question 1 (multi-currency)** touches this indirectly: `payeeCurrency`
-  is returned so that a caller never has to guess which currency a seat's
+  is returned so that a caller never has to guess which currency a position's
   occupant is paid in.
 - Probed 2026-09-03 and relied on here: a MISSING property does not match an
   `EQUAL ""` filter; an empty `IN` list is a safe no-op; `fields` projections

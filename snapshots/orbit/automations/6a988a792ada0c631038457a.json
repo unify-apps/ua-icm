@@ -2,17 +2,17 @@
   "appsUsed": [],
   "createdTime": 1788381817666,
   "deleted": false,
-  "deployedVersion": 1,
+  "deployedVersion": 2,
   "deploymentState": {
-    "deployedAt": 1788382443250,
+    "deployedAt": 1788419527747,
     "deployedBy": 22816,
-    "deployedDefinitionId": "6a988cebd0f78271cf568e06",
-    "deploymentNotes": "Seat picker + bulk occupancy for the Seat Directory page. 22/22 suite green, validate + lint clean. Approved by Sarthak in conversation 2026-09-03.",
+    "deployedDefinitionId": "6a991dc72ada0c631070043f",
+    "deploymentNotes": "Rename to ICM | List Positions; result array seats -> positions. Vocabulary aligned with the Position object and the Ledger prototype. Approved by Sarthak Ray in session 2026-09-03. 22/22 suite green, validate + lint clean.",
     "status": "DEPLOYED",
-    "version": 1,
-    "workflowVersion": 1
+    "version": 2,
+    "workflowVersion": 2
   },
-  "description": "A paged, searchable list of seats, optionally with who occupies each one as of a date - resolved in BULK so a page never makes one call per row. Spec: docs/automations/list-seats.md",
+  "description": "A paged, searchable list of positions, optionally with who occupies each one as of a date - resolved in BULK so a page never makes one call per row. Spec: docs/automations/list-positions.md",
   "edges": [
     {
       "fromNodeId": "n_sTaRt",
@@ -100,10 +100,10 @@
   "id": "6a988a792ada0c631038457a",
   "lastModifiedBy": 22816,
   "lastPlatformUpdateBy": 22816,
-  "lastPlatformUpdateOn": 1788382443251,
-  "lcName": "icm | list seats",
-  "modifiedTime": 1788382443251,
-  "name": "ICM | List Seats",
+  "lastPlatformUpdateOn": 1788419527748,
+  "lcName": "icm | list positions",
+  "modifiedTime": 1788419527748,
+  "name": "ICM | List Positions",
   "nodes": [
     {
       "context": {
@@ -125,7 +125,7 @@
             "success",
             "message",
             "total",
-            "seats"
+            "positions"
           ],
           "properties": {
             "status": {
@@ -190,9 +190,9 @@
                 }
               }
             },
-            "seats": {
+            "positions": {
               "type": "array",
-              "title": "Seats",
+              "title": "Positions",
               "items": {
                 "type": "object",
                 "properties": {
@@ -408,7 +408,7 @@
         "stepError": "STOP"
       },
       "skip": false,
-      "subTitle": "The page of seats the caller asked for",
+      "subTitle": "The page of positions the caller asked for",
       "title": "Fetch records",
       "type": "ACTION"
     },
@@ -437,9 +437,9 @@
                 "type": "string"
               }
             },
-            "seatCount": {
+            "positionCount": {
               "type": "integer",
-              "title": "Seat Count"
+              "title": "Position Count"
             },
             "filter": {
               "type": "object",
@@ -465,7 +465,7 @@
             }
           }
         },
-        "code": "// One IN filter for the whole page of seats - three fetches total, however many\n// seats came back. The '__none__' sentinel keeps an empty page a clean no-op\n// instead of an unfiltered scan.\ndef ids = []\nif (rows != null) rows.each { r -> ids << String.valueOf(r.id) }\ndef useIds = ids.isEmpty() ? ['__none__'] : ids\ndef filters = [\n    [property: 'properties.positionId',     filter: [operator: 'IN',  value: useIds]],\n    [property: 'properties.effectiveStart', filter: [operator: 'LTE', value: asOfEpoch]]]\nreturn [positionIds: useIds, seatCount: ids.size(),\n        filter: [operator: 'AND', filters: filters]]",
+        "code": "// One IN filter for the whole page of positions - three fetches total, however many\n// positions came back. The '__none__' sentinel keeps an empty page a clean no-op\n// instead of an unfiltered scan.\ndef ids = []\nif (rows != null) rows.each { r -> ids << String.valueOf(r.id) }\ndef useIds = ids.isEmpty() ? ['__none__'] : ids\ndef filters = [\n    [property: 'properties.positionId',     filter: [operator: 'IN',  value: useIds]],\n    [property: 'properties.effectiveStart', filter: [operator: 'LTE', value: asOfEpoch]]]\nreturn [positionIds: useIds, positionCount: ids.size(),\n        filter: [operator: 'AND', filters: filters]]",
         "compile_static": false,
         "captureStdOutput": false,
         "parameters": {
@@ -474,7 +474,7 @@
         }
       },
       "skip": false,
-      "subTitle": "Collect this page's seat ids for one bulk lookup",
+      "subTitle": "Collect this page's position ids for one bulk lookup",
       "title": "Groovy code",
       "type": "ACTION"
     },
@@ -519,7 +519,7 @@
         "stepError": "STOP"
       },
       "skip": false,
-      "subTitle": "Every assignment on those seats that had already started",
+      "subTitle": "Every assignment on those positions that had already started",
       "title": "Fetch records",
       "type": "ACTION"
     },
@@ -670,9 +670,9 @@
           "additionalProperties": false,
           "required": [],
           "properties": {
-            "seats": {
+            "positions": {
               "type": "array",
-              "title": "Seats",
+              "title": "Positions",
               "items": {
                 "type": "object",
                 "properties": {
@@ -810,7 +810,7 @@
             }
           }
         },
-        "code": "// The same as-of rule as ICM | Resolve Seat Occupant, folded in memory for a\n// whole page at once. Two assignments covering the date is a CONFLICT and never\n// a pick - a seat has one occupant on a day, and guessing would pay somebody\n// wrongly.\ndef byPos = [:]\nif (live != null) live.each { l ->\n    def k = String.valueOf(l.positionId)\n    if (!byPos.containsKey(k)) byPos[k] = []\n    byPos[k] << l\n}\ndef payById = [:]\nif (payRows != null) payRows.each { p -> payById[String.valueOf(p.id)] = p.properties }\n\nint occupied = 0, vacant = 0, conflict = 0\ndef seats = []\nif (posRows != null) posRows.each { r ->\n    def p = r.properties\n    def seat = [positionId: String.valueOf(r.id),\n                positionCode: p?.positionCode ?: '',\n                name: p?.name ?: '',\n                // a boolean never set is MISSING, not false - treat absent as active\n                active: (p?.active == null) ? true : (p.active as boolean),\n                occupancy: 'UNKNOWN', payeeId: '', employeeId: '', payeeName: '', matchCount: 0]\n    if (wantOccupancy) {\n        def hits = byPos[String.valueOf(r.id)] ?: []\n        seat.matchCount = hits.size()\n        if (hits.size() == 0)      { seat.occupancy = 'VACANT';   vacant++ }\n        else if (hits.size() > 1)  { seat.occupancy = 'CONFLICT'; conflict++ }\n        else {\n            seat.occupancy = 'OCCUPIED'; occupied++\n            seat.payeeId = String.valueOf(hits[0].payeeId)\n            def pay = payById[seat.payeeId]\n            seat.employeeId = (pay == null) ? '' : (pay.employeeId ?: '')\n            seat.payeeName  = (pay == null) ? '' : (pay.name ?: '')\n        }\n    }\n    seats << seat\n}\n\nint total = (posTotal == null) ? seats.size() : Integer.valueOf(String.valueOf(posTotal))\nint got   = (asgRows == null) ? 0 : asgRows.size()\nint asgTot = (asgTotal == null) ? got : Integer.valueOf(String.valueOf(asgTotal))\n\nreturn [seats: seats,\n        total: total,\n        hasMore: (pageOffset + seats.size()) < total,\n        counts: [total: seats.size(), occupied: occupied, vacant: vacant, conflict: conflict],\n        countsTruncated: got < asgTot,\n        message: wantOccupancy\n            ? (seats.size() + ' seat(s) on this page, as of ' + String.valueOf(asOfDay))\n            : (seats.size() + ' seat(s) on this page; occupancy not resolved')]",
+        "code": "// The same as-of rule as ICM | Resolve Position Occupant, folded in memory for a\n// whole page at once. Two assignments covering the date is a CONFLICT and never\n// a pick - a position has one occupant on a day, and guessing would pay somebody\n// wrongly.\ndef byPos = [:]\nif (live != null) live.each { l ->\n    def k = String.valueOf(l.positionId)\n    if (!byPos.containsKey(k)) byPos[k] = []\n    byPos[k] << l\n}\ndef payById = [:]\nif (payRows != null) payRows.each { p -> payById[String.valueOf(p.id)] = p.properties }\n\nint occupied = 0, vacant = 0, conflict = 0\ndef positions = []\nif (posRows != null) posRows.each { r ->\n    def p = r.properties\n    def position = [positionId: String.valueOf(r.id),\n                positionCode: p?.positionCode ?: '',\n                name: p?.name ?: '',\n                // a boolean never set is MISSING, not false - treat absent as active\n                active: (p?.active == null) ? true : (p.active as boolean),\n                occupancy: 'UNKNOWN', payeeId: '', employeeId: '', payeeName: '', matchCount: 0]\n    if (wantOccupancy) {\n        def hits = byPos[String.valueOf(r.id)] ?: []\n        position.matchCount = hits.size()\n        if (hits.size() == 0)      { position.occupancy = 'VACANT';   vacant++ }\n        else if (hits.size() > 1)  { position.occupancy = 'CONFLICT'; conflict++ }\n        else {\n            position.occupancy = 'OCCUPIED'; occupied++\n            position.payeeId = String.valueOf(hits[0].payeeId)\n            def pay = payById[position.payeeId]\n            position.employeeId = (pay == null) ? '' : (pay.employeeId ?: '')\n            position.payeeName  = (pay == null) ? '' : (pay.name ?: '')\n        }\n    }\n    positions << position\n}\n\nint total = (posTotal == null) ? positions.size() : Integer.valueOf(String.valueOf(posTotal))\nint got   = (asgRows == null) ? 0 : asgRows.size()\nint asgTot = (asgTotal == null) ? got : Integer.valueOf(String.valueOf(asgTotal))\n\nreturn [positions: positions,\n        total: total,\n        hasMore: (pageOffset + positions.size()) < total,\n        counts: [total: positions.size(), occupied: occupied, vacant: vacant, conflict: conflict],\n        countsTruncated: got < asgTot,\n        message: wantOccupancy\n            ? (positions.size() + ' position(s) on this page, as of ' + String.valueOf(asOfDay))\n            : (positions.size() + ' position(s) on this page; occupancy not resolved')]",
         "compile_static": false,
         "captureStdOutput": false,
         "parameters": {
@@ -826,7 +826,7 @@
         }
       },
       "skip": false,
-      "subTitle": "Resolve every seat's occupant for this page at once",
+      "subTitle": "Resolve every position's occupant for this page at once",
       "title": "Groovy code",
       "type": "ACTION"
     },
@@ -889,7 +889,7 @@
             "vacant": 0,
             "conflict": 0
           },
-          "seats": []
+          "positions": []
         }
       },
       "skip": false,
@@ -922,15 +922,15 @@
           "occupancyResolved": "{{ n_Norm.outputs.result.wantOccupancy }}",
           "countsTruncated": "{{ n_Fold.outputs.result.countsTruncated }}",
           "counts": "{{ n_Fold.outputs.result.counts }}",
-          "seats": {
+          "positions": {
             "ua:type": "mappedArray",
-            "source": "{{ n_Fold.outputs.result.seats }}",
-            "items": "{{ n_Fold.outputs.result.seats[0] }}"
+            "source": "{{ n_Fold.outputs.result.positions }}",
+            "items": "{{ n_Fold.outputs.result.positions[0] }}"
           }
         }
       },
       "skip": false,
-      "subTitle": "The page of seats, with each one's occupant",
+      "subTitle": "The page of positions, with each one's occupant",
       "title": "Respond to automation",
       "type": "STOP"
     }
@@ -949,5 +949,5 @@
   "tags": [
     "icm"
   ],
-  "version": 1
+  "version": 2
 }

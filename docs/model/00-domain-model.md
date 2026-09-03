@@ -24,25 +24,25 @@ the built objects:
 3. **Anything with a fixed vocabulary is a LOOKUP, not a string.** A currency is
    a lookup to `Currency`; a territory is a lookup to `Territory`; a job title is
    a lookup to `Title`. The reason is not tidiness: a credit rule matching
-   `"WEST"` against a seat someone typed as `"West"` pays nobody, and it fails
+   `"WEST"` against a position someone typed as `"West"` pays nobody, and it fails
    silently. Status enums stay as strings because they are closed sets defined in
    `glossary.md`, not user-extensible reference data.
 
-## The seat is the unit, not the person
+## The position is the unit, not the person
 
 **This is the load-bearing decision of the whole model** (taken 2026-09-03,
 adopting the shape of `UNIFYAPPS_BUILD_SPEC.md` over this file's original
 participant-centric draft).
 
-Credit attaches to a **`Position`** — a seat — and the person who gets paid is
-resolved by asking *who held that seat on the transaction's close date*. The
+Credit attaches to a **`Position`** — a position — and the person who gets paid is
+resolved by asking *who held that position on the transaction's close date*. The
 alternative, crediting a `Payee` directly, looks simpler and is wrong: it makes
 "who owned the West territory in March" unanswerable the moment somebody is
 promoted, and it makes a mid-quarter territory move impossible to prorate.
 
-Almost nothing is stored *on* a seat. A seat's title, its territory, its
+Almost nothing is stored *on* a position. A position's title, its territory, its
 occupant and its parent are each effective-dated in their own object, because a
-seat outlives its occupants and history has to stay answerable as of any date:
+position outlives its occupants and history has to stay answerable as of any date:
 
 ```
 Position ──< PositionAttribute        ⌛ title, territory, over a date range
@@ -51,9 +51,9 @@ Position ──< PositionAttribute        ⌛ title, territory, over a date rang
 ```
 
 ⌛ marks an effective-dated object. **None of them can carry a unique index for
-the invariant that matters** — "no two rows for the same seat with overlapping
+the invariant that matters** — "no two rows for the same position with overlapping
 date ranges" is not expressible in Mongo. So overlap is an automation guard with
-its own status and its own regression case, and `ICM | Resolve Seat Occupant`
+its own status and its own regression case, and `ICM | Resolve Position Occupant`
 returns `AMBIGUOUS` rather than picking one when it finds two.
 
 ## The one-paragraph version
@@ -61,8 +61,8 @@ returns `AMBIGUOUS` rather than picking one when it finds two.
 Money flows in one direction, and every object below sits somewhere on that
 line: a **transaction** (a closed deal) is **credited** to one or more
 **positions** by a credit rule; each credit resolves to the **payee** who held
-that seat on the close date; a **calculation run** reads those credits against
-the seat's **plan** for a **period**, measures attainment against a **quota**,
+that position on the close date; a **calculation run** reads those credits against
+the position's **plan** for a **period**, measures attainment against a **quota**,
 applies a **rate table**, and writes **earnings**; earnings roll into a
 **payout**, which is approved and paid, and appears to the rep as a
 **statement** they can **dispute**. Everything else — draws, adjustments,
@@ -90,17 +90,17 @@ Quota ────────────────────────�
 | object | purpose | key fields | uniqueness |
 |---|---|---|---|
 | `Payee` | a person who can be paid. The bridge from a platform user to comp | `employeeId`, `name`, `email`, `userId` (FK USER), `currencyId` (FK Currency), `hireDate`, `terminationDate`, `status` | `employeeId` UNIQUE |
-| `Position` | a SEAT — the unit that gets credited and quota'd | `positionCode`, `name`, `active` | `positionCode` UNIQUE |
-| `Title` | a job title a seat can carry | `titleCode`, `name` | `titleCode` UNIQUE |
-| `Territory` | a named sales territory a seat can carry | `territoryCode`, `name`, `active` | `territoryCode` UNIQUE |
-| `PositionAttribute` ⌛ | what a seat WAS over a date range: its title and territory | `positionId`, `titleId`, `territoryId`, `effectiveStart`, `effectiveEnd` | none — overlap is a *rule* |
-| `PayeePositionAssignment` ⌛ | who held which seat over which date range | `payeeId`, `positionId`, `effectiveStart`, `effectiveEnd`, `allocationPct` | none — overlap is a *rule* |
+| `Position` | a JOB SEAT — the unit that gets credited and quota'd | `positionCode`, `name`, `active` | `positionCode` UNIQUE |
+| `Title` | a job title a position can carry | `titleCode`, `name` | `titleCode` UNIQUE |
+| `Territory` | a named sales territory a position can carry | `territoryCode`, `name`, `active` | `territoryCode` UNIQUE |
+| `PositionAttribute` ⌛ | what a position WAS over a date range: its title and territory | `positionId`, `titleId`, `territoryId`, `effectiveStart`, `effectiveEnd` | none — overlap is a *rule* |
+| `PayeePositionAssignment` ⌛ | who held which position over which date range | `payeeId`, `positionId`, `effectiveStart`, `effectiveEnd`, `allocationPct` | none — overlap is a *rule* |
 
 **Still to build here**: `PositionHierarchy` ⌛ (`positionId`,
 `parentPositionId`, effective-dated) — the manager rollup that rollup credit
 walks. It is deliberately its own effective-dated object rather than a
-`managerId` on `Payee`, for the same reason the seat model exists: a payout for
-March must ask who the seat reported to *in March*.
+`managerId` on `Payee`, for the same reason the position model exists: a payout for
+March must ask who the position reported to *in March*.
 
 **Known debt (2026-09-03).** `Payee` still carries a dead `currency` string
 beside its `currencyId` lookup, and `PositionAttribute` a dead `territory`
@@ -108,7 +108,7 @@ string beside `territoryId`. Both are leftovers of retyping-by-addition — the
 platform refuses to retype a property once an object holds records, and
 `ua-schema.mjs` never retypes by design. `Payee.currency` is still marked
 `required`, so writes must fill a field nothing reads. See the "Now" list in
-`docs/architecture.md`.
+`docs/architecture.html`.
 
 ### Calendar and money — **BUILT 2026-09-03**
 

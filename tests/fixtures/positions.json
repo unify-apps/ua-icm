@@ -1,6 +1,6 @@
 {
-  "family": "KITFIX-SEATS",
-  "note": "Fixture family for ICM | Resolve Seat Occupant. Every record's business key starts with KITFIX- so it can never be confused with, or matched by, real comp data. ICM safety rule: fixtures are participants and seats of our own invention, never real pay data.",
+  "family": "KITFIX-POSITIONS",
+  "note": "Fixture family for ICM | Resolve Position Occupant. Every record's business key starts with KITFIX- so it can never be confused with, or matched by, real comp data. ICM safety rule: fixtures are participants and positions of our own invention, never real pay data.",
   "prefixField": {
     "Payee": "employeeId",
     "Title": "titleCode",
@@ -95,37 +95,37 @@
       {
         "$ref": "POS_CLOSED",
         "positionCode": "KITFIX-POS-01",
-        "name": "KITFIX-West AE Seat (closed range)",
+        "name": "KITFIX-West AE Position (closed range)",
         "active": true
       },
       {
         "$ref": "POS_OPEN",
         "positionCode": "KITFIX-POS-02",
-        "name": "KITFIX-East AE Seat (open ended)",
+        "name": "KITFIX-East AE Position (open ended)",
         "active": true
       },
       {
         "$ref": "POS_CONTESTED",
         "positionCode": "KITFIX-POS-03",
-        "name": "KITFIX-Contested Seat (overlap bug)",
+        "name": "KITFIX-Contested Position (overlap bug)",
         "active": true
       },
       {
         "$ref": "POS_EMPTY",
         "positionCode": "KITFIX-POS-04",
-        "name": "KITFIX-Never Filled Seat",
+        "name": "KITFIX-Never Filled Position",
         "active": true
       },
       {
         "$ref": "POS_GHOST",
         "positionCode": "KITFIX-POS-05",
-        "name": "KITFIX-Dangling Payee Seat",
+        "name": "KITFIX-Dangling Payee Position",
         "active": true
       },
       {
         "$ref": "POS_RETIRED",
         "positionCode": "KITFIX-POS-06",
-        "name": "KITFIX-Retired Seat (inactive today)",
+        "name": "KITFIX-Retired Position (inactive today)",
         "active": false
       }
     ],
@@ -194,5 +194,5 @@
       }
     ]
   },
-  "_deadFieldNote": "Payee.currency (plain string) is DEAD but still marked required in the live schema, so every fixture must fill it even though nothing reads it. currencyId is the real field. This is the visible cost of retyping-by-addition and the argument for recreating Payee cleanly - see docs/architecture.md 'Now'."
+  "_deadFieldNote": "Payee.currency (plain string) is DEAD but still marked required in the live schema, so every fixture must fill it even though nothing reads it. currencyId is the real field. This is the visible cost of retyping-by-addition and the argument for recreating Payee cleanly - see docs/architecture.html 'Now'."
 }

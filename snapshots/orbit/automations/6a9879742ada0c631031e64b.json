@@ -2,16 +2,17 @@
   "appsUsed": [],
   "createdTime": 1788377460777,
   "deleted": false,
-  "deployedVersion": 1,
+  "deployedVersion": 2,
   "deploymentState": {
-    "deployedAt": 1788381321115,
+    "deployedAt": 1788419643607,
     "deployedBy": 22816,
-    "deployedDefinitionId": "6a988888873a4a6394ba9db7",
+    "deployedDefinitionId": "6a991e3b337a0d7698a69688",
+    "deploymentNotes": "Rename to ICM | Resolve Position Occupant; message text Seat -> Position. Vocabulary aligned with the Position object and the Ledger prototype. Approved by Sarthak Ray in session 2026-09-03. 24/24 suite green, validate + lint clean.",
     "status": "DEPLOYED",
-    "version": 1,
-    "workflowVersion": 1
+    "version": 2,
+    "workflowVersion": 2
   },
-  "description": "Given a Position and a date, says who held that seat on that date - or names exactly why the question has no single answer. Spec: docs/automations/resolve-seat-occupant.md. NOT for the calculation path; the engine does this fold in memory.",
+  "description": "Given a Position and a date, says who held that position on that date - or names exactly why the question has no single answer. Spec: docs/automations/resolve-position-occupant.md. NOT for the calculation path; the engine does this fold in memory.",
   "edges": [
     {
       "fromNodeId": "n_sTaRt",
@@ -171,10 +172,10 @@
   "id": "6a9879742ada0c631031e64b",
   "lastModifiedBy": 22816,
   "lastPlatformUpdateBy": 22816,
-  "lastPlatformUpdateOn": 1788381321115,
-  "lcName": "icm | resolve seat occupant",
-  "modifiedTime": 1788381321115,
-  "name": "ICM | Resolve Seat Occupant",
+  "lastPlatformUpdateOn": 1788419643608,
+  "lcName": "icm | resolve position occupant",
+  "modifiedTime": 1788419643608,
+  "name": "ICM | Resolve Position Occupant",
   "nodes": [
     {
       "context": {
@@ -410,7 +411,7 @@
         "stepError": "STOP"
       },
       "skip": false,
-      "subTitle": "Look up the seat itself",
+      "subTitle": "Look up the position itself",
       "title": "Fetch records",
       "type": "ACTION"
     },
@@ -473,7 +474,7 @@
         "stepError": "STOP"
       },
       "skip": false,
-      "subTitle": "Every assignment on this seat that had already started",
+      "subTitle": "Every assignment on this position that had already started",
       "title": "Fetch records",
       "type": "ACTION"
     },
@@ -555,7 +556,7 @@
             }
           }
         },
-        "code": "// Closes the window: an assignment covers asOf when it had started AND has\n// either not ended or ends on/after asOf. Missing, null and blank effectiveEnd\n// all mean \"still held\" - the platform stores an unset property as ABSENT, not\n// as an empty value, so all three are checked rather than assumed equivalent.\ndef matches = []\ndef ids = []\nlong asOf = Long.valueOf(String.valueOf(asOfEpoch))\nif (valid && rows != null) {\n    rows.each { r ->\n        def p = r.properties\n        def en = p?.effectiveEnd\n        boolean open = (en == null) || en.toString().trim().isEmpty()\n        boolean endOk = open || (Long.valueOf(String.valueOf(en)) >= asOf)\n        if (endOk) {\n            def pid = (p?.payeeId == null) ? '' : p.payeeId.toString().trim()\n            matches << [id: String.valueOf(r.id),\n                        payeeId: pid,\n                        startEpoch: (p?.effectiveStart == null) ? 0L : Long.valueOf(String.valueOf(p.effectiveStart)),\n                        endEpoch: open ? -1L : Long.valueOf(String.valueOf(en)),\n                        allocationPct: (p?.allocationPct == null) ? 0 : p.allocationPct]\n            if (!pid.isEmpty() && !ids.contains(pid)) ids << pid\n        }\n    }\n}\n// The '__none__' sentinel keeps the Payee fetch a clean no-op instead of an\n// unfiltered scan when nobody held the seat.\nreturn [matches: matches, payeeIds: ids.isEmpty() ? ['__none__'] : ids]",
+        "code": "// Closes the window: an assignment covers asOf when it had started AND has\n// either not ended or ends on/after asOf. Missing, null and blank effectiveEnd\n// all mean \"still held\" - the platform stores an unset property as ABSENT, not\n// as an empty value, so all three are checked rather than assumed equivalent.\ndef matches = []\ndef ids = []\nlong asOf = Long.valueOf(String.valueOf(asOfEpoch))\nif (valid && rows != null) {\n    rows.each { r ->\n        def p = r.properties\n        def en = p?.effectiveEnd\n        boolean open = (en == null) || en.toString().trim().isEmpty()\n        boolean endOk = open || (Long.valueOf(String.valueOf(en)) >= asOf)\n        if (endOk) {\n            def pid = (p?.payeeId == null) ? '' : p.payeeId.toString().trim()\n            matches << [id: String.valueOf(r.id),\n                        payeeId: pid,\n                        startEpoch: (p?.effectiveStart == null) ? 0L : Long.valueOf(String.valueOf(p.effectiveStart)),\n                        endEpoch: open ? -1L : Long.valueOf(String.valueOf(en)),\n                        allocationPct: (p?.allocationPct == null) ? 0 : p.allocationPct]\n            if (!pid.isEmpty() && !ids.contains(pid)) ids << pid\n        }\n    }\n}\n// The '__none__' sentinel keeps the Payee fetch a clean no-op instead of an\n// unfiltered scan when nobody held the position.\nreturn [matches: matches, payeeIds: ids.isEmpty() ? ['__none__'] : ids]",
         "compile_static": false,
         "captureStdOutput": false,
         "parameters": {
@@ -811,7 +812,7 @@
             }
           }
         },
-        "code": "// One node owns the whole outcome so the as-of rule has exactly one home.\ndef fmt = { long ms -> java.time.Instant.ofEpochMilli(ms).atZone(java.time.ZoneOffset.UTC).toLocalDate().toString() }\ndef ms = (matches == null) ? [] : matches\ndef r = [outcome: '', message: '', positionCode: '', positionName: '',\n         payeeId: '', employeeId: '', payeeName: '', payeeCurrency: '',\n         effectiveStart: '', effectiveEnd: '', allocationPct: 0, matchCount: ms.size()]\n\nif (!valid) { r.outcome = 'INVALID_INPUT'; r.message = reason; return r }\n\nif (posRows == null || posRows.isEmpty()) {\n    r.outcome = 'POSITION_NOT_FOUND'\n    r.message = 'No position with id ' + String.valueOf(positionId)\n    return r\n}\nr.positionCode = posRows[0].properties?.positionCode ?: ''\nr.positionName = posRows[0].properties?.name ?: ''\n\n// A bulk fetch that hit its limit lies by omission. Say so rather than answer\n// confidently from a partial set.\nint got = (asgRows == null) ? 0 : asgRows.size()\nint total = (asgTotal == null) ? got : Integer.valueOf(String.valueOf(asgTotal))\nif (got < total) {\n    r.outcome = 'AMBIGUOUS'\n    r.message = 'Seat ' + r.positionCode + ' has ' + total + ' assignment rows but only ' + got +\n                ' were read - refusing to answer from a truncated set'\n    return r\n}\n\nif (ms.isEmpty()) {\n    r.outcome = 'VACANT'\n    r.message = 'Seat ' + r.positionCode + ' was unoccupied on ' + String.valueOf(asOfDay)\n    return r\n}\nif (ms.size() > 1) {\n    r.outcome = 'AMBIGUOUS'\n    r.message = ms.size() + ' overlapping assignments cover ' + String.valueOf(asOfDay) +\n                ' on seat ' + r.positionCode + ' - this is an assignment data bug, not a tie to break'\n    return r\n}\n\ndef m = ms[0]\nr.payeeId = String.valueOf(m.payeeId)\nr.effectiveStart = fmt(Long.valueOf(String.valueOf(m.startEpoch)))\nlong en = Long.valueOf(String.valueOf(m.endEpoch))\nr.effectiveEnd = (en < 0) ? '' : fmt(en)\nr.allocationPct = m.allocationPct\n\ndef pay = (payRows == null) ? null : payRows.find { String.valueOf(it.id) == r.payeeId }\nif (pay == null) {\n    r.outcome = 'PAYEE_NOT_FOUND'\n    r.message = 'Assignment points at payee ' + r.payeeId + ', which does not exist. ' +\n                'Foreign keys are not enforced on PayeePositionAssignment.'\n    return r\n}\nr.employeeId = pay.properties?.employeeId ?: ''\nr.payeeName  = pay.properties?.name ?: ''\n// Resolve the currency LOOKUP to its printable code. A missing currency row is\n// left blank rather than guessed: showing an amount against the wrong currency\n// is worse than showing it against none.\ndef curId = pay.properties?.currencyId\ndef cur = (curRows == null || curId == null) ? null : curRows.find { String.valueOf(it.id) == String.valueOf(curId) }\nr.payeeCurrency = (cur == null) ? '' : (cur.properties?.code ?: '')\nr.payeeCurrencySymbol = (cur == null) ? '' : (cur.properties?.symbol ?: '')\nr.outcome = 'RESOLVED'\nr.message = 'Seat ' + r.positionCode + ' was held by ' + r.payeeName + ' on ' + String.valueOf(asOfDay)\nreturn r",
+        "code": "// One node owns the whole outcome so the as-of rule has exactly one home.\ndef fmt = { long ms -> java.time.Instant.ofEpochMilli(ms).atZone(java.time.ZoneOffset.UTC).toLocalDate().toString() }\ndef ms = (matches == null) ? [] : matches\ndef r = [outcome: '', message: '', positionCode: '', positionName: '',\n         payeeId: '', employeeId: '', payeeName: '', payeeCurrency: '',\n         effectiveStart: '', effectiveEnd: '', allocationPct: 0, matchCount: ms.size()]\n\nif (!valid) { r.outcome = 'INVALID_INPUT'; r.message = reason; return r }\n\nif (posRows == null || posRows.isEmpty()) {\n    r.outcome = 'POSITION_NOT_FOUND'\n    r.message = 'No position with id ' + String.valueOf(positionId)\n    return r\n}\nr.positionCode = posRows[0].properties?.positionCode ?: ''\nr.positionName = posRows[0].properties?.name ?: ''\n\n// A bulk fetch that hit its limit lies by omission. Say so rather than answer\n// confidently from a partial set.\nint got = (asgRows == null) ? 0 : asgRows.size()\nint total = (asgTotal == null) ? got : Integer.valueOf(String.valueOf(asgTotal))\nif (got < total) {\n    r.outcome = 'AMBIGUOUS'\n    r.message = 'Position ' + r.positionCode + ' has ' + total + ' assignment rows but only ' + got +\n                ' were read - refusing to answer from a truncated set'\n    return r\n}\n\nif (ms.isEmpty()) {\n    r.outcome = 'VACANT'\n    r.message = 'Position ' + r.positionCode + ' was unoccupied on ' + String.valueOf(asOfDay)\n    return r\n}\nif (ms.size() > 1) {\n    r.outcome = 'AMBIGUOUS'\n    r.message = ms.size() + ' overlapping assignments cover ' + String.valueOf(asOfDay) +\n                ' on position ' + r.positionCode + ' - this is an assignment data bug, not a tie to break'\n    return r\n}\n\ndef m = ms[0]\nr.payeeId = String.valueOf(m.payeeId)\nr.effectiveStart = fmt(Long.valueOf(String.valueOf(m.startEpoch)))\nlong en = Long.valueOf(String.valueOf(m.endEpoch))\nr.effectiveEnd = (en < 0) ? '' : fmt(en)\nr.allocationPct = m.allocationPct\n\ndef pay = (payRows == null) ? null : payRows.find { String.valueOf(it.id) == r.payeeId }\nif (pay == null) {\n    r.outcome = 'PAYEE_NOT_FOUND'\n    r.message = 'Assignment points at payee ' + r.payeeId + ', which does not exist. ' +\n                'Foreign keys are not enforced on PayeePositionAssignment.'\n    return r\n}\nr.employeeId = pay.properties?.employeeId ?: ''\nr.payeeName  = pay.properties?.name ?: ''\n// Resolve the currency LOOKUP to its printable code. A missing currency row is\n// left blank rather than guessed: showing an amount against the wrong currency\n// is worse than showing it against none.\ndef curId = pay.properties?.currencyId\ndef cur = (curRows == null || curId == null) ? null : curRows.find { String.valueOf(it.id) == String.valueOf(curId) }\nr.payeeCurrency = (cur == null) ? '' : (cur.properties?.code ?: '')\nr.payeeCurrencySymbol = (cur == null) ? '' : (cur.properties?.symbol ?: '')\nr.outcome = 'RESOLVED'\nr.message = 'Position ' + r.positionCode + ' was held by ' + r.payeeName + ' on ' + String.valueOf(asOfDay)\nreturn r",
         "compile_static": false,
         "captureStdOutput": false,
         "parameters": {
@@ -857,7 +858,7 @@
         "operator": "AND"
       },
       "skip": false,
-      "subTitle": "Was the seat cleanly occupied?",
+      "subTitle": "Was the position cleanly occupied?",
       "title": "Condition",
       "type": "IF_ELSE"
     },
@@ -895,7 +896,7 @@
         }
       },
       "skip": false,
-      "subTitle": "Exactly one person held this seat that day",
+      "subTitle": "Exactly one person held this position that day",
       "title": "Respond to automation",
       "type": "STOP"
     },
@@ -991,7 +992,7 @@
         "operator": "AND"
       },
       "skip": false,
-      "subTitle": "Was the seat empty on that date?",
+      "subTitle": "Was the position empty on that date?",
       "title": "Condition",
       "type": "IF_ELSE"
     },
@@ -1029,7 +1030,7 @@
         }
       },
       "skip": false,
-      "subTitle": "The seat existed but nobody sat in it",
+      "subTitle": "The position existed but nobody held it",
       "title": "Respond to automation",
       "type": "STOP"
     },
@@ -1201,7 +1202,7 @@
         }
       },
       "skip": false,
-      "subTitle": "No such seat - the caller sent a stale position id",
+      "subTitle": "No such position - the caller sent a stale position id",
       "title": "Respond to automation",
       "type": "STOP"
     }
@@ -1220,5 +1221,5 @@
   "tags": [
     "icm"
   ],
-  "version": 1
+  "version": 2
 }
