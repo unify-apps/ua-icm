@@ -2,6 +2,16 @@
   "appsUsed": [],
   "createdTime": 1788381817666,
   "deleted": false,
+  "deployedVersion": 1,
+  "deploymentState": {
+    "deployedAt": 1788382443250,
+    "deployedBy": 22816,
+    "deployedDefinitionId": "6a988cebd0f78271cf568e06",
+    "deploymentNotes": "Seat picker + bulk occupancy for the Seat Directory page. 22/22 suite green, validate + lint clean. Approved by Sarthak in conversation 2026-09-03.",
+    "status": "DEPLOYED",
+    "version": 1,
+    "workflowVersion": 1
+  },
   "description": "A paged, searchable list of seats, optionally with who occupies each one as of a date - resolved in BULK so a page never makes one call per row. Spec: docs/automations/list-seats.md",
   "edges": [
     {
@@ -90,9 +100,9 @@
   "id": "6a988a792ada0c631038457a",
   "lastModifiedBy": 22816,
   "lastPlatformUpdateBy": 22816,
-  "lastPlatformUpdateOn": 1788381859931,
+  "lastPlatformUpdateOn": 1788382443251,
   "lcName": "icm | list seats",
-  "modifiedTime": 1788381859931,
+  "modifiedTime": 1788382443251,
   "name": "ICM | List Seats",
   "nodes": [
     {

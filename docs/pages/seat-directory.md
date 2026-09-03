@@ -1,47 +1,39 @@
 # Page | Seat Directory
 
-**Built state (2026-09-03)**: **PARTLY BUILT — structure yes, data no.**
-The page exists at `/seat-directory` with 14 blocks: header, the as-of control
-bound to a page variable, the seat-list panel with its empty state, and the
-three outcome banners. Every colour, size and spacing value is a design-system
-token (`bg-workspace`, `text-tertiary`, `text-xsm`, `gap-lg`), not a hex copied
-from the mockup.
+**Built state (2026-09-03)**: **BUILT AND WORKING — the seat list is live.**
+The page at `/seat-directory` reads `ICM | List Seats` through the `listSeats`
+data source and renders real seats with their occupancy for the chosen date.
+Verified in the live preview, not assumed — all six fixture seats appear with
+the right state, including the two that matter most:
 
-**It cannot fetch yet, and the cause is not in this repo.** Creating the data
-source that calls `ICM | List Seats` is refused by the platform:
+| seat | shows | why that is correct |
+|---|---|---|
+| KITFIX-POS-01 / 02 | `OCCUPIED` with the payee's name | one assignment covers 2026-03-14 |
+| **KITFIX-POS-03** | **`CONFLICT`**, no name | two assignments overlap that day — the callable refuses to pick, and the page shows the refusal |
+| KITFIX-POS-04 | `VACANT` | never assigned |
+| **KITFIX-POS-05** | `OCCUPIED`, name blank | the dangling `payeeId` degrades to an empty name rather than crashing the page |
+| **KITFIX-POS-06** | `VACANT` | its assignment ended 2026-02-28, so on 2026-03-14 the seat was empty. Effective dating, visible on screen |
 
-```
-ENTITY_TYPE with id e_data_source_deployed not found
-  … check if you have the permissions to view this e_data_source_deployed
-```
+Every value is a design-system token (`bg-workspace`, `text-tertiary`,
+`text-xsm`, `gap-lg`), never a hex from the mockup. The empty state is hidden by
+a real condition object on `total == 0`, so it appears only when there genuinely
+are no seats.
 
-Reproduced twice, with a minimal payload and with both `page` and `app` scope,
-so it is not the config. It is the same fault behind the
-`forbidden datasource: not found` warning that every save on this app returns.
-`get_data_sources` reads fine and returns an empty list; the app has **zero**
-data sources, which is itself the symptom. **Someone with workspace admin needs
-to provision / grant the data-source entity type on orbit for this user.**
+**The data source was the hard part, and it was not an entitlement problem.**
+`create_data_source` fails on orbit with `ENTITY_TYPE with id
+e_data_source_deployed not found … check if you have the permissions`, which
+reads like a missing grant. It is a hardcoded literal in the devkit's own tool:
+orbit has `e_data_source`, not `e_data_source_deployed`, and a missing entity
+type answers **HTTP 200 with an empty body** rather than 404. `scripts/ua-datasource.mjs`
+probes for the type that exists instead of assuming one. Full evidence in
+`notes/runtime-facts.md`.
 
-Until then the page renders its structure and its empty state, and the wiring is
-one `create_data_source` call plus one layer of bindings — the layout was built
-so that call drops into it rather than reshaping it.
-
-**Verified in the live preview** (`/preview/seat-directory`), not assumed: the
-page renders, the binding resolves (`{{ var_xIGkZ['value'] }}` shows
-`2026-03-14`), and the two `visibility: false` state banners are correctly
-absent from the DOM. Two defects were found by looking and are fixed:
-
-- `borderRadius: "rounded-lg"` **is not a token.** It was stored without
-  complaint and computed to `0px`. The "lg" preset is `rounded-3xl` (10px);
-  `get_style_options` is the list, and now it reads 10px.
-- `startDecorator: "CheckCircle"` and `"MinusCircle"` **are not icon names.**
-  The first logged `Icon not found`; the second matched nothing at all and would
-  have rendered silently. They are `SvgCheckCircle` and `SvgCircleDotted`,
-  resolved with `get_icon_options`.
-
-Both are the same failure: a plausible-looking value written into a key that
-takes a fixed registry. Nothing refuses it and nothing logs it — the block just
-keeps rendering the default. Resolve every token and icon from its own tool.
+**Not built yet:** the detail panel. The three outcome banners exist
+(`b_OCqVU` / `b_EHMr9` / `b_pEQmM`) but the answer panel is hidden, because
+selecting a seat is not wired: it needs the Repeatable's `onSelectItem` to write
+`selectedPositionId`, a second data source over `ICM | Resolve Seat Occupant`,
+and the banners' visibility bound to its `status`. That is the next layer, and
+the callable it needs is already deployed.
 
 | field | value |
 |---|---|
@@ -49,6 +41,7 @@ keeps rendering the default. Resolve every token and icon from its own tool.
 | Platform page id | `e_6a988d297f7cff32ea8e8a4a` — what `/start` and `/restore` act on |
 | Devkit session | `sessions/sarthak-ray/2026-09-03-0225-session` |
 | Page variables | `var_jqj3Z` seatSearch · `var_xIGkZ` asOfDate · `var_ccGER` selectedPositionId |
+| Data source | `e_6a99098a7f7cff32ea921799` `listSeats` → automation `6a988a792ada0c631038457a`, automatic, runs on page load |
 | Key blocks | `b_DQZ7E` pageHeader · `b_1rH11` asOfControls · `b_EBwtj` seatListPanel · `b_V22z8` answerPanel |
 | Audience | comp ops, and comp admins |
 | Purpose | Answer "who held this seat on this date, and who holds it now" — and make a broken assignment visible instead of letting it surface later as a wrong payout. |

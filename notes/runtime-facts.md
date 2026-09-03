@@ -1104,3 +1104,77 @@ Three corollaries:
   sorting and analytics aggregation on money columns. We keep `number` + `dec()`;
   if a future finding shows a value where `String.valueOf` does not round-trip,
   revisit this trade.
+
+## The data-source entity type is `e_data_source` on orbit, not `e_data_source_deployed` (ICM, 2026-09-03)
+
+**This one masqueraded as a permissions problem for an hour, and the error
+message is why.** Creating a page data source through the devkit's
+`create_data_source` fails on orbit with:
+
+```
+ENTITY_TYPE with id e_data_source_deployed not found,
+please check if you haven the permissions to view this e_data_source_deployed
+```
+
+That reads like an entitlement gap. It is not. The tool HARDCODES the type
+(`www/packages/llm-tools/src/page-builder/actions/dataSources.ts:215`,
+commented *"[VERIFIED export] — every real DS export carries this literal"*),
+and orbit does not have it:
+
+| probe | result |
+|---|---|
+| `GET /api/entity-type?entityType=e_data_source_deployed` | **HTTP 200, EMPTY body** |
+| `GET /api/entity-type?entityType=e_data_source` | the real definition — "Data Source", properties `interfacePageId, interfaceId, type, name, context, inputs, options, tags, advancedOptions, parentId, metadata`, required `interfacePageId, type, name` |
+
+**A missing entity type answers 200 with an empty body, not a 404.** So "did
+the request succeed" is the wrong question — the check is whether the body has
+content. `scripts/ua-datasource.mjs` therefore PROBES both names and uses
+whichever exists, rather than inheriting the same hardcoded literal.
+
+Creating it directly through
+`POST /api/entity/create-update-or-delete/hierarchical` with
+`entityType: "e_data_source"` worked first time, and the page-builder tools then
+read it back happily (`get_data_sources` lists it, `get_data_source_output_schema`
+derives its shape, blocks bind to it). So only the CREATE path was wrong.
+
+Two lessons that generalise beyond this bug:
+
+- **A platform error naming permissions is not evidence of a permissions
+  problem.** Probe the asset it names before believing the sentence.
+- **A tool's "[VERIFIED]" comment is verified against ONE platform.** The devkit
+  is shared across platforms; orbit is not the one that literal was checked on.
+
+### Two more silent-value traps found the same day, both by looking at the page
+
+Neither errored, neither logged (the second logged only once rendered):
+
+- `appearance.styles.borderRadius: "rounded-lg"` **is not a token.** It stored
+  without complaint and computed to `0px`. The "lg" preset is `rounded-3xl`
+  (10px). `get_style_options` is the list.
+- `appearance.startDecorator: "CheckCircle"` / `"MinusCircle"` **are not icon
+  names.** The first logged `Icon not found`; the second matched nothing at all
+  and rendered silently. They are `SvgCheckCircle` and `SvgCircleDotted`.
+  `get_icon_options` is the list, and it matches on the OBJECT the glyph
+  depicts, not the action.
+
+Same shape as the `fields`-projection and `groupId` traps already recorded: a
+plausible value written into a key backed by a fixed registry is accepted,
+stored, and ignored. **Resolve every token, icon and enum from its own tool.**
+
+### `visibility` takes a condition object, never a binding
+
+`update_blocks` refuses `visibility.value` as a path (it wants exactly
+`visibility`), and then refuses a `{{ }}` expression as its value:
+`visibility.value must be true, false, or 'conditions'`. A data-driven
+show/hide is:
+
+```json
+"visibility": { "value": "conditions", "conditions": { "type": "filter",
+  "payload": { "operator": "AND", "filters": [
+    { "property": "{{ e_<dsId>['data']['total'] }}",
+      "filter": { "operator": "EQUAL", "value": "0" } } ] } } }
+```
+
+`filter.value` is always TEXT whatever the operator wants — `"0"`, not `0`.
+Note `create_block` DOES accept `visibility.value` as a prop path while
+`update_blocks` does not; the two verbs disagree, and only the update refuses.

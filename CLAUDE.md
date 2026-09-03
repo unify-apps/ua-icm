@@ -215,18 +215,43 @@ missing one.
 `scripts/ua-write.mjs` — direct workflow-definition update. Orbit only; refuses
 production outright.
 
-`scripts/ua-schema.mjs` — adds properties to an object schema. Changes the data
-model for everyone. Never removes or retypes.
+`scripts/ua-object.mjs` — CREATES an object type from a compact spec. Changes
+the data model for everyone. `plan` prints the body without calling anything;
+`create` POSTs it. Never updates, retypes or deletes.
+
+`scripts/ua-schema.mjs` — adds properties to an object schema that already
+exists. Changes the data model for everyone. Never removes or retypes.
+
+`scripts/ua-datasource.mjs` — CREATES the page data source that lets a PAGE
+call a deployed automation. It exists because the devkit's own
+`create_data_source` hardcodes `entityType: 'e_data_source_deployed'`, which
+does not exist on orbit — the failure reads as a permissions error and is not
+one. This script PROBES which data-source type the platform actually has and
+uses that, rather than inheriting the same hardcoded literal. `plan` prints the
+body without calling anything; `create` POSTs it. Orbit only.
+
+`scripts/field-types.mjs` — the ONE definition of how a field spec becomes a
+platform property, shared by the two above. Not a command.
+
+`scripts/fixtures.mjs` — seeds and resets the loudly-named (`KITFIX-`) record
+families the suites run against. This is the mechanism behind the ICM rule
+about never testing on real pay data.
+
+`scripts/graph.mjs` — regenerates `docs/architecture.html` from snapshots,
+specs and suites. `--check` fails when it is stale; `--json <path>` dumps the
+raw graph for ad-hoc querying.
+
+`scripts/check-docs.mjs` — fails when a script or docs area exists that
+`docs/START-HERE.html` does not describe.
 
 `scripts/deploy.mjs` — the ONLY sanctioned way to deploy (see the gates below).
 
 `scripts/gen-types.mjs` — regenerates `docs/api/icm-types.ts` from the entity
 snapshots, driven by `kit.config.json`.
 
-There is deliberately no `fixtures.mjs` yet. The Axis one was entirely
-product-specific, so it was not copied. Suites that CREATE need their own
-loudly-named fixture family, and the script to reset it gets written with the
-first such suite — see the ICM safety rule about real pay data.
+The fixture families themselves live in `tests/fixtures/`. `fixtures.mjs` only
+ever deletes records whose business key carries the family's loud prefix, which
+is the mechanism behind the ICM rule about never testing on real pay data.
 
 ## Objects: the data model you own
 
@@ -264,186 +289,110 @@ usual answer) or ask. Never guess a field into existence.
 
 ## Application pages
 
-The third pillar, and the one the Axis kit never modelled. Pages are built
-through **`ua-agent-devkit`**, which runs `www/packages/llm-tools` as a local
-MCP server (35 typed page-builder tools) bound to one platform — ours is orbit
-on port 3002. Open question 10 is answered: there is no plain REST path for a
-page and none is needed. Read `docs/pages/00-page-contract.md` before specifying
-one.
+Pages are built **here, in this repo, in this conversation** — not in a second
+Claude Code session with its own context. `scripts/page.mjs` drives the
+`ua-agent-devkit` clone (path in `kit.config.json`, `pages.devkitDir`), so the
+tools and the safety come from there while the thinking stays here.
 
-The build happens in a Claude Code session opened **in the devkit folder**, not
-here: `/start <builder-url>` snapshots the page first, `/done "note"` writes the
-session record, `/restore` puts it back. **`/restore` is the only per-page undo
-that exists** — the platform's own version history restores the WHOLE app — so
-`/start` is not optional.
+```
+node scripts/page.mjs up      start the tool server, wire .mcp.json, then RESTART Claude Code
+```
+
+That gives this session two MCP servers: `page-builder` (35 typed page tools)
+and `preview-browser` (a logged-in Chrome for looking at the result).
+`.mcp.json` carries a live cookie — it is `chmod 600` and git-ignored.
+
+Four commands, and they are not optional:
+
+| command | what it does |
+|---|---|
+| `/start <builder-url>` | **snapshots the page BEFORE any edit** and prints the `host`/`interfaceId`/`pageId` every page tool needs |
+| `/restore` | puts the page back exactly as it was at `/start` |
+| `/done "note"` | writes the page spec here, the session record in the devkit, and regenerates the map |
+| `/page-status` | is the server up, which session am I in, is anything uncommitted |
+
+**`/restore` is the only per-page undo that exists.** The platform's own version
+history restores the WHOLE app, not one page. So `/start` is not optional: a
+page edited without it has no small way back.
 
 **The page spec in `docs/pages/` is written or updated BEFORE `/done`.** The
-build lives in the devkit; the record of what a page depends on lives here, and
-nowhere else.
+build happens through the devkit's tools; the record of what a page depends on
+lives here, and nowhere else — nothing on the platform stores it. `/done`
+regenerates `docs/architecture.html` so a page that does not appear wired to its
+callables is a spec that is wrong.
 
-Two things carry over into automation work regardless:
-- **A page is a caller.** Its dependency on a callable is recorded nowhere but
-  `docs/pages/`, so that folder is part of every contract change.
-- **Explainability is the product.** Every amount a page shows must be
-  drillable down to the transactions behind it, which means read callables are
-  designed for that interaction, not just for first paint.
+Session transcripts stay in the devkit (that is where the team collects them);
+the spec and the map stay here. Two records, deliberately: one is how it was
+built, the other is what it depends on.
 
-## Build INCREMENTALLY, not in one shot
+Not ported: the devkit's `run-tests` and `write-tests` skills, which need its
+`qa/` apparatus. Use them from the devkit if you need them. `preview-pixel-perfect`
+works here.
 
-One-shot "build these 9 nodes" prompts make the copilot work 5-7 minutes in a
-single turn, which is where the platform's flaky save error lives — and twice it
-silently built into the WRONG automation. The proven recipe
-(`notes/incremental-agent-building.md`): one NEW chat per small step, each
-prompt naming the workflow id, pre-confirming the apply, and demanding the agent
-re-fetch to verify its own save. After every step WE re-fetch and check the
-version moved — the agent has both claimed success on saves that never happened
-and claimed failure on saves that landed. Between steps, run `testrun.mjs` and
-feed the exact node error back in a fresh chat.
+## The architecture map, and the layer rules it draws
 
-Creating a NEW automation: the agent can only edit workflows that already have
-VALID nodes. A workflow created empty via the API cannot be edited by the agent,
-and a UI-created placeholder is rejected too. What WORKS: clone a small healthy
-callable with the target name/tags
-(`POST /api/workflow-definition/clone/{id}`), then rebuild it. A placeholder can
-also be seeded directly with `ua-write.mjs update <id> <definition.json>` — the
-placeholder restriction is the COPILOT editor's, not the update API's.
+`docs/architecture.html` is the one picture of the system — every object,
+automation and page, what depends on what, and how far along each is. Open it in
+a browser: drag to pan, scroll to zoom, hover a card to trace its dependencies,
+click for the detail.
 
-MISPLACED-SAVE trap: a chat can report "success: true" while the target workflow
-never changes, because the build was upserted into a brand-new automation whose
-id equals the chat's case id. After every "applied" claim, re-fetch the target
-and check `version`/`modifiedTime` moved. If not, look for a stray new
-automation holding the build, and start a fresh chat.
+**It is generated, never drawn.** `scripts/graph.mjs` derives it from entity
+snapshots (objects and their foreign keys), automation snapshots (what each
+reads, what it calls, its real `deploymentState`), `docs/pages/` (the
+page→callable dependencies the platform records NOWHERE else), `tests/` (which
+have suites) and the domain model (what is proposed but unbuilt). If an asset is
+missing from the picture, record it in one of those places — never edit the
+output. A node shown as **missing** is referenced but not snapshotted: a
+dangling reference, which is the whole reason the picture exists.
 
-## The critique gate
+There is deliberately ONE file. A separate diagram, data file and status board
+describing the same assets is three places for one truth to rot in.
+`node scripts/graph.mjs --json <path>` dumps the raw graph when something needs
+to query it.
 
-After the tests go green and before anything is called done, audit it like a
-staff engineer reviewing a service.
+**Layer rules the map exists to enforce:**
 
-- Every finding stands on a runtime fact (`notes/runtime-facts.md`), a measured
-  number from a test run, or a fresh read of the backend source — never a hunch.
-  If the runtime's behaviour is unknown, go read it, and add what you learn to
-  `runtime-facts.md` so the next critique is cheaper.
-- Each finding becomes ONE incremental fix, then re-test, then re-critique.
-- A finding we decide to live with gets written into the spec's Notes with the
-  reason. Accepted debt is fine; silent debt is not.
+- **Pages never touch objects directly.** A page calls a callable; the callable
+  reads and writes. Not style — authorization lives in the callable, so a page
+  reaching around it is a page that can show somebody else's pay.
+- **Shared logic is a callable, not a copy.** When the same check appears in a
+  second automation, it becomes a callable then, not later.
+- **Automations are the only writers.** Ad hoc record writes through
+  `/api/entity/create-update-or-delete/hierarchical` are for fixtures and
+  debugging only, and never against real pay data.
+- **Nothing is reachable until it is DEPLOYED.** Callers only ever hit the
+  deployed copy, so a card that is not green is not in the product yet.
 
-The questions, in order of how often they bite:
+When the map and a snapshot disagree, the snapshot is right. Start every session
+with `ua.mjs drift --tag icm`.
 
-1. **Latency shape.** Count the external calls on the critical path. Independent
-   fetches belong on parallel BRANCH arms that join before the compute step.
-2. **Data volume ceiling.** For every bulk fetch: what happens when the data
-   outgrows the limit? Silent truncation = wrong answers. **ICM: state the row
-   count at target scale**, not at today's test data.
-3. **Memory.** One code node holding all records of many object types sums their
-   sizes in the run's memory.
-4. **Caching.** Slowly-changing reads can use `options.cacheConfig` (TTL
-   seconds). Never cache what the same flow writes.
-5. **Field discipline.** Fetches project only the fields the flow uses.
-6. **Failure model.** Is `fallbackMode: STOP` actually right per node? Optional
-   enrichments should not kill the response. For every unique field written: is
-   there a pre-check with a distinct `DUPLICATE_*` status, and does the suite
-   prove the same-payload-twice call returns it cleanly?
-7. **Configuration.** Filter dialect per app, blank-string hardening, respond
-   node TYPE = STOP, distinct statuses, applicationId from config, defaults
-   applied inside the automation.
-8. **Reuse.** Logic in 2+ automations becomes a callable sub-automation now.
-9. **ICM — money and periods.** Every rounding point named and justified; the
-   period-writable guard present on every write carrying a `periodId`; every
-   effective-dated read asking "as of when?"; a second concurrent run refused
-   rather than racing. `docs/model/money-and-time.md` is the checklist.
-10. **ICM — authorization.** Who may call this, and what does it do when the
-    caller may not? A read that returns another person's pay because nobody
-    specified the rule is the worst bug this product can have.
+## Keeping the repo describable (automated, but you own the prose)
 
-## Deploying (gated on an explicit human yes AND a green suite, every time)
+Two things run at the END of every session, from a `Stop` hook in
+`.claude/settings.json`. You do not invoke them; you only have to not ignore
+what they say.
 
-Drafts and deployments are separate copies. Callers only ever hit the DEPLOYED
-copy.
+1. **`graphify update .`** — rebuilds the knowledge graph so the next session
+   starts from a current picture instead of last week's.
+2. **`node scripts/graph.mjs`** — regenerates `docs/architecture.html` and
+   `.json` from snapshots, specs and suites. This is why the dependency graph
+   can never drift: nobody draws it.
+3. **`node scripts/check-docs.mjs --warn`** — reports anything that exists in
+   the repo but is not described in `docs/START-HERE.html`.
 
-**THE SUITE GATE — NON-NEGOTIABLE.** Four things must be true, all mechanical:
+**The rule the third one enforces: a new script, a new `docs/` area, or a new
+process is not finished until `docs/START-HERE.html` says what it is and when
+you would reach for it.** The check can only see whether the name appears
+somewhere — it cannot tell whether you explained it. Adding a name to silence
+the check, without saying what the thing is for, is worse than the gap, because
+it turns a visible hole into an invisible one.
 
-1. `tests/<workflowId>.json` EXISTS;
-2. `node scripts/regress.mjs <workflowId>` prints `all green`;
-3. `node scripts/ua.mjs validate <workflowId>` prints `clean`;
-4. `node scripts/lint.mjs <workflowId>` prints `clean`.
+Anything that WRITES to the platform also goes in the script list above, since
+that list is the safety contract rather than a convenience index. `check-docs`
+fails, not warns, on that one.
 
-Deploy through the script that enforces them, never by hand:
-
-```
-node scripts/deploy.mjs <workflowId> "what changed and who approved"
-```
-
-It refuses on any failed gate, deploys only when all four pass, then VERIFIES by
-reading `deploymentState` back. There is deliberately no bypass flag: if you must
-ship without a suite, edit `deploy.mjs` on purpose and say so in the commit, so
-skipping is a visible act rather than an invisible shortcut.
-
-The Axis repo inherited 21 deployed automations with no suite, and calls that
-"a debt somebody will pay at 2am". This repo starts at zero. Keep it there — in
-a product that moves money, the suite is the whole safety argument.
-
-**WHAT IS ACTUALLY LIVE.** The authority is `deploymentState` on the workflow
-record (`ua.mjs fetch <id>`): compare `deploymentState.workflowVersion` against
-the record's `version`. The inventory's draft-vs-deployed column is a hint, not
-evidence, and `GET .../deployed-workflow/{id}?latest=true` has returned DRAFT
-content. Read `deploymentState` before saying anything is — or is not — live. A
-teammate can deploy at any moment, so "I did not deploy it" never means "it is
-not deployed".
-
-## Review checklist for automation diffs
-
-- **Branch polarity.** On IF_ELSE the `if` edge fires when the condition is
-  TRUE, `next` is the else path. Check every condition against its edges.
-- **Builder-clean gate, after EVERY change.** BOTH `ua.mjs validate <id>` AND
-  `lint.mjs <id>`. The runtime, the validator, and the builder each see a
-  DIFFERENT layer.
-- **IF_ELSE and BRANCH config.** IF_ELSE inputs must be `{operator, filters}` at
-  the TOP level (a `conditions:` wrapper = silently always false); every BRANCH
-  arm needs non-empty filters; nodes after a branch join carry the branch node's
-  PARENT groupId, not `...@default`.
-- **`groupId` branch paths — the day-one trap.** A node inside an IF branch
-  carries the nesting path, NOT `root_id-1`: `n_IfA@root_id-1@y` for the yes arm,
-  `n_IfB@n_IfA@root_id-1@n@y` one level deeper. Leaving everything at root
-  passes validate AND runs green in a test, then renders as a dangling `+` in
-  the builder and the platform PRUNES the unrenderable nodes on the next write.
-  See `notes/runtime-facts.md`. Always eyeball the builder after a hand-built
-  graph, and check the node count on the next fetch.
-- **Hand-made edges carry the builder's vocabulary.** IF edges are named
-  `yes`/`no`, branch edges by branch id; every arm's last node has an explicit
-  `next` edge to the join node. Never invent edge `id` fields.
-- **Sibling consistency.** Checks doing the same kind of job are wired the same
-  way.
-- **Loops.** API calls inside a for-each are a slowdown multiplier.
-- **Half-done states.** Multi-write flows: what happens if step 2 fails?
-- **Unique keys.** Every create/update checks the schema snapshot's
-  `uniqueKeyFields`; each has a pre-check and a `DUPLICATE_*` path.
-- **Failure mode.** Nodes default to `fallbackMode: STOP`. Does a fetch that
-  finds nothing error out or return empty? Test both branches.
-- **applicationId.** From `kit.config.json`, never a literal. Watch for mixes of
-  hard-coded strings and `{{ __USER__.outputs.applicationId }}`.
-- **The four questions** — every node that leaves the automation: what is sent ·
-  what is NOT sent and why the omission is safe · when it is called · when it is
-  NOT called. A node any of whose four answers is unknown does not ship.
-- **Filter dialect.** Storage shape vs platform shape. Wrong one crashes at RUN
-  time.
-- **Blank-string inputs.** Real callers send `""`, not null. Test the
-  all-empty-strings payload for every callable.
-- **STOP nodes.** Every path ends in a "Respond to automation" with a distinct
-  status, and its TYPE must be STOP, not ACTION.
-- **Node `type` vs `resourceName`.** A node saved with NO type passes validation
-  and then makes the whole workflow unrunnable. `callables_return_to_automation`
-  needs STOP; `callables_call_automation` needs CALL_WORKFLOW.
-- **Verify writes by RE-READING.** `{"success": true}` is a claim about the
-  call, not about the data.
-- **TYPED RESPONSES — arrays especially.** Every array declares `items` with
-  named `properties`, in BOTH the trigger's `result` schema and the code node's
-  output schema. Walk nested arrays too. `required` is what is ALWAYS present.
-  Derive the field list from a LIVE RUN, not from the spec.
-- **Node names.** Every node's title says what IT does in THIS flow.
-- **ICM — money.** No float arithmetic on amounts; one rounding point; every
-  amount beside its currency.
-- **ICM — periods.** Every write carrying a `periodId` checked the period first.
-- **ICM — authorization.** The refusal happens in the callable, not in the page.
+Run any of the three by hand whenever you want; they are all idempotent and
+`graph.mjs --check` is the version that fails on staleness (use it in a gate).
 
 ## Navigating this repo with graphify
 
