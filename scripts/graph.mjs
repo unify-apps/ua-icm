@@ -403,7 +403,7 @@ function render(g) {
     <div class="hint">drag to pan · scroll to zoom · hover to trace · click a card for detail</div>
   </div>
 
-  <p class="note"><b>Nothing here is hand-drawn.</b> <code>scripts/graph.mjs</code> derives every node and edge from the repo itself — entity snapshots for objects and their foreign keys, automation snapshots for what each one reads and calls and whether it is really deployed, <code>docs/pages/</code> for the page→callable dependencies that the platform records nowhere, <code>tests/</code> for suites, and the domain model for what is proposed but unbuilt. If something is missing from this picture, record it in one of those places; never edit this file. It regenerates at the end of every session.</p>
+  <p class="note"><b>Nothing here is hand-drawn.</b> <code>scripts/graph.mjs</code> derives every node and edge from the repo itself — entity snapshots for objects and their foreign keys, automation snapshots for what each one reads and calls and whether it is really deployed, <code>docs/pages/</code> for the page→callable dependencies that the platform records nowhere, <code>tests/</code> for suites, and the domain model for what is proposed but unbuilt. If something is missing from this picture, record it in one of those places; never edit this file. Regenerate it with <code>scripts/graph.mjs</code> whenever you change what it is derived from; <code>--check</code> fails when it is stale.</p>
 </div>
 
 <script id="graph-data" type="application/json">${data}</script>

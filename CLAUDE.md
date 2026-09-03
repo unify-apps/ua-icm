@@ -388,33 +388,52 @@ to query it.
 When the map and a snapshot disagree, the snapshot is right. Start every session
 with `ua.mjs drift --tag icm`.
 
-## Keeping the repo describable (automated, but you own the prose)
+## Keeping the repo describable (you run the regenerators; one check runs itself)
 
-Two things run at the END of every session, from a `Stop` hook in
-`.claude/settings.json`. You do not invoke them; you only have to not ignore
-what they say.
+**The map and the knowledge graph are regenerated ON REQUEST, not on a timer.**
+They used to run from a `Stop` hook at the end of every session. That is off,
+deliberately (2026-09-03): regenerating unasked rewrote `docs/architecture.html`
+on every single session — usually only its timestamp — so every session ended
+with a dirty file nobody had changed, and a commit's diff stopped meaning
+anything. A generated file that changes when nothing changed is noise, and the
+team reads these.
 
-1. **`graphify update .`** — rebuilds the knowledge graph so the next session
-   starts from a current picture instead of last week's.
-2. **`node scripts/graph.mjs`** — regenerates `docs/architecture.html` and
-   `.json` from snapshots, specs and suites. This is why the dependency graph
-   can never drift: nobody draws it.
-3. **`node scripts/check-docs.mjs --warn`** — reports anything that exists in
-   the repo but is not described in `docs/START-HERE.html`.
+```
+node scripts/graph.mjs           regenerate docs/architecture.html + .json
+node scripts/graph.mjs --check   FAIL if it is stale — this is the gate
+graphify update .                rebuild the knowledge graph (AST-only, no API cost)
+```
 
-**The rule the third one enforces: a new script, a new `docs/` area, or a new
-process is not finished until `docs/START-HERE.html` says what it is and when
-you would reach for it.** The check can only see whether the name appears
-somewhere — it cannot tell whether you explained it. Adding a name to silence
-the check, without saying what the thing is for, is worse than the gap, because
-it turns a visible hole into an invisible one.
+**The cost of that choice, stated plainly: the map CAN now be stale.** It could
+not before. So `graph.mjs --check` stops being a formality and becomes the thing
+that catches it — run it before you commit anything that changes an automation, a
+page spec or an object, and regenerate when it fails. The rule that the picture
+is never hand-drawn is unchanged; only when it is redrawn has changed.
+
+Regenerate whenever you have changed what the map is derived FROM: an automation
+snapshot, a file in `docs/pages/`, a suite, an entity snapshot, or the domain
+model. `/done` still regenerates it for you at the end of a page session, because
+a page's callable dependencies exist nowhere else.
+
+**One thing still runs itself**, from the `Stop` hook in `.claude/settings.json`:
+
+- **`node scripts/check-docs.mjs --warn`** — reports anything that exists in the
+  repo but is not described in `docs/START-HERE.html`. It is kept automatic
+  because it WRITES NOTHING. It only reads and reports, so it can never dirty
+  the tree the way the regenerators did.
+
+**The rule it enforces: a new script, a new `docs/` area, or a new process is
+not finished until `docs/START-HERE.html` says what it is and when you would
+reach for it.** The check can only see whether the name appears somewhere — it
+cannot tell whether you explained it. Adding a name to silence the check,
+without saying what the thing is for, is worse than the gap, because it turns a
+visible hole into an invisible one.
 
 Anything that WRITES to the platform also goes in the script list above, since
 that list is the safety contract rather than a convenience index. `check-docs`
 fails, not warns, on that one.
 
-Run any of the three by hand whenever you want; they are all idempotent and
-`graph.mjs --check` is the version that fails on staleness (use it in a gate).
+All three are idempotent, so running one by hand is always safe.
 
 ## Navigating this repo with graphify
 
@@ -434,6 +453,12 @@ Two things specific to this repo:
 - **It is a navigation aid, never a source of truth.** When the graph and a
   snapshot disagree, the snapshot is right and the graph is stale. `graphify-out/`
   is git-ignored precisely so nobody reviews it as if it were a document.
+- **It is refreshed on request, not on a timer** (changed 2026-09-03). Nothing
+  rebuilds it at session end any more, so assume it is as old as the last person
+  who ran `graphify update .`. That is fine for a navigation aid and it is the
+  reason the line above matters: reach for a snapshot or a spec when the answer
+  has to be right, and reach for the graph when you are still looking for where
+  the answer lives.
 
 ## Where deeper knowledge lives
 
