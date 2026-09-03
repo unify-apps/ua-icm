@@ -306,7 +306,7 @@ Four commands, and they are not optional:
 
 | command | what it does |
 |---|---|
-| `/start <builder-url>` | **snapshots the page BEFORE any edit** and prints the `host`/`interfaceId`/`pageId` every page tool needs |
+| `/start <builder-url>` | **snapshots the page BEFORE any edit**, prints the `host`/`interfaceId`/`pageId` every page tool needs, and **loads the devkit's builder brief** |
 | `/restore` | puts the page back exactly as it was at `/start` |
 | `/done "note"` | writes the page spec here, the session record in the devkit, and regenerates the map |
 | `/page-status` | is the server up, which session am I in, is anything uncommitted |
@@ -325,9 +325,31 @@ Session transcripts stay in the devkit (that is where the team collects them);
 the spec and the map stay here. Two records, deliberately: one is how it was
 built, the other is what it depends on.
 
+**The tools come across; the brief does not.** The devkit's
+`agent/instructions.md` is the platform agent's own configuration — the app
+model, the runtime's behaviour, the knowledge-sheet rules, where a look can
+live, twelve worked examples — and it auto-loads from that repo's `CLAUDE.md`
+only when Claude Code runs in that directory. Building pages from here without
+it is why the first page came out plainer and more guess-prone than one built in
+the devkit. So `/start` reads it, in full, as step 3 of every page session. It
+is read-only: regenerated there from the lab repo by `bin/sync-prompt.mjs`, so
+it is never edited and never copied into this repo. Where it and this file
+differ, **this file wins** on the layer rules, the spec-first discipline and the
+ICM safety rules; the brief wins on everything about how the platform behaves.
+
+**Design work has a second half, and it is a skill.** When the task is about how
+a page READS rather than what it does, use `page-design`
+(`.claude/skills/page-design/`) **before the first visual decision.** It loads
+the `frontend-design` craft skill, points at the brief's design section (the
+three rungs: block tokens → conditional values → custom CSS, and "match the
+relationship, not the number"), and names the traps this repo has already paid
+for — `rounded-lg` is not a token, icon names carry the `Svg` prefix, and the
+app sits on the pre-retheme cool palette, which is a THEME fix and never a
+per-block one.
+
 Not ported: the devkit's `run-tests` and `write-tests` skills, which need its
 `qa/` apparatus. Use them from the devkit if you need them. `preview-pixel-perfect`
-works here.
+works here, and is how a design task is verified rather than assumed.
 
 ## The architecture map, and the layer rules it draws
 

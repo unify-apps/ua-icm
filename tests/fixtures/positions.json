@@ -194,5 +194,5 @@
       }
     ]
   },
-  "_deadFieldNote": "Payee.currency (plain string) is DEAD but still marked required in the live schema, so every fixture must fill it even though nothing reads it. currencyId is the real field. This is the visible cost of retyping-by-addition and the argument for recreating Payee cleanly - see docs/architecture.html 'Now'."
+  "_deadFieldNote": "OUT OF DATE as of 2026-09-03: Payee.currency was removed from the live schema (9 fields -> 8), as was PositionAttribute.territory. The four Payee records below still send `currency` and the platform now ignores it - harmless, and both suites are green with it there. Drop it the next time this family is edited. currencyId is and was the real field. See docs/model/00-domain-model.md and question 14 in notes/open-questions.md."
 }

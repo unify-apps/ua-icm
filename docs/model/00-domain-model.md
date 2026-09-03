@@ -102,13 +102,26 @@ walks. It is deliberately its own effective-dated object rather than a
 `managerId` on `Payee`, for the same reason the position model exists: a payout for
 March must ask who the position reported to *in March*.
 
-**Known debt (2026-09-03).** `Payee` still carries a dead `currency` string
-beside its `currencyId` lookup, and `PositionAttribute` a dead `territory`
-string beside `territoryId`. Both are leftovers of retyping-by-addition — the
-platform refuses to retype a property once an object holds records, and
-`ua-schema.mjs` never retypes by design. `Payee.currency` is still marked
-`required`, so writes must fill a field nothing reads. See the "Now" list in
-`docs/architecture.html`.
+**Debt CLEARED on the platform (observed 2026-09-03).** `Payee` carried a dead
+`currency` string beside its `currencyId` lookup, and `PositionAttribute` a dead
+`territory` string beside `territoryId` — both leftovers of
+retyping-by-addition, because the platform refuses to retype a property once an
+object holds records and `ua-schema.mjs` never retypes by design. `Payee.currency`
+was even marked `required`, so every write had to fill a field nothing read.
+
+A `snap-types --tag icm` refresh on 2026-09-03 shows **both properties are now
+gone** (`Payee` 9 fields → 8, `PositionAttribute` 7 → 6). That removal was NOT
+made from this kit — `ua-schema.mjs` only ever adds — so it was done in the
+builder by someone on the product team. The snapshots are the truth and they
+say the columns are gone.
+
+Two things still lag behind it, deliberately left rather than fixed in the
+rename commit: `tests/fixtures/positions.json` still sends `currency` on its
+four `Payee` records, which the platform now ignores, and its `_deadFieldNote`
+describes the old world. Both are harmless — the fixture family re-seeded and
+both suites went green with the field still being sent — and both should go the
+next time the family is touched. Recorded as question 14 in
+`notes/open-questions.md` so it is not lost.
 
 ### Calendar and money — **BUILT 2026-09-03**
 

@@ -26,3 +26,8 @@ KIT-BOOTSTRAP.md
 # them are the reviewable artefact.
 designs/*.html
 !designs/*.dc.html
+
+# Preview-browser output: screenshots, snapshots and console logs from a
+# looking-at-the-page session. Regenerated on demand, never review material.
+.playwright-mcp/
+/*.png

@@ -1,3 +1,5 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ICM Kit Orientation</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
@@ -284,6 +286,7 @@
           <div class="cmd">bin/serve start · :3002</div>
           <p>Pages are built <b>here, in one conversation</b>: <code>scripts/page.mjs up</code> wires this repo to the devkit's 35 typed tools, which refuse a bad write.</p>
           <p><code>/start</code> snapshots the page, <code>/done</code> records the session, <code>/restore</code> undoes it. <b><code>/restore</code> is the only per-page undo that exists</b> — the platform's own history restores the whole app.</p>
+          <p><b>The tools come across; the brief does not.</b> The devkit's <code>agent/instructions.md</code> is the platform agent's own configuration — the app model, the knowledge-sheet rules, and where a look can live — and it auto-loads only when Claude Code runs in that directory. That is why a page built from here comes out plainer and more guess-prone. <code>/start</code> now reads it as step 3, and the <b><code>page-design</code> skill</b> is the half about how a screen READS: it loads the <code>frontend-design</code> craft skill, the brief's three rungs (block tokens → conditional values → custom CSS), and the traps this repo has already paid for. Reach for it before the first visual decision, not after the screen exists.</p>
         </div>
       </div>
     </div>

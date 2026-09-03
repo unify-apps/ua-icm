@@ -1,5 +1,5 @@
 {
-  "columnCounts": 9,
+  "columnCounts": 8,
   "createdTime": 1788377149267,
   "deleted": false,
   "description": "A person who can be paid incentive compensation. The bridge from a platform user to the comp world. A payee holds a Position over a date range (PayeePositionAssignment); credit attaches to the POSITION and resolves to the payee who held it on the transaction's close date.",
@@ -13,7 +13,6 @@
         "name",
         "email",
         "userId",
-        "currency",
         "hireDate",
         "terminationDate",
         "status",
@@ -76,12 +75,6 @@
           "title": "Platform User",
           "filterable": true
         },
-        "currency": {
-          "type": "string",
-          "title": "Currency",
-          "filterable": true,
-          "sortable": true
-        },
         "hireDate": {
           "type": "integer",
           "format": "date",
@@ -118,14 +111,13 @@
       "required": [
         "employeeId",
         "name",
-        "currency",
         "status"
       ]
     }
   },
   "lastModifiedBy": 22816,
   "lastPlatformUpdateBy": 22816,
-  "lastPlatformUpdateOn": 1788377900166,
+  "lastPlatformUpdateOn": 1788378594609,
   "lcName": "payee",
   "metadata": {
     "auditable": true,
@@ -146,7 +138,6 @@
       "name",
       "email",
       "userId",
-      "currency",
       "hireDate",
       "terminationDate",
       "status",
@@ -201,7 +192,7 @@
     "vectorFields": [],
     "versioningEnabled": true
   },
-  "modifiedTime": 1788377900166,
+  "modifiedTime": 1788378594609,
   "name": "Payee",
   "ownerUserId": 22816,
   "packaged": false,
@@ -245,12 +236,6 @@
           "title": "Platform User",
           "filterable": true
         },
-        "currency": {
-          "type": "string",
-          "title": "Currency",
-          "filterable": true,
-          "sortable": true
-        },
         "hireDate": {
           "type": "integer",
           "format": "date",
@@ -287,7 +272,6 @@
       "required": [
         "employeeId",
         "name",
-        "currency",
         "status"
       ]
     }
@@ -296,5 +280,5 @@
   "tags": [
     "icm"
   ],
-  "version": 1
+  "version": 2
 }
