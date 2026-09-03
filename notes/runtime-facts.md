@@ -1020,3 +1020,161 @@ against orbit while building `icmPeriod` and `ICM | Check Period Writable`.
   Two habits follow: **snapshot immediately after any create** (that snapshot is
   what made the restore a non-event), and **check the node count on the next
   fetch** rather than trusting the create's 200.
+
+## A storage `number` returns a DIFFERENT Java type depending on its VALUE (ICM, 2026-09-03)
+
+**This is the most expensive fact in this file for a product that computes pay,
+and it answers open question 8.** It was found by a probe, not inferred: object
+`KitTestNumeric` (tag `icmkit-test`), ten rows written through
+`/api/entity/create-update-or-delete/hierarchical`, read back by
+`storage_by_unifyapps_fetch_records` and interrogated in a
+`code_by_unifyapps_groovy` node with `getClass().getName()`.
+
+The schema declares one type. The runtime hands back two, chosen by magnitude:
+
+| stored value | `number` property arrives as |
+|---|---|
+| `0.1`, `0.2`, `123.45`, `12345.67`, `1234567.89`, `9999999.99` | **`java.math.BigDecimal`** |
+| `10000000.00`, `12345678.91`, `99999999.99`, `1000000000.55` | **`java.lang.Double`** |
+
+**The cliff is at 10^7.** `9999999.99` is a BigDecimal; `10000000.00` is a
+Double. In rupees that boundary is **₹1 crore** — squarely inside the range of
+real quotas, payouts and period totals, not an exotic edge.
+
+An `integer` property has the same disease one boundary further out:
+
+| stored value | `integer` property arrives as |
+|---|---|
+| `12345` … `2147483647` | **`java.lang.Integer`** |
+| `2147483648`, `9999999999` | **`java.lang.Long`** |
+
+It widens exactly at `Integer.MAX_VALUE`.
+
+### Why this is dangerous rather than merely untidy
+
+Groovy's numeric promotion means **`BigDecimal + Double` is a `Double`**. So a
+single row over ₹1 crore silently converts an otherwise-exact sum to binary
+floating point, and every value after it in that fold inherits the error. The
+type depends on the *data*, so the same automation is exact on Monday's dataset
+and wrong on Friday's, and the symptom is a one-paisa discrepancy on one
+person's statement and nowhere else. Nothing errors. Nothing logs.
+
+The same run confirmed the two halves of the classic trap, so there is no doubt
+about which side we want to be on:
+
+```
+GROOVY LITERAL 0.1 + 0.2   = 0.3                 <java.math.BigDecimal>   == 0.3 ? true
+GROOVY DOUBLE  0.1d + 0.2d = 0.30000000000000004 <java.lang.Double>
+```
+
+Groovy decimal literals are already `BigDecimal`, which is on our side. The
+platform's storage layer is not.
+
+### The rule that follows, and it is not optional
+
+**Every amount read out of storage is coerced at the boundary before it touches
+an operator**, with one helper used everywhere:
+
+```groovy
+// The ONLY way an amount enters the arithmetic. Handles both types the
+// platform may hand us, including the E-notation a Double stringifies to.
+static BigDecimal dec(v) {
+    if (v == null) return BigDecimal.ZERO
+    if (v instanceof BigDecimal) return v
+    return new BigDecimal(String.valueOf(v))
+}
+```
+
+`new BigDecimal(String.valueOf(x))` is proven to recover both cases — the
+probe's `1.234567891E7` Double parsed back to exactly `1234567891.00` after
+×100, because `BigDecimal(String)` accepts scientific notation. Bare arithmetic
+on a fetched property is a review finding, every time, with no "but this field
+is always small" exemption: the field being always small is a claim about data,
+and data changes.
+
+Three corollaries:
+
+- **Never store money in an `integer` field.** 2,147,483,647 paise is ₹2.14
+  crore, and past it the type silently changes. This is independent confirmation
+  that the minor-units-as-integer design would have been a trap in this currency.
+- **`compile_static: false`** on the Groovy node is what lets `dec()` accept
+  either type. Turning static compilation on would need the signature widened.
+- Storing amounts as **strings** removes the cliff entirely
+  (`new BigDecimal(storedString)` was exact for every row) but forfeits numeric
+  sorting and analytics aggregation on money columns. We keep `number` + `dec()`;
+  if a future finding shows a value where `String.valueOf` does not round-trip,
+  revisit this trade.
+
+## The data-source entity type is `e_data_source` on orbit, not `e_data_source_deployed` (ICM, 2026-09-03)
+
+**This one masqueraded as a permissions problem for an hour, and the error
+message is why.** Creating a page data source through the devkit's
+`create_data_source` fails on orbit with:
+
+```
+ENTITY_TYPE with id e_data_source_deployed not found,
+please check if you haven the permissions to view this e_data_source_deployed
+```
+
+That reads like an entitlement gap. It is not. The tool HARDCODES the type
+(`www/packages/llm-tools/src/page-builder/actions/dataSources.ts:215`,
+commented *"[VERIFIED export] — every real DS export carries this literal"*),
+and orbit does not have it:
+
+| probe | result |
+|---|---|
+| `GET /api/entity-type?entityType=e_data_source_deployed` | **HTTP 200, EMPTY body** |
+| `GET /api/entity-type?entityType=e_data_source` | the real definition — "Data Source", properties `interfacePageId, interfaceId, type, name, context, inputs, options, tags, advancedOptions, parentId, metadata`, required `interfacePageId, type, name` |
+
+**A missing entity type answers 200 with an empty body, not a 404.** So "did
+the request succeed" is the wrong question — the check is whether the body has
+content. `scripts/ua-datasource.mjs` therefore PROBES both names and uses
+whichever exists, rather than inheriting the same hardcoded literal.
+
+Creating it directly through
+`POST /api/entity/create-update-or-delete/hierarchical` with
+`entityType: "e_data_source"` worked first time, and the page-builder tools then
+read it back happily (`get_data_sources` lists it, `get_data_source_output_schema`
+derives its shape, blocks bind to it). So only the CREATE path was wrong.
+
+Two lessons that generalise beyond this bug:
+
+- **A platform error naming permissions is not evidence of a permissions
+  problem.** Probe the asset it names before believing the sentence.
+- **A tool's "[VERIFIED]" comment is verified against ONE platform.** The devkit
+  is shared across platforms; orbit is not the one that literal was checked on.
+
+### Two more silent-value traps found the same day, both by looking at the page
+
+Neither errored, neither logged (the second logged only once rendered):
+
+- `appearance.styles.borderRadius: "rounded-lg"` **is not a token.** It stored
+  without complaint and computed to `0px`. The "lg" preset is `rounded-3xl`
+  (10px). `get_style_options` is the list.
+- `appearance.startDecorator: "CheckCircle"` / `"MinusCircle"` **are not icon
+  names.** The first logged `Icon not found`; the second matched nothing at all
+  and rendered silently. They are `SvgCheckCircle` and `SvgCircleDotted`.
+  `get_icon_options` is the list, and it matches on the OBJECT the glyph
+  depicts, not the action.
+
+Same shape as the `fields`-projection and `groupId` traps already recorded: a
+plausible value written into a key backed by a fixed registry is accepted,
+stored, and ignored. **Resolve every token, icon and enum from its own tool.**
+
+### `visibility` takes a condition object, never a binding
+
+`update_blocks` refuses `visibility.value` as a path (it wants exactly
+`visibility`), and then refuses a `{{ }}` expression as its value:
+`visibility.value must be true, false, or 'conditions'`. A data-driven
+show/hide is:
+
+```json
+"visibility": { "value": "conditions", "conditions": { "type": "filter",
+  "payload": { "operator": "AND", "filters": [
+    { "property": "{{ e_<dsId>['data']['total'] }}",
+      "filter": { "operator": "EQUAL", "value": "0" } } ] } } }
+```
+
+`filter.value` is always TEXT whatever the operator wants — `"0"`, not `0`.
+Note `create_block` DOES accept `visibility.value` as a prop path while
+`update_blocks` does not; the two verbs disagree, and only the update refuses.

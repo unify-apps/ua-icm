@@ -1,0 +1,16 @@
+{
+  "id": "Currency",
+  "name": "Currency",
+  "pluralName": "Currencies",
+  "description": "A currency the product can pay in. Every money field in ICM sits beside a lookup to this object rather than a loose three-letter string, so a typo ('inr') cannot silently create a second currency that sums separately. Rates do NOT live here - see FxRate, because a rate is a fact about a currency AND a period, not about a currency alone.",
+  "nameField": "name",
+  "uniqueKeyFields": ["code"],
+  "properties": {
+    "code":       { "type": "string",  "required": true, "uniqueKey": true, "searchable": true, "title": "ISO Code" },
+    "name":       { "type": "string",  "required": true, "searchable": true },
+    "symbol":     { "type": "string" },
+    "minorUnits": { "type": "integer", "title": "Minor Units" },
+    "isBase":     { "type": "boolean", "title": "Is Base Currency" },
+    "active":     { "type": "boolean" }
+  }
+}

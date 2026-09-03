@@ -1,0 +1,953 @@
+{
+  "appsUsed": [],
+  "createdTime": 1788381817666,
+  "deleted": false,
+  "deployedVersion": 2,
+  "deploymentState": {
+    "deployedAt": 1788419527747,
+    "deployedBy": 22816,
+    "deployedDefinitionId": "6a991dc72ada0c631070043f",
+    "deploymentNotes": "Rename to ICM | List Positions; result array seats -> positions. Vocabulary aligned with the Position object and the Ledger prototype. Approved by Sarthak Ray in session 2026-09-03. 22/22 suite green, validate + lint clean.",
+    "status": "DEPLOYED",
+    "version": 2,
+    "workflowVersion": 2
+  },
+  "description": "A paged, searchable list of positions, optionally with who occupies each one as of a date - resolved in BULK so a page never makes one call per row. Spec: docs/automations/list-positions.md",
+  "edges": [
+    {
+      "fromNodeId": "n_sTaRt",
+      "id": "next@n_sTaRt@n_Norm",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Norm",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Norm",
+      "id": "next@n_Norm@n_FtPos",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtPos",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtPos",
+      "id": "next@n_FtPos@n_Ids",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Ids",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Ids",
+      "id": "next@n_Ids@n_FtAsg",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtAsg",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtAsg",
+      "id": "next@n_FtAsg@n_PayIds",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_PayIds",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_PayIds",
+      "id": "next@n_PayIds@n_FtPay",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtPay",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtPay",
+      "id": "next@n_FtPay@n_Fold",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Fold",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Fold",
+      "id": "next@n_Fold@n_IfBad",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfBad",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "if@n_IfBad@n_StBad",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StBad",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "next@n_IfBad@n_StOk",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StOk",
+      "type": "next"
+    }
+  ],
+  "id": "6a988a792ada0c631038457a",
+  "lastModifiedBy": 22816,
+  "lastPlatformUpdateBy": 22816,
+  "lastPlatformUpdateOn": 1788419527748,
+  "lcName": "icm | list positions",
+  "modifiedTime": 1788419527748,
+  "name": "ICM | List Positions",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_sTaRt",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "success",
+            "message",
+            "total",
+            "positions"
+          ],
+          "properties": {
+            "status": {
+              "type": "string",
+              "title": "Status"
+            },
+            "success": {
+              "type": "boolean",
+              "title": "Success"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            },
+            "asOfDate": {
+              "type": "string",
+              "title": "As Of Date"
+            },
+            "total": {
+              "type": "integer",
+              "title": "Total"
+            },
+            "hasMore": {
+              "type": "boolean",
+              "title": "Has More"
+            },
+            "offset": {
+              "type": "integer",
+              "title": "Offset"
+            },
+            "limit": {
+              "type": "integer",
+              "title": "Limit"
+            },
+            "occupancyResolved": {
+              "type": "boolean",
+              "title": "Occupancy Resolved"
+            },
+            "countsTruncated": {
+              "type": "boolean",
+              "title": "Counts Truncated"
+            },
+            "counts": {
+              "type": "object",
+              "title": "Counts",
+              "properties": {
+                "total": {
+                  "type": "integer",
+                  "title": "Total"
+                },
+                "occupied": {
+                  "type": "integer",
+                  "title": "Occupied"
+                },
+                "vacant": {
+                  "type": "integer",
+                  "title": "Vacant"
+                },
+                "conflict": {
+                  "type": "integer",
+                  "title": "Conflict"
+                }
+              }
+            },
+            "positions": {
+              "type": "array",
+              "title": "Positions",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "positionId": {
+                    "type": "string",
+                    "title": "Position Id"
+                  },
+                  "positionCode": {
+                    "type": "string",
+                    "title": "Position Code"
+                  },
+                  "name": {
+                    "type": "string",
+                    "title": "Name"
+                  },
+                  "active": {
+                    "type": "boolean",
+                    "title": "Active"
+                  },
+                  "occupancy": {
+                    "type": "string",
+                    "title": "Occupancy"
+                  },
+                  "payeeId": {
+                    "type": "string",
+                    "title": "Payee Id"
+                  },
+                  "employeeId": {
+                    "type": "string",
+                    "title": "Employee Id"
+                  },
+                  "payeeName": {
+                    "type": "string",
+                    "title": "Payee Name"
+                  },
+                  "matchCount": {
+                    "type": "integer",
+                    "title": "Match Count"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "search": {
+              "type": "string",
+              "title": "Search"
+            },
+            "asOfDate": {
+              "type": "string",
+              "title": "As Of Date"
+            },
+            "limit": {
+              "type": "string",
+              "title": "Limit"
+            },
+            "offset": {
+              "type": "string",
+              "title": "Offset"
+            },
+            "includeOccupancy": {
+              "type": "string",
+              "title": "Include Occupancy"
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Norm",
+      "index": 2,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "valid": {
+              "type": "boolean",
+              "title": "Valid"
+            },
+            "reason": {
+              "type": "string",
+              "title": "Reason"
+            },
+            "asOfEpoch": {
+              "type": "integer",
+              "title": "As Of Epoch"
+            },
+            "asOfDay": {
+              "type": "string",
+              "title": "As Of Day"
+            },
+            "pageLimit": {
+              "type": "integer",
+              "title": "Page Limit"
+            },
+            "pageOffset": {
+              "type": "integer",
+              "title": "Page Offset"
+            },
+            "wantOccupancy": {
+              "type": "boolean",
+              "title": "Want Occupancy"
+            },
+            "filter": {
+              "type": "object",
+              "title": "Filter"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "search": {
+              "type": "string",
+              "title": "Search"
+            },
+            "asOfDate": {
+              "type": "string",
+              "title": "As Of Date"
+            },
+            "limit": {
+              "type": "string",
+              "title": "Limit"
+            },
+            "offset": {
+              "type": "string",
+              "title": "Offset"
+            },
+            "includeOccupancy": {
+              "type": "string",
+              "title": "Include Occupancy"
+            }
+          }
+        },
+        "code": "// Every default is applied HERE, never assumed from the caller. Real callers\n// send \"\" for what they did not fill, so \"\" is the value each branch is built\n// around rather than an edge case.\ndef s   = (search == null) ? '' : search.toString().trim()\ndef raw = (asOfDate == null) ? '' : asOfDate.toString().trim()\ndef lim = (limit == null) ? '' : limit.toString().trim()\ndef off = (offset == null) ? '' : offset.toString().trim()\ndef occ = (includeOccupancy == null) ? '' : includeOccupancy.toString().trim()\n\nboolean valid = true\nString reason = ''\nlong epoch = 0L\nString day = ''\n\nif (raw.isEmpty()) {\n    // default: TODAY, UTC - and it is echoed back so a caller in another\n    // timezone always knows which day it actually got\n    def d = java.time.LocalDate.now(java.time.ZoneOffset.UTC)\n    epoch = d.atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli()\n    day = d.toString()\n} else if (raw ==~ /^\\d{4}-\\d{2}-\\d{2}$/) {\n    try {\n        def d = java.time.LocalDate.parse(raw)\n        epoch = d.atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli()\n        day = raw\n    } catch (Exception e) { valid = false; reason = 'asOfDate is not a real calendar date: ' + raw }\n} else if (raw ==~ /^\\d{9,}$/) {\n    epoch = Long.parseLong(raw)\n    day = java.time.Instant.ofEpochMilli(epoch).atZone(java.time.ZoneOffset.UTC).toLocalDate().toString()\n} else {\n    valid = false; reason = 'asOfDate must be YYYY-MM-DD or epoch milliseconds, got: ' + raw\n}\n\nint pageLimit = 50\nif (!lim.isEmpty()) {\n    if (lim ==~ /^\\d+$/) { pageLimit = Integer.parseInt(lim) } else { valid = false; reason = 'limit must be a whole number, got: ' + lim }\n}\nif (pageLimit < 1) pageLimit = 1\nif (pageLimit > 200) pageLimit = 200\n\nint pageOffset = 0\nif (!off.isEmpty()) {\n    if (off ==~ /^\\d+$/) { pageOffset = Integer.parseInt(off) } else { valid = false; reason = 'offset must be a whole number, got: ' + off }\n}\n\nboolean wantOcc = occ.isEmpty() ? true : !(occ.equalsIgnoreCase('false'))\n\n// A nested OR group inside the AND. A filter node's STATIC config cannot\n// express this, but the runtime accepts the whole object built here and passed\n// as one pill (runtime-facts, proven 2026-08-24). Filtering after the fetch\n// instead would break `total` and paging.\ndef filters = []\nif (!valid) {\n    filters << [property: 'id', filter: [operator: 'EQUAL', value: '__invalid_input__']]\n} else if (!s.isEmpty()) {\n    filters << [operator: 'OR', filters: [\n        [property: 'properties.positionCode', filter: [operator: 'ICONTAINS', value: s]],\n        [property: 'properties.name',         filter: [operator: 'ICONTAINS', value: s]]]]\n}\nreturn [valid: valid, reason: reason, asOfEpoch: epoch, asOfDay: day,\n        pageLimit: pageLimit, pageOffset: pageOffset, wantOccupancy: wantOcc,\n        filter: [operator: 'AND', filters: filters]]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "search": "{{ n_sTaRt.outputs.search }}",
+          "asOfDate": "{{ n_sTaRt.outputs.asOfDate }}",
+          "limit": "{{ n_sTaRt.outputs.limit }}",
+          "offset": "{{ n_sTaRt.outputs.offset }}",
+          "includeOccupancy": "{{ n_sTaRt.outputs.includeOccupancy }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Apply the defaults and build the search filter",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtPos",
+      "index": 3,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.filter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Position",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}"
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.positionCode",
+          "properties.name",
+          "properties.active"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The page of positions the caller asked for",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Ids",
+      "index": 4,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "positionIds": {
+              "type": "array",
+              "title": "Position Ids",
+              "items": {
+                "type": "string"
+              }
+            },
+            "positionCount": {
+              "type": "integer",
+              "title": "Position Count"
+            },
+            "filter": {
+              "type": "object",
+              "title": "Filter"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rows": {
+              "type": "array",
+              "title": "Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "asOfEpoch": {
+              "type": "integer",
+              "title": "As Of Epoch"
+            }
+          }
+        },
+        "code": "// One IN filter for the whole page of positions - three fetches total, however many\n// positions came back. The '__none__' sentinel keeps an empty page a clean no-op\n// instead of an unfiltered scan.\ndef ids = []\nif (rows != null) rows.each { r -> ids << String.valueOf(r.id) }\ndef useIds = ids.isEmpty() ? ['__none__'] : ids\ndef filters = [\n    [property: 'properties.positionId',     filter: [operator: 'IN',  value: useIds]],\n    [property: 'properties.effectiveStart', filter: [operator: 'LTE', value: asOfEpoch]]]\nreturn [positionIds: useIds, positionCount: ids.size(),\n        filter: [operator: 'AND', filters: filters]]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "rows": "{{ n_FtPos.outputs.objects }}",
+          "asOfEpoch": "{{ n_Norm.outputs.result.asOfEpoch }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Collect this page's position ids for one bulk lookup",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtAsg",
+      "index": 5,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Ids.outputs.result.filter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "PayeePositionAssignment",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 2000,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.positionId",
+          "properties.payeeId",
+          "properties.effectiveStart",
+          "properties.effectiveEnd"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Every assignment on those positions that had already started",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_PayIds",
+      "index": 6,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "live": {
+              "type": "array",
+              "title": "Live",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "positionId": {
+                    "type": "string",
+                    "title": "Position Id"
+                  },
+                  "payeeId": {
+                    "type": "string",
+                    "title": "Payee Id"
+                  }
+                }
+              }
+            },
+            "payeeIds": {
+              "type": "array",
+              "title": "Payee Ids",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rows": {
+              "type": "array",
+              "title": "Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "asOfEpoch": {
+              "type": "integer",
+              "title": "As Of Epoch"
+            }
+          }
+        },
+        "code": "// Close the window in memory: missing, null and blank effectiveEnd all mean\n// \"still held\" - the platform stores an unset property as ABSENT, so all three\n// are checked rather than assumed equivalent.\ndef live = []\ndef ids = []\nlong asOf = Long.valueOf(String.valueOf(asOfEpoch))\nif (rows != null) {\n    rows.each { r ->\n        def p = r.properties\n        def en = p?.effectiveEnd\n        boolean open = (en == null) || en.toString().trim().isEmpty()\n        if (open || (Long.valueOf(String.valueOf(en)) >= asOf)) {\n            def pid = (p?.payeeId == null) ? '' : p.payeeId.toString().trim()\n            live << [positionId: String.valueOf(p?.positionId), payeeId: pid]\n            if (!pid.isEmpty() && !ids.contains(pid)) ids << pid\n        }\n    }\n}\nreturn [live: live, payeeIds: ids.isEmpty() ? ['__none__'] : ids]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "rows": "{{ n_FtAsg.outputs.objects }}",
+          "asOfEpoch": "{{ n_Norm.outputs.result.asOfEpoch }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Keep the assignments covering the date, and their payees",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtPay",
+      "index": 7,
+      "inputs": {
+        "triggerInputCondition": {
+          "operator": "AND",
+          "filters": [
+            {
+              "property": "id",
+              "filter": {
+                "operator": "IN",
+                "value": "{{ n_PayIds.outputs.result.payeeIds }}"
+              }
+            }
+          ]
+        },
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Payee",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 200,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.employeeId",
+          "properties.name"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Look up the occupants in one call",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Fold",
+      "index": 8,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "positions": {
+              "type": "array",
+              "title": "Positions",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "positionId": {
+                    "type": "string",
+                    "title": "Position Id"
+                  },
+                  "positionCode": {
+                    "type": "string",
+                    "title": "Position Code"
+                  },
+                  "name": {
+                    "type": "string",
+                    "title": "Name"
+                  },
+                  "active": {
+                    "type": "boolean",
+                    "title": "Active"
+                  },
+                  "occupancy": {
+                    "type": "string",
+                    "title": "Occupancy"
+                  },
+                  "payeeId": {
+                    "type": "string",
+                    "title": "Payee Id"
+                  },
+                  "employeeId": {
+                    "type": "string",
+                    "title": "Employee Id"
+                  },
+                  "payeeName": {
+                    "type": "string",
+                    "title": "Payee Name"
+                  },
+                  "matchCount": {
+                    "type": "integer",
+                    "title": "Match Count"
+                  }
+                }
+              }
+            },
+            "total": {
+              "type": "integer",
+              "title": "Total"
+            },
+            "hasMore": {
+              "type": "boolean",
+              "title": "Has More"
+            },
+            "counts": {
+              "type": "object",
+              "title": "Counts",
+              "properties": {
+                "total": {
+                  "type": "integer",
+                  "title": "Total"
+                },
+                "occupied": {
+                  "type": "integer",
+                  "title": "Occupied"
+                },
+                "vacant": {
+                  "type": "integer",
+                  "title": "Vacant"
+                },
+                "conflict": {
+                  "type": "integer",
+                  "title": "Conflict"
+                }
+              }
+            },
+            "countsTruncated": {
+              "type": "boolean",
+              "title": "Counts Truncated"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "posRows": {
+              "type": "array",
+              "title": "Pos Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "posTotal": {
+              "type": "integer",
+              "title": "Pos Total"
+            },
+            "asgRows": {
+              "type": "array",
+              "title": "Asg Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "asgTotal": {
+              "type": "integer",
+              "title": "Asg Total"
+            },
+            "live": {
+              "type": "array",
+              "title": "Live",
+              "items": {
+                "type": "object"
+              }
+            },
+            "payRows": {
+              "type": "array",
+              "title": "Pay Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "wantOccupancy": {
+              "type": "boolean",
+              "title": "Want Occupancy"
+            },
+            "asOfDay": {
+              "type": "string",
+              "title": "As Of Day"
+            },
+            "pageOffset": {
+              "type": "integer",
+              "title": "Page Offset"
+            }
+          }
+        },
+        "code": "// The same as-of rule as ICM | Resolve Position Occupant, folded in memory for a\n// whole page at once. Two assignments covering the date is a CONFLICT and never\n// a pick - a position has one occupant on a day, and guessing would pay somebody\n// wrongly.\ndef byPos = [:]\nif (live != null) live.each { l ->\n    def k = String.valueOf(l.positionId)\n    if (!byPos.containsKey(k)) byPos[k] = []\n    byPos[k] << l\n}\ndef payById = [:]\nif (payRows != null) payRows.each { p -> payById[String.valueOf(p.id)] = p.properties }\n\nint occupied = 0, vacant = 0, conflict = 0\ndef positions = []\nif (posRows != null) posRows.each { r ->\n    def p = r.properties\n    def position = [positionId: String.valueOf(r.id),\n                positionCode: p?.positionCode ?: '',\n                name: p?.name ?: '',\n                // a boolean never set is MISSING, not false - treat absent as active\n                active: (p?.active == null) ? true : (p.active as boolean),\n                occupancy: 'UNKNOWN', payeeId: '', employeeId: '', payeeName: '', matchCount: 0]\n    if (wantOccupancy) {\n        def hits = byPos[String.valueOf(r.id)] ?: []\n        position.matchCount = hits.size()\n        if (hits.size() == 0)      { position.occupancy = 'VACANT';   vacant++ }\n        else if (hits.size() > 1)  { position.occupancy = 'CONFLICT'; conflict++ }\n        else {\n            position.occupancy = 'OCCUPIED'; occupied++\n            position.payeeId = String.valueOf(hits[0].payeeId)\n            def pay = payById[position.payeeId]\n            position.employeeId = (pay == null) ? '' : (pay.employeeId ?: '')\n            position.payeeName  = (pay == null) ? '' : (pay.name ?: '')\n        }\n    }\n    positions << position\n}\n\nint total = (posTotal == null) ? positions.size() : Integer.valueOf(String.valueOf(posTotal))\nint got   = (asgRows == null) ? 0 : asgRows.size()\nint asgTot = (asgTotal == null) ? got : Integer.valueOf(String.valueOf(asgTotal))\n\nreturn [positions: positions,\n        total: total,\n        hasMore: (pageOffset + positions.size()) < total,\n        counts: [total: positions.size(), occupied: occupied, vacant: vacant, conflict: conflict],\n        countsTruncated: got < asgTot,\n        message: wantOccupancy\n            ? (positions.size() + ' position(s) on this page, as of ' + String.valueOf(asOfDay))\n            : (positions.size() + ' position(s) on this page; occupancy not resolved')]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "posRows": "{{ n_FtPos.outputs.objects }}",
+          "posTotal": "{{ n_FtPos.outputs.total }}",
+          "asgRows": "{{ n_FtAsg.outputs.objects }}",
+          "asgTotal": "{{ n_FtAsg.outputs.total }}",
+          "live": "{{ n_PayIds.outputs.result.live }}",
+          "payRows": "{{ n_FtPay.outputs.objects }}",
+          "wantOccupancy": "{{ n_Norm.outputs.result.wantOccupancy }}",
+          "asOfDay": "{{ n_Norm.outputs.result.asOfDay }}",
+          "pageOffset": "{{ n_Norm.outputs.result.pageOffset }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Resolve every position's occupant for this page at once",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_IfBad",
+      "index": 9,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Norm.outputs.result.valid }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": false
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Was the request itself unusable?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@y",
+      "id": "n_StBad",
+      "index": 10,
+      "inputs": {
+        "result": {
+          "asOfDate": "{{ n_Norm.outputs.result.asOfDay }}",
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "status": "INVALID_INPUT",
+          "success": false,
+          "message": "{{ n_Norm.outputs.result.reason }}",
+          "total": 0,
+          "hasMore": false,
+          "occupancyResolved": false,
+          "countsTruncated": false,
+          "counts": {
+            "total": 0,
+            "occupied": 0,
+            "vacant": 0,
+            "conflict": 0
+          },
+          "positions": []
+        }
+      },
+      "skip": false,
+      "subTitle": "Caller sent an unparseable date or page number",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_StOk",
+      "index": 11,
+      "inputs": {
+        "result": {
+          "asOfDate": "{{ n_Norm.outputs.result.asOfDay }}",
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "status": "OK",
+          "success": true,
+          "message": "{{ n_Fold.outputs.result.message }}",
+          "total": "{{ n_Fold.outputs.result.total }}",
+          "hasMore": "{{ n_Fold.outputs.result.hasMore }}",
+          "occupancyResolved": "{{ n_Norm.outputs.result.wantOccupancy }}",
+          "countsTruncated": "{{ n_Fold.outputs.result.countsTruncated }}",
+          "counts": "{{ n_Fold.outputs.result.counts }}",
+          "positions": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Fold.outputs.result.positions }}",
+            "items": "{{ n_Fold.outputs.result.positions[0] }}"
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "The page of positions, with each one's occupant",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 22816,
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 2
+}

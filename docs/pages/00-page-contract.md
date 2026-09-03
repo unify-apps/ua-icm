@@ -14,8 +14,21 @@ only record of what it depends on.
 
 ## How a page actually gets built
 
-Pages are built in a Claude Code session opened **in the devkit folder**, not
-here. The three commands that matter:
+**Pages are built HERE** (changed 2026-09-03 — previously this said a second
+Claude Code session had to be opened in the devkit folder). `scripts/page.mjs`
+runs the devkit's own bin scripts with the devkit as its working directory, so
+the snapshot, restore and trace guarantees are exactly the devkit's — nothing is
+reimplemented or forked — but the page work happens in the same session, and the
+same context, as the automations and specs it depends on.
+
+The devkit clone is located by `pages.devkitDir` in `kit.config.json` (or
+`UA_DEVKIT_DIR`). `node scripts/page.mjs up` starts the tool server and writes
+the `.mcp.json` that hands the 35 page-builder tools to Claude Code; that file
+carries a live platform session cookie and is git-ignored. **Claude Code reads
+`.mcp.json` at startup**, so a session that was already open when it was written
+does not have the tools — restart it.
+
+The commands that matter, all of them running here:
 
 | command | what it does |
 |---|---|
@@ -29,13 +42,15 @@ no small way back — so `/start` is not optional.
 
 ### The rule that keeps this repo honest
 
-**The page spec in this folder is written or updated BEFORE `/done`.** The build
-happens in the devkit; the record of what the page depends on lives here, and
-nowhere else. Treat it exactly like the automation rule that the spec updates in
-the same commit as the build — same discipline, two repos.
+**The page spec in this folder is written or updated BEFORE `/done`.** `/done`
+enforces the order: the spec first, then the session record, then the
+regenerated map. The session TRANSCRIPT lives in the devkit; the record of what
+the page DEPENDS ON lives here, and nowhere else — nothing on the platform
+records that a page calls a callable.
 
-Setup for the devkit lives in its own README. One clone serves one platform;
-ours is bound to **orbit** on port 3002.
+`/page-status` answers "is this wired up, and what session am I in" — run it
+first when anything looks wrong. Setup for the devkit clone lives in its own
+README. One clone serves one platform; ours is bound to **orbit** on port 3002.
 
 ## A page is a caller, and that is the whole point of specifying it
 

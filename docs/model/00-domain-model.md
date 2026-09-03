@@ -1,48 +1,151 @@
-# ICM domain model — proposed
+# ICM domain model
 
-**Status: PROPOSAL, not yet built.** Nothing here has been read off the
-platform. This is the model to argue about with the product team and then
-create; once objects exist, `node scripts/ua.mjs snap-types --tag icm` makes
-`snapshots/orbit/entity-types/` the source of truth and this file becomes the
-narrative that explains it. Where the two disagree, the snapshot wins and this
-file is the bug.
+**Status: PART BUILT, part proposal — and the two are marked.** Nine objects now
+exist on orbit (2026-09-03); `snapshots/orbit/entity-types/` is their truth and
+`objects/*.json` are the specs that created them. Everything else here is still a
+proposal to argue about with the product team. Where this file and a snapshot
+disagree, **the snapshot is right and this file is the bug**.
 
-Naming convention: every object type starts with the `icm` prefix from
-`kit.config.json` (`icmParticipant`, `icmPlan`, …), the way the Axis model uses
-`axisNoCode*`. `gen-types.mjs` keys off that prefix.
+| section | state |
+|---|---|
+| Calendar and money — `Period`, `Currency`, `FxRate` | **built** |
+| People and org — `Payee`, `Position`, `Title`, `PositionAttribute`, `PayeePositionAssignment`, `Territory` | **built** |
+| Plans, rates, transactions, credit, calculation, payout, disputes | **proposal** |
+
+## Naming and typing conventions
+
+Three rules, all of them decided rather than inherited, and all three visible in
+the built objects:
+
+1. **No prefix on object names.** `Payee`, not `icmPayee`. Membership in the
+   product is by the **`icm` tag**, never by name — a name-based convention
+   breaks the moment somebody creates `IcmPayee`.
+2. **camelCase fields.** `effectiveStart`, not `effective_start`.
+3. **Anything with a fixed vocabulary is a LOOKUP, not a string.** A currency is
+   a lookup to `Currency`; a territory is a lookup to `Territory`; a job title is
+   a lookup to `Title`. The reason is not tidiness: a credit rule matching
+   `"WEST"` against a position someone typed as `"West"` pays nobody, and it fails
+   silently. Status enums stay as strings because they are closed sets defined in
+   `glossary.md`, not user-extensible reference data.
+
+## The position is the unit, not the person
+
+**This is the load-bearing decision of the whole model** (taken 2026-09-03,
+adopting the shape of `UNIFYAPPS_BUILD_SPEC.md` over this file's original
+participant-centric draft).
+
+Credit attaches to a **`Position`** — a position — and the person who gets paid is
+resolved by asking *who held that position on the transaction's close date*. The
+alternative, crediting a `Payee` directly, looks simpler and is wrong: it makes
+"who owned the West territory in March" unanswerable the moment somebody is
+promoted, and it makes a mid-quarter territory move impossible to prorate.
+
+Almost nothing is stored *on* a position. A position's title, its territory, its
+occupant and its parent are each effective-dated in their own object, because a
+position outlives its occupants and history has to stay answerable as of any date:
+
+```
+Position ──< PositionAttribute        ⌛ title, territory, over a date range
+         ──< PayeePositionAssignment  ⌛ which Payee held it, over a date range
+                                      └──> Payee ──> Currency
+```
+
+⌛ marks an effective-dated object. **None of them can carry a unique index for
+the invariant that matters** — "no two rows for the same position with overlapping
+date ranges" is not expressible in Mongo. So overlap is an automation guard with
+its own status and its own regression case, and `ICM | Resolve Position Occupant`
+returns `AMBIGUOUS` rather than picking one when it finds two.
 
 ## The one-paragraph version
 
 Money flows in one direction, and every object below sits somewhere on that
 line: a **transaction** (a closed deal) is **credited** to one or more
-**participants** by a credit rule; a **calculation run** reads those credits
-against the participant's **plan** for a **period**, measures attainment
-against a **quota**, applies a **rate table**, and writes **earnings**;
-earnings roll into a **payout**, which is approved and paid, and appears to the
-rep as a **statement** they can **dispute**. Everything else — draws,
-adjustments, clawbacks — is a correction applied at a named point on that line.
+**positions** by a credit rule; each credit resolves to the **payee** who held
+that position on the close date; a **calculation run** reads those credits against
+the position's **plan** for a **period**, measures attainment against a **quota**,
+applies a **rate table**, and writes **earnings**; earnings roll into a
+**payout**, which is approved and paid, and appears to the rep as a
+**statement** they can **dispute**. Everything else — draws, adjustments,
+clawbacks — is a correction applied at a named point on that line.
 
 ```
-icmTransaction ──credit rule──> icmCredit ──┐
-                                            ├──> icmCalculationRun ──> icmEarning ──> icmPayout ──> icmStatement
-icmPlanAssignment ─> icmPlan ─> icmPlanComponent ─> icmRateTable ──┘         ▲              │
-icmQuota ───────────────────────────────────────────────────────────────────┘              └──> icmDispute
+Transaction ──credit rule──> Credit ──┐   (credit lands on a POSITION)
+                                      │
+Position ⌛─> PayeePositionAssignment ─┴─> Payee ──> Currency
+   │                                                    ▲
+   └─⌛ PositionAttribute ─> Title, Territory            │
+                                                        │
+PlanAssignment ─> Plan ─> PlanComponent ─> RateTable ────┤
+Quota ───────────────────────────────────────────────────┤
+                                                         ▼
+                    CalculationRun ──> Earning ──> Payout ──> Statement ──> Dispute
+                                                     ▲
+                                          Period ────┘  (state machine: the audit boundary)
 ```
 
 ## Core objects
 
-### People and org
+### People and org — **BUILT 2026-09-03**
 
 | object | purpose | key fields | uniqueness |
 |---|---|---|---|
-| `icmParticipant` | a payee. The bridge from a platform user to comp | `userId` (FK USER), `employeeId`, `managerId` (self FK), `hireDate`, `terminationDate`, `currency`, `status` | `employeeId` UNIQUE |
-| `icmPosition` | the role a participant holds; drives plan eligibility | `name`, `level`, `defaultPlanId` (FK plan) | `name` UNIQUE |
-| `icmHierarchy` | manager rollup used for rollup credit, kept as its own object so it can be effective-dated independently of `managerId` | `participantId`, `parentParticipantId`, `effectiveStart`, `effectiveEnd` | none (a junction) |
+| `Payee` | a person who can be paid. The bridge from a platform user to comp | `employeeId`, `name`, `email`, `userId` (FK USER), `currencyId` (FK Currency), `hireDate`, `terminationDate`, `status` | `employeeId` UNIQUE |
+| `Position` | a JOB SEAT — the unit that gets credited and quota'd | `positionCode`, `name`, `active` | `positionCode` UNIQUE |
+| `Title` | a job title a position can carry | `titleCode`, `name` | `titleCode` UNIQUE |
+| `Territory` | a named sales territory a position can carry | `territoryCode`, `name`, `active` | `territoryCode` UNIQUE |
+| `PositionAttribute` ⌛ | what a position WAS over a date range: its title and territory | `positionId`, `titleId`, `territoryId`, `effectiveStart`, `effectiveEnd` | none — overlap is a *rule* |
+| `PayeePositionAssignment` ⌛ | who held which position over which date range | `payeeId`, `positionId`, `effectiveStart`, `effectiveEnd`, `allocationPct` | none — overlap is a *rule* |
 
-`managerId` on the participant is "who they report to *today*". `icmHierarchy`
-is "who they reported to *on the day that deal closed*", which is what rollup
-credit must use. Keeping only the first makes retroactive recalculation
-impossible — a mistake that is very hard to undo once payouts exist.
+**Still to build here**: `PositionHierarchy` ⌛ (`positionId`,
+`parentPositionId`, effective-dated) — the manager rollup that rollup credit
+walks. It is deliberately its own effective-dated object rather than a
+`managerId` on `Payee`, for the same reason the position model exists: a payout for
+March must ask who the position reported to *in March*.
+
+**Debt CLEARED on the platform (observed 2026-09-03).** `Payee` carried a dead
+`currency` string beside its `currencyId` lookup, and `PositionAttribute` a dead
+`territory` string beside `territoryId` — both leftovers of
+retyping-by-addition, because the platform refuses to retype a property once an
+object holds records and `ua-schema.mjs` never retypes by design. `Payee.currency`
+was even marked `required`, so every write had to fill a field nothing read.
+
+A `snap-types --tag icm` refresh on 2026-09-03 shows **both properties are now
+gone** (`Payee` 9 fields → 8, `PositionAttribute` 7 → 6). That removal was NOT
+made from this kit — `ua-schema.mjs` only ever adds — so it was done in the
+builder by someone on the product team. The snapshots are the truth and they
+say the columns are gone.
+
+Two things still lag behind it, deliberately left rather than fixed in the
+rename commit: `tests/fixtures/positions.json` still sends `currency` on its
+four `Payee` records, which the platform now ignores, and its `_deadFieldNote`
+describes the old world. Both are harmless — the fixture family re-seeded and
+both suites went green with the field still being sent — and both should go the
+next time the family is touched. Recorded as question 14 in
+`notes/open-questions.md` so it is not lost.
+
+### Calendar and money — **BUILT 2026-09-03**
+
+| object | purpose | key fields | uniqueness |
+|---|---|---|---|
+| `Period` | one fiscal period | `name`, `periodType`, `startDate`, `endDate`, `status`, `parentPeriodId` | `name` UNIQUE |
+| `Currency` | a currency the product can pay in | `code`, `name`, `symbol`, `minorUnits`, `isBase`, `active` | `code` UNIQUE |
+| `FxRate` | the rate converting one currency to base FOR ONE PERIOD | `currencyId`, `periodId`, `rateToBase`, `source` | none — see below |
+
+**Why the rate is not a field on `Currency`.** A rate is a fact about a currency
+*and a point in time*. Stored on `Currency`, every finance update would silently
+rewrite history and March would recalculate at today's rate. `FxRate` needs a
+uniqueness guard on (`currencyId`, `periodId`) that Mongo can express as a
+compound key — that is not yet applied and is a gap, not a decision.
+
+`Period.status` is the product's most important state machine, because it is
+what makes the numbers trustworthy. See `docs/model/money-and-time.md`.
+
+**Amounts.** Every money field is `number` in storage and `BigDecimal` in code,
+coerced through one `dec()` helper at the boundary. This is not a style
+preference — a storage `number` returns a `Double` above ₹1 crore and a
+`BigDecimal` below it, so uncoerced arithmetic is exact or inexact depending on
+the data. Money never goes in an `integer` field. Evidence in
+`notes/runtime-facts.md`.
 
 ### Plans and rates
 

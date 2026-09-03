@@ -1,3 +1,5 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ICM Kit Orientation</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
@@ -220,7 +222,7 @@
         <div class="row"><div class="path">docs/automations/<em>backend specs</em></div><div class="what">One file per automation: what it takes in and returns in <b>every</b> outcome. <code>00-shared-contract.md</code> holds what they all inherit — written once, because a rule copied into ten specs drifts in ten places.</div></div>
         <div class="row"><div class="path">docs/pages/<em>screen specs</em></div><div class="what"><b>Load-bearing.</b> Nothing on the platform records that a page depends on an automation, so if the dependency is not written here it does not exist anywhere.</div></div>
         
-        <div class="row"><div class="path">docs/api/<em>contracts + curls</em></div><div class="what"><code>platform-endpoints.md</code> is every platform call we know, as curl, with provenance marked on each one.</div></div>
+        <div class="row"><div class="path">docs/api/<em>contracts + curls</em></div><div class="what"><code>platform-endpoints.md</code> is every platform call we know, as curl, with provenance marked on each one. <code>architecture.html</code> is the live dependency map.</div></div>
       </div>
 
       <div class="grp g-is">
@@ -243,13 +245,19 @@
         <div class="glabel">How we act — read the header comment of any script</div>
         <div class="row"><div class="path">scripts/ua.mjs<em>read-only</em></div><div class="what">Cannot change anything, by design. <code>whoami</code>, <code>search</code>, <code>fetch</code>, <code>snap</code>, <code>validate</code>, <code>inventory</code>, <code>drift</code>, <code>registry</code>.</div></div>
         <div class="row"><div class="path">scripts/testrun.mjs · regress.mjs<em>run it</em></div><div class="what">Run a draft and see every node's real output. These <b>execute against real data</b> — same care as a live run.</div></div>
+        <div class="row"><div class="path">scripts/ua-object.mjs · ua-schema.mjs<em>the data model</em></div><div class="what"><code>ua-object.mjs</code> CREATES an object type from a compact spec (<code>plan</code> shows the body without calling anything); <code>ua-schema.mjs</code> ADDS fields to one that exists. Neither ever retypes or deletes — <code>field-types.mjs</code> is the single shared definition of how a field spec becomes a platform property, so the two can't drift.</div></div>
+        <div class="row"><div class="path">scripts/ua-datasource.mjs<em>pages → automations</em></div><div class="what">CREATES the data source that lets a PAGE call a deployed automation — the bridge between the two halves of the product. Reach for it when a page needs data: the page-builder MCP tool <code>create_data_source</code> fails on orbit because it hardcodes an entity type this platform does not have, and the error blames permissions rather than naming the real cause. This script asks the platform which type exists and uses that. <code>plan</code> prints the body without calling anything.</div></div>
+        <div class="row"><div class="path">scripts/fixtures.mjs<em>test data</em></div><div class="what">Seeds and resets the loudly-named record families the suites run against (<code>KITFIX-</code> prefix). <b>The reason real pay data is never touched.</b></div></div>
+        <div class="row"><div class="path">scripts/page.mjs<em>page work, from here</em></div><div class="what">Drives the <code>ua-agent-devkit</code> clone so pages get built <b>in this repo, in one conversation</b> — <code>up</code> starts the tool server and wires <code>.mcp.json</code>, then <code>/start</code>, <code>/restore</code> and <code>/done</code> do the rest. <b><code>/restore</code> is the only per-page undo that exists</b>, so <code>/start</code> is not optional.</div></div>
+        <div class="row"><div class="path">scripts/graph.mjs<em>the picture</em></div><div class="what">Regenerates <code>docs/architecture.html</code> — the interactive dependency graph — from snapshots, specs and suites. Nothing about it is hand-drawn, so it cannot drift.</div></div>
+        <div class="row"><div class="path">scripts/check-docs.mjs<em>the doc gate</em></div><div class="what">Fails when a script or a docs area exists that this page does not describe. It can't write the prose; it can only stop the gap being quiet.</div></div>
         <div class="row"><div class="path">scripts/deploy.mjs<em>the gate</em></div><div class="what">The only sanctioned deploy. Four mechanical checks, then it <b>verifies by reading the deployment state back</b> — a 200 is never treated as proof.</div></div>
       </div>
 
       <div class="grp g-intend">
         <div class="glabel">Two root files you'll touch constantly</div>
         <div class="row"><div class="path">kit.config.json<em>the identifiers</em></div><div class="what">App id, tags, object prefix — <b>the only place they live.</b> A wrong app id does not error; it silently matches nothing.</div></div>
-        <div class="row"><div class="path">docs/architecture.md<em>the living map</em></div><div class="what">Every asset with its id and status, what calls what, and <b>Now / Next / Done</b> — one diagram, updated in the same commit as the work.</div></div>
+        <div class="row"><div class="path">docs/architecture.html<em>the living map</em></div><div class="what">An interactive graph of every asset — drag to pan, hover to trace dependencies, click for detail — plus a progress bar per layer. <b>Generated from the repo, never drawn</b>, and regenerated at the end of every session.</div></div>
       </div>
     </div>
   </section>
@@ -276,8 +284,9 @@
         <div class="body">
           <div class="builds">Application pages</div>
           <div class="cmd">bin/serve start · :3002</div>
-          <p>Pages are built in a Claude Code session opened <b>in the <code>ua-agent-devkit</code> folder</b>, using 35 typed tools that refuse a bad write.</p>
+          <p>Pages are built <b>here, in one conversation</b>: <code>scripts/page.mjs up</code> wires this repo to the devkit's 35 typed tools, which refuse a bad write.</p>
           <p><code>/start</code> snapshots the page, <code>/done</code> records the session, <code>/restore</code> undoes it. <b><code>/restore</code> is the only per-page undo that exists</b> — the platform's own history restores the whole app.</p>
+          <p><b>The tools come across; the brief does not.</b> The devkit's <code>agent/instructions.md</code> is the platform agent's own configuration — the app model, the knowledge-sheet rules, and where a look can live — and it auto-loads only when Claude Code runs in that directory. That is why a page built from here comes out plainer and more guess-prone. <code>/start</code> now reads it as step 3, and the <b><code>page-design</code> skill</b> is the half about how a screen READS: it loads the <code>frontend-design</code> craft skill, the brief's three rungs (block tokens → conditional values → custom CSS), and the traps this repo has already paid for. Reach for it before the first visual decision, not after the screen exists.</p>
         </div>
       </div>
     </div>
@@ -326,7 +335,7 @@
     <div class="sec-head">
       <div class="eyebrow">Current state · 2026-09-02</div>
       <h2>What exists today</h2>
-      <p>The platform was greenfield: zero ICM automations and zero ICM objects before this. The live map — every asset, what it calls, and what is still planned — is <code>docs/architecture.md</code>.</p>
+      <p>The platform was greenfield: zero ICM automations and zero ICM objects before this. The live map — every asset, what it calls, and what is still planned — is <code>docs/architecture.html</code>.</p>
     </div>
     <div class="tablewrap">
       <table>
