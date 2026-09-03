@@ -22,7 +22,9 @@
     "_prefixNote": "Object names carry NO product prefix (Period, not icmPeriod). Membership is by the tags above, never by name \u2014 gen-types.mjs filters on tags."
   },
   "pages": {
-    "applicationId": "sales-commission-management"
+    "applicationId": "sales-commission-management",
+    "devkitDir": "../ua-agent-devkit",
+    "_devkitNote": "Page work runs HERE via scripts/page.mjs, which drives this devkit clone. Override with UA_DEVKIT_DIR."
   },
   "_notes": [
     "This file is the ONLY place product-specific identifiers live. Scripts read it",
