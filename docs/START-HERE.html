@@ -257,7 +257,7 @@
       <div class="grp g-intend">
         <div class="glabel">Two root files you'll touch constantly</div>
         <div class="row"><div class="path">kit.config.json<em>the identifiers</em></div><div class="what">App id, tags, object prefix — <b>the only place they live.</b> A wrong app id does not error; it silently matches nothing.</div></div>
-        <div class="row"><div class="path">docs/architecture.html<em>the living map</em></div><div class="what">An interactive graph of every asset — drag to pan, hover to trace dependencies, click for detail — plus a progress bar per layer. <b>Generated from the repo, never drawn</b>, and regenerated at the end of every session.</div></div>
+        <div class="row"><div class="path">docs/architecture.html<em>the living map</em></div><div class="what">An interactive graph of every asset — drag to pan, hover to trace dependencies, click for detail — plus a progress bar per layer. <b>Generated from the repo, never drawn.</b> Regenerate it with <code>node scripts/graph.mjs</code> after changing an automation, a page spec or an object; <code>--check</code> fails when it is stale. It is deliberately NOT rebuilt automatically — that only ever dirtied the file with a new timestamp.</div></div>
       </div>
     </div>
   </section>

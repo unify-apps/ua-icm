@@ -25,9 +25,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd \"$CLAUDE_PROJECT_DIR\" || exit 0; graphify update . >/dev/null 2>&1; node scripts/graph.mjs >/dev/null 2>&1; S=$(node scripts/check-docs.mjs --warn 2>&1 | head -1); jq -n --arg s \"$S\" '{systemMessage: (\"session end \u00b7 graph regenerated \u00b7 \" + $s)}'",
-            "timeout": 120,
-            "statusMessage": "Refreshing graph and checking docs"
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" || exit 0; S=$(node scripts/check-docs.mjs --warn 2>&1 | head -1); jq -n --arg s \"$S\" '{systemMessage: (\"session end \u00b7 \" + $s)}'",
+            "timeout": 30,
+            "statusMessage": "Checking the docs describe the repo"
           }
         ]
       }
