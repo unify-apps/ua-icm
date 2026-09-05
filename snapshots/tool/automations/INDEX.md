@@ -9,3 +9,4 @@ Rebuilt automatically by `scripts/ua.mjs snap`. One JSON file per automation, na
 | 6a9bcafbc4f2d5527e3c324c | ICM | List Positions | 13 | 2026-09-05 |
 | 6a9bef655f22d93ee6e9b03a | ICM | Manage Titles | 20 | 2026-09-05 |
 | 6a9bfdeac4f2d5527e4c9a63 | ICM | Create Position | 16 | 2026-09-05 |
+| 6a9c001e723e7964da56efee | ICM | List Payees | 7 | 2026-09-05 |

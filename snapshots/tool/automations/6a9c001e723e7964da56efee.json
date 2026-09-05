@@ -1,0 +1,458 @@
+{
+  "appsUsed": [],
+  "createdTime": 1788608542212,
+  "deleted": false,
+  "description": "A paged, searchable list of positions, optionally with who occupies each one as of a date - resolved in BULK so a page never makes one call per row. Spec: docs/automations/list-positions.md",
+  "edges": [
+    {
+      "fromNodeId": "n_sTaRt",
+      "id": "next@n_sTaRt@n_Norm",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Norm",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Norm",
+      "id": "next@n_Norm@n_Ft",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Ft",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Ft",
+      "id": "next@n_Ft@n_Shape",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Shape",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Shape",
+      "id": "next@n_Shape@n_IfBad",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfBad",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "if@n_IfBad@n_StBad",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StBad",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "next@n_IfBad@n_StOk",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StOk",
+      "type": "next"
+    }
+  ],
+  "id": "6a9c001e723e7964da56efee",
+  "lastModifiedBy": 435691,
+  "lastPlatformUpdateBy": 435691,
+  "lastPlatformUpdateOn": 1788608590594,
+  "lcName": "icm | list payees",
+  "modifiedTime": 1788608590594,
+  "name": "ICM | List Payees",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_sTaRt",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "success",
+            "message",
+            "total",
+            "payees"
+          ],
+          "properties": {
+            "status": {
+              "type": "string"
+            },
+            "success": {
+              "type": "boolean"
+            },
+            "message": {
+              "type": "string"
+            },
+            "total": {
+              "type": "integer"
+            },
+            "hasMore": {
+              "type": "boolean"
+            },
+            "offset": {
+              "type": "integer"
+            },
+            "limit": {
+              "type": "integer"
+            },
+            "payees": {
+              "type": "array",
+              "title": "Payees",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "payeeId": {
+                    "type": "string"
+                  },
+                  "employeeId": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "search": {
+              "type": "string",
+              "title": "Search"
+            },
+            "limit": {
+              "type": "string",
+              "title": "Limit"
+            },
+            "offset": {
+              "type": "string",
+              "title": "Offset"
+            },
+            "activeOnly": {
+              "type": "string",
+              "title": "Active Only"
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Norm",
+      "index": 2,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "valid": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "filter": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "pageLimit": {
+              "type": "integer"
+            },
+            "pageOffset": {
+              "type": "integer"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "search": {
+              "type": "string"
+            },
+            "limit": {
+              "type": "string"
+            },
+            "offset": {
+              "type": "string"
+            },
+            "activeOnly": {
+              "type": "string"
+            }
+          }
+        },
+        "compile_static": false,
+        "code": "\n// Same shape as ICM | List Positions: \"\" is what real callers send, so every\n// default is applied here rather than assumed.\ndef t = { v -> v == null ? '' : v.toString().trim() }\ndef s = t(search); def lim = t(limit); def off = t(offset); def act = t(activeOnly)\n\nboolean valid = true; String reason = ''\nint pageLimit = 50\nif (!lim.isEmpty()) { if (lim ==~ /^\\d+$/) { pageLimit = Integer.parseInt(lim) } else { valid=false; reason='limit must be a whole number, got: ' + lim } }\nif (pageLimit < 1) pageLimit = 1\nif (pageLimit > 200) pageLimit = 200\nint pageOffset = 0\nif (!off.isEmpty()) { if (off ==~ /^\\d+$/) { pageOffset = Integer.parseInt(off) } else { valid=false; reason='offset must be a whole number, got: ' + off } }\n\n// search narrows SERVER-side across the two things a human types: the name and\n// the employee id. ICONTAINS so case never matters.\ndef leaves = []\nif (!s.isEmpty()) leaves << [operator:'OR', filters:[\n   [property:'properties.name',       filter:[operator:'ICONTAINS', value:s]],\n   [property:'properties.employeeId', filter:[operator:'ICONTAINS', value:s]]]]\n// a payee who has left should not be offered as the occupant of a NEW seat\nif (act.equalsIgnoreCase('true')) leaves << [property:'properties.status', filter:[operator:'NOT_EQUAL', value:'TERMINATED']]\ndef filter = leaves.isEmpty() ? [:] : [operator:'AND', filters: leaves]\nreturn [valid: valid, reason: reason, filter: filter, pageLimit: pageLimit, pageOffset: pageOffset]",
+        "captureStdOutput": false,
+        "parameters": {
+          "search": "{{ n_sTaRt.outputs.search }}",
+          "limit": "{{ n_sTaRt.outputs.limit }}",
+          "offset": "{{ n_sTaRt.outputs.offset }}",
+          "activeOnly": "{{ n_sTaRt.outputs.activeOnly }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Apply the defaults and build the search filter",
+      "title": "Execute Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Ft",
+      "index": 3,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.filter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Payee",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}"
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.employeeId",
+          "properties.name",
+          "properties.email",
+          "properties.status"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The page of payees the caller asked for",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Shape",
+      "index": 4,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "payees": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            "total": {
+              "type": "integer"
+            },
+            "hasMore": {
+              "type": "boolean"
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rows": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            "total": {
+              "type": "integer"
+            },
+            "pageOffset": {
+              "type": "integer"
+            }
+          }
+        },
+        "compile_static": false,
+        "code": "\ndef out = []\nif (rows != null) rows.each { r ->\n    def p = r.properties\n    out << [payeeId: String.valueOf(r.id),\n            employeeId: p?.employeeId ?: '',\n            name: p?.name ?: '',\n            email: p?.email ?: '',\n            status: p?.status ?: '']\n}\nint tot = (total == null) ? out.size() : Integer.valueOf(String.valueOf(total))\nreturn [payees: out, total: tot, hasMore: (pageOffset + out.size()) < tot,\n        message: out.size() + ' payee(s) on this page']",
+        "captureStdOutput": false,
+        "parameters": {
+          "rows": "{{ n_Ft.outputs.objects }}",
+          "total": "{{ n_Ft.outputs.total }}",
+          "pageOffset": "{{ n_Norm.outputs.result.pageOffset }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "One row per payee, only the fields a picker needs",
+      "title": "Execute Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_IfBad",
+      "index": 5,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Norm.outputs.result.valid }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": false
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Was the request itself unusable?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_StBad",
+      "index": 6,
+      "inputs": {
+        "result": {
+          "status": "INVALID_INPUT",
+          "success": false,
+          "message": "{{ n_Norm.outputs.result.reason }}",
+          "total": 0,
+          "payees": []
+        }
+      },
+      "skip": false,
+      "subTitle": "Caller sent an unusable limit or offset",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_StOk",
+      "index": 7,
+      "inputs": {
+        "result": {
+          "status": "OK",
+          "success": true,
+          "message": "{{ n_Shape.outputs.result.message }}",
+          "total": "{{ n_Shape.outputs.result.total }}",
+          "hasMore": "{{ n_Shape.outputs.result.hasMore }}",
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "payees": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Shape.outputs.result.payees }}",
+            "items": "{{ n_Shape.outputs.result.payees[0] }}"
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "The page of payees",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 435691,
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 1
+}

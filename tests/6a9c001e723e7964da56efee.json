@@ -1,0 +1,89 @@
+{
+  "name": "ICM | List Payees",
+  "fixtures": "tests/fixtures/positions.json - seed with: node scripts/fixtures.mjs seed positions",
+  "note": "Read-only: every case writes nothing and is idempotent. Search asserts against KITFIX- fixtures, so real payees can come and go without reddening it.",
+  "cases": [
+    {
+      "name": "OK - every input blank, the payload real callers actually send",
+      "payload": { "search": "", "limit": "", "offset": "", "activeOnly": "" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "success", "equals": true },
+        { "path": "limit", "equals": 50 },
+        { "path": "offset", "equals": 0 },
+        { "path": "payees", "type": "array", "minLen": 4 }
+      ]
+    },
+    {
+      "name": "OK - search by employee id narrows SERVER-side, and total reflects it",
+      "payload": { "search": "KITFIX-E003", "limit": "", "offset": "", "activeOnly": "" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "total", "equals": 1 },
+        { "path": "payees.0.employeeId", "equals": "KITFIX-E003" },
+        { "path": "payees.0.name", "equals": "KITFIX-Chandra Nair" },
+        { "path": "payees.0.payeeId", "type": "string", "minLen": 3 }
+      ]
+    },
+    {
+      "name": "OK - search matches a NAME in a different case (ICONTAINS is case-insensitive)",
+      "payload": { "search": "kitfix-chandra", "limit": "", "offset": "", "activeOnly": "" },
+      "checks": [
+        { "path": "total", "equals": 1 },
+        { "path": "payees.0.employeeId", "equals": "KITFIX-E003" }
+      ]
+    },
+    {
+      "name": "OK - search matches nothing: empty is a result, not an error",
+      "payload": { "search": "KITFIX-nobody-by-that-name", "limit": "", "offset": "", "activeOnly": "" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "total", "equals": 0 },
+        { "path": "payees", "type": "array", "maxLen": 0 }
+      ]
+    },
+    {
+      "name": "OK - activeOnly excludes a TERMINATED payee, who must not be offered a NEW seat",
+      "payload": { "search": "KITFIX-Deepa", "limit": "", "offset": "", "activeOnly": "true" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "total", "equals": 0 }
+      ]
+    },
+    {
+      "name": "OK - without activeOnly the same terminated payee IS returned",
+      "payload": { "search": "KITFIX-Deepa", "limit": "", "offset": "", "activeOnly": "" },
+      "checks": [
+        { "path": "total", "equals": 1 },
+        { "path": "payees.0.status", "equals": "TERMINATED" }
+      ]
+    },
+    {
+      "name": "OK - first page of two, hasMore is true",
+      "payload": { "search": "KITFIX-", "limit": "2", "offset": "0", "activeOnly": "" },
+      "checks": [
+        { "path": "payees", "type": "array", "maxLen": 2 },
+        { "path": "hasMore", "equals": true },
+        { "path": "limit", "equals": 2 }
+      ]
+    },
+    {
+      "name": "OK - limit is clamped to the 200 ceiling rather than trusted",
+      "payload": { "search": "", "limit": "5000", "offset": "", "activeOnly": "" },
+      "checks": [{ "path": "limit", "equals": 200 }]
+    },
+    {
+      "name": "INVALID_INPUT - limit is not a number",
+      "payload": { "search": "", "limit": "abc", "offset": "", "activeOnly": "" },
+      "checks": [
+        { "path": "status", "equals": "INVALID_INPUT" },
+        { "path": "success", "equals": false }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - offset is not a number",
+      "payload": { "search": "", "limit": "", "offset": "-3", "activeOnly": "" },
+      "checks": [{ "path": "status", "equals": "INVALID_INPUT" }]
+    }
+  ]
+}
