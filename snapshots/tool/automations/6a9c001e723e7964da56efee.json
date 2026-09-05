@@ -2,6 +2,16 @@
   "appsUsed": [],
   "createdTime": 1788608542212,
   "deleted": false,
+  "deployedVersion": 1,
+  "deploymentState": {
+    "deployedAt": 1788608783803,
+    "deployedBy": 435691,
+    "deployedDefinitionId": "6a9c010fc4f2d5527e4cdabf",
+    "deploymentNotes": "First deploy of ICM | List Payees, the Person picker behind the Positions screen's Create dialog. Suite 10/10 green on tool, validate and lint clean. Approved by krish.sharma in session 2026-09-05.",
+    "status": "DEPLOYED",
+    "version": 1,
+    "workflowVersion": 1
+  },
   "description": "A paged, searchable list of positions, optionally with who occupies each one as of a date - resolved in BULK so a page never makes one call per row. Spec: docs/automations/list-positions.md",
   "edges": [
     {
@@ -58,9 +68,9 @@
   "id": "6a9c001e723e7964da56efee",
   "lastModifiedBy": 435691,
   "lastPlatformUpdateBy": 435691,
-  "lastPlatformUpdateOn": 1788608590594,
+  "lastPlatformUpdateOn": 1788609137728,
   "lcName": "icm | list payees",
-  "modifiedTime": 1788608590594,
+  "modifiedTime": 1788609137728,
   "name": "ICM | List Payees",
   "nodes": [
     {
@@ -389,7 +399,7 @@
       "debug": false,
       "dirty": false,
       "fallbackMode": "STOP",
-      "groupId": "root_id-1",
+      "groupId": "n_IfBad@root_id-1@y",
       "id": "n_StBad",
       "index": 6,
       "inputs": {
@@ -415,7 +425,7 @@
       "debug": false,
       "dirty": false,
       "fallbackMode": "STOP",
-      "groupId": "root_id-1",
+      "groupId": "n_IfBad@root_id-1@n",
       "id": "n_StOk",
       "index": 7,
       "inputs": {
@@ -441,6 +451,7 @@
     }
   ],
   "ownerUserId": 435691,
+  "schemaReferences": [],
   "settings": {
     "enableNodeLevelLogging": true,
     "enableRunLogging": true,
@@ -454,5 +465,5 @@
   "tags": [
     "icm"
   ],
-  "version": 1
+  "version": 3
 }

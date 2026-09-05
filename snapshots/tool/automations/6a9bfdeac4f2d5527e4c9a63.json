@@ -2,6 +2,16 @@
   "appsUsed": [],
   "createdTime": 1788607978540,
   "deleted": false,
+  "deployedVersion": 1,
+  "deploymentState": {
+    "deployedAt": 1788608542063,
+    "deployedBy": 435691,
+    "deployedDefinitionId": "6a9c001d5f22d93ee6eb53c8",
+    "deploymentNotes": "First deploy of ICM | Create Position, the create callable behind the Positions screen's Create dialog. Suite 19/19 green on tool, validate and lint clean. Approved by krish.sharma in session 2026-09-05.",
+    "status": "DEPLOYED",
+    "version": 1,
+    "workflowVersion": 1
+  },
   "description": "A paged, searchable list of positions, optionally with who occupies each one as of a date - resolved in BULK so a page never makes one call per row. Spec: docs/automations/list-positions.md",
   "edges": [
     {
@@ -134,9 +144,9 @@
   "id": "6a9bfdeac4f2d5527e4c9a63",
   "lastModifiedBy": 435691,
   "lastPlatformUpdateBy": 435691,
-  "lastPlatformUpdateOn": 1788608174176,
+  "lastPlatformUpdateOn": 1788609137428,
   "lcName": "icm | create position",
-  "modifiedTime": 1788608174176,
+  "modifiedTime": 1788609137428,
   "name": "ICM | Create Position",
   "nodes": [
     {
@@ -372,7 +382,7 @@
       "debug": false,
       "dirty": false,
       "fallbackMode": "STOP",
-      "groupId": "root_id-1",
+      "groupId": "n_IfBad@root_id-1@y",
       "id": "n_StBad",
       "index": 4,
       "inputs": {
@@ -396,7 +406,7 @@
       "debug": false,
       "dirty": false,
       "fallbackMode": "STOP",
-      "groupId": "root_id-1",
+      "groupId": "n_IfBad@root_id-1@n",
       "id": "n_FtDup",
       "index": 5,
       "inputs": {
@@ -438,7 +448,7 @@
       "debug": false,
       "dirty": false,
       "fallbackMode": "STOP",
-      "groupId": "root_id-1",
+      "groupId": "n_IfBad@root_id-1@n",
       "id": "n_FtTitle",
       "index": 6,
       "inputs": {
@@ -480,7 +490,7 @@
       "debug": false,
       "dirty": false,
       "fallbackMode": "STOP",
-      "groupId": "root_id-1",
+      "groupId": "n_IfBad@root_id-1@n",
       "id": "n_FtPayee",
       "index": 7,
       "inputs": {
@@ -522,7 +532,7 @@
       "debug": false,
       "dirty": false,
       "fallbackMode": "STOP",
-      "groupId": "root_id-1",
+      "groupId": "n_IfBad@root_id-1@n",
       "id": "n_Chk",
       "index": 8,
       "inputs": {
@@ -597,7 +607,7 @@
       "debug": false,
       "dirty": false,
       "fallbackMode": "STOP",
-      "groupId": "root_id-1",
+      "groupId": "n_IfBad@root_id-1@n",
       "id": "n_IfChk",
       "index": 9,
       "inputs": {
@@ -626,7 +636,7 @@
       "debug": false,
       "dirty": false,
       "fallbackMode": "STOP",
-      "groupId": "root_id-1",
+      "groupId": "n_IfChk@n_IfBad@root_id-1@n@y",
       "id": "n_StChk",
       "index": 10,
       "inputs": {
@@ -651,7 +661,7 @@
       "debug": false,
       "dirty": false,
       "fallbackMode": "STOP",
-      "groupId": "root_id-1",
+      "groupId": "n_IfChk@n_IfBad@root_id-1@n@n",
       "id": "n_CrPos",
       "index": 11,
       "inputs": {
@@ -683,7 +693,7 @@
       "debug": false,
       "dirty": false,
       "fallbackMode": "STOP",
-      "groupId": "root_id-1",
+      "groupId": "n_IfChk@n_IfBad@root_id-1@n@n",
       "id": "n_CrAttr",
       "index": 12,
       "inputs": {
@@ -715,7 +725,7 @@
       "debug": false,
       "dirty": false,
       "fallbackMode": "STOP",
-      "groupId": "root_id-1",
+      "groupId": "n_IfChk@n_IfBad@root_id-1@n@n",
       "id": "n_IfAsg",
       "index": 13,
       "inputs": {
@@ -745,7 +755,7 @@
       "debug": false,
       "dirty": false,
       "fallbackMode": "STOP",
-      "groupId": "root_id-1",
+      "groupId": "n_IfAsg@n_IfChk@n_IfBad@root_id-1@n@n@y",
       "id": "n_CrAsg",
       "index": 14,
       "inputs": {
@@ -778,7 +788,7 @@
       "debug": false,
       "dirty": false,
       "fallbackMode": "STOP",
-      "groupId": "root_id-1",
+      "groupId": "n_IfAsg@n_IfChk@n_IfBad@root_id-1@n@n@y",
       "id": "n_StOkA",
       "index": 15,
       "inputs": {
@@ -807,7 +817,7 @@
       "debug": false,
       "dirty": false,
       "fallbackMode": "STOP",
-      "groupId": "root_id-1",
+      "groupId": "n_IfAsg@n_IfChk@n_IfBad@root_id-1@n@n@n",
       "id": "n_StOk",
       "index": 16,
       "inputs": {
@@ -828,6 +838,7 @@
     }
   ],
   "ownerUserId": 435691,
+  "schemaReferences": [],
   "settings": {
     "enableNodeLevelLogging": true,
     "enableRunLogging": true,
@@ -841,5 +852,5 @@
   "tags": [
     "icm"
   ],
-  "version": 1
+  "version": 4
 }

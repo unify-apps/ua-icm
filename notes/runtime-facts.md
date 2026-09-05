@@ -1215,3 +1215,48 @@ the output and it came back missing even on rows that should have read `100`, be
 field was never on the row to carry through. Adding an output field means checking the
 fetch that feeds it, and asserting a REAL VALUE in the suite rather than a type —
 `{ "type": "number" }` would have passed on nothing at all.
+
+## `groupId` is what the BUILDER renders from, and a flat graph loses nodes when opened (ICM, 2026-09-05)
+
+`IfElseNodeRuntime` picks a branch purely by EDGE TYPE — read it:
+
+```java
+if (result.isResult()) return Edge.Type.IF;
+return Edge.Type.NEXT;
+```
+
+So a hand-built automation whose `if`/`next` edges are right EXECUTES correctly
+even if every node carries the same `groupId`. Two suites, 29 cases, ran green
+against exactly such a graph.
+
+**It is still broken, and opening it in the builder is what proves it.** The
+builder derives the branch tree from `groupId`, not from the edges. Given a flat
+graph it cannot place the nodes, and re-serialising **silently drops the ones it
+could not place**:
+
+| automation | nodes before | after one builder edit |
+|---|---|---|
+| `ICM \| Create Position` | 16 | **5** — all three pre-write checks and all three `create_record` nodes gone |
+| `ICM \| List Payees` | 7 | 8, the OK return replaced by two empty ACTION stubs |
+
+The DEPLOYED copies were untouched, which is the only reason this was a scare
+rather than an outage: callables hit the deployed copy, so the app kept working
+while the draft was wreckage. That is also why it went unnoticed — every live
+check still passed.
+
+**The convention**, copied from a platform-authored workflow rather than guessed:
+
+```
+<nearest IF ancestor id>@<that ancestor's own groupId>@y   // the `if` branch
+<nearest IF ancestor id>@<that ancestor's own groupId>@n   // the `next` branch
+root_id-1                                                  // nothing above it
+```
+
+It NESTS, so a node three branches deep reads
+`n_IfAsg@n_IfChk@n_IfBad@root_id-1@n@n@y`. A LOOP body uses `@l` the same way
+(`n_2pYMH@_PwvxO-1@l`).
+
+Derive it by walking the edges from START; never hand-write it, and **fail on any
+node the walk does not reach** — an unreachable node is exactly what the builder
+would later drop, so refusing to write it is the check that catches this before a
+human opens the automation.
