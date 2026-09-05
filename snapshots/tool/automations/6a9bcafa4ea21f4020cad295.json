@@ -1,0 +1,1215 @@
+{
+  "appsUsed": [],
+  "createdTime": 1788594938924,
+  "deleted": false,
+  "description": "Given a Position and a date, says who held that position on that date - or names exactly why the question has no single answer. Spec: docs/automations/resolve-position-occupant.md. NOT for the calculation path; the engine does this fold in memory.",
+  "edges": [
+    {
+      "fromNodeId": "n_sTaRt",
+      "id": "next@n_sTaRt@n_Norm",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Norm",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Norm",
+      "id": "next@n_Norm@n_FtPos",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtPos",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtPos",
+      "id": "next@n_FtPos@n_FtAsg",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtAsg",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtAsg",
+      "id": "next@n_FtAsg@n_Ids",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Ids",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Ids",
+      "id": "next@n_Ids@n_FtPay",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtPay",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtPay",
+      "id": "next@n_FtPay@n_FtCur",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtCur",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtCur",
+      "id": "next@n_FtCur@n_Pick",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Pick",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Pick",
+      "id": "next@n_Pick@n_IfOk",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfOk",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfOk",
+      "id": "if@n_IfOk@n_StOk",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StOk",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfAmb",
+      "id": "if@n_IfAmb@n_StAmb",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StAmb",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfVac",
+      "id": "if@n_IfVac@n_StVac",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StVac",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "if@n_IfBad@n_StBad",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StBad",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfNoPay",
+      "id": "if@n_IfNoPay@n_StNoPay",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StNoPay",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfNoPay",
+      "id": "next@n_IfNoPay@n_StNoPos",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StNoPos",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfOk",
+      "id": "next@n_IfOk@n_IfAmb",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfAmb",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfAmb",
+      "id": "next@n_IfAmb@n_IfVac",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfVac",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfVac",
+      "id": "next@n_IfVac@n_IfBad",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfBad",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "next@n_IfBad@n_IfNoPay",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfNoPay",
+      "type": "next"
+    }
+  ],
+  "id": "6a9bcafa4ea21f4020cad295",
+  "lastModifiedBy": 372563,
+  "lastPlatformUpdateBy": 372563,
+  "lastPlatformUpdateOn": 1788594938924,
+  "lcName": "icm | resolve position occupant",
+  "modifiedTime": 1788594938924,
+  "name": "ICM | Resolve Position Occupant",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_sTaRt",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "success",
+            "message",
+            "matchCount"
+          ],
+          "properties": {
+            "status": {
+              "type": "string",
+              "title": "Status"
+            },
+            "success": {
+              "type": "boolean",
+              "title": "Success"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            },
+            "asOfDate": {
+              "type": "string",
+              "title": "As Of Date"
+            },
+            "asOfEpoch": {
+              "type": "integer",
+              "title": "As Of Epoch"
+            },
+            "positionId": {
+              "type": "string",
+              "title": "Position Id"
+            },
+            "positionCode": {
+              "type": "string",
+              "title": "Position Code"
+            },
+            "positionName": {
+              "type": "string",
+              "title": "Position Name"
+            },
+            "payeeId": {
+              "type": "string",
+              "title": "Payee Id"
+            },
+            "employeeId": {
+              "type": "string",
+              "title": "Employee Id"
+            },
+            "payeeName": {
+              "type": "string",
+              "title": "Payee Name"
+            },
+            "payeeCurrency": {
+              "type": "string",
+              "title": "Payee Currency"
+            },
+            "payeeCurrencySymbol": {
+              "type": "string",
+              "title": "Payee Currency Symbol"
+            },
+            "effectiveStart": {
+              "type": "string",
+              "title": "Effective Start"
+            },
+            "effectiveEnd": {
+              "type": "string",
+              "title": "Effective End"
+            },
+            "allocationPct": {
+              "type": "number",
+              "title": "Allocation Pct"
+            },
+            "matchCount": {
+              "type": "integer",
+              "title": "Match Count"
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "positionId": {
+              "type": "string",
+              "title": "Position Id"
+            },
+            "asOfDate": {
+              "type": "string",
+              "title": "As Of Date"
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Norm",
+      "index": 2,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "positionId": {
+              "type": "string",
+              "title": "Position Id"
+            },
+            "asOfEpoch": {
+              "type": "integer",
+              "title": "As Of Epoch"
+            },
+            "asOfDay": {
+              "type": "string",
+              "title": "As Of Day"
+            },
+            "valid": {
+              "type": "boolean",
+              "title": "Valid"
+            },
+            "reason": {
+              "type": "string",
+              "title": "Reason"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "positionId": {
+              "type": "string",
+              "title": "Position Id"
+            },
+            "asOfDate": {
+              "type": "string",
+              "title": "As Of Date"
+            }
+          }
+        },
+        "code": "// The timezone rule lives HERE and nowhere else: a bare YYYY-MM-DD means\n// midnight UTC on that day. \"2026-03-31\" resolving to a different instant in\n// two timezones would move a deal between quarters, so it is decided once.\ndef pid = (positionId == null) ? '' : positionId.toString().trim()\ndef raw = (asOfDate == null) ? '' : asOfDate.toString().trim()\nlong epoch = 0L\nString day = ''\nboolean valid = false\nString reason = ''\nif (pid.isEmpty()) {\n    reason = 'positionId is required'\n} else if (raw.isEmpty()) {\n    reason = 'asOfDate is required'\n} else if (raw ==~ /^\\d{4}-\\d{2}-\\d{2}$/) {\n    try {\n        def d = java.time.LocalDate.parse(raw)\n        epoch = d.atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli()\n        day = raw\n        valid = true\n    } catch (Exception e) {\n        reason = 'asOfDate is not a real calendar date: ' + raw\n    }\n} else if (raw ==~ /^\\d{9,}$/) {\n    epoch = Long.parseLong(raw)\n    day = java.time.Instant.ofEpochMilli(epoch).atZone(java.time.ZoneOffset.UTC).toLocalDate().toString()\n    valid = true\n} else {\n    reason = 'asOfDate must be YYYY-MM-DD or epoch milliseconds, got: ' + raw\n}\nreturn [positionId: pid, asOfEpoch: epoch, asOfDay: day, valid: valid, reason: reason]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "positionId": "{{ n_sTaRt.outputs.positionId }}",
+          "asOfDate": "{{ n_sTaRt.outputs.asOfDate }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Normalise the as-of date and reject blank input",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtPos",
+      "index": 3,
+      "inputs": {
+        "triggerInputCondition": {
+          "operator": "AND",
+          "filters": [
+            {
+              "property": "id",
+              "filter": {
+                "operator": "EQUAL",
+                "value": "{{ n_Norm.outputs.result.positionId }}"
+              }
+            }
+          ]
+        },
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Position",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 1,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.positionCode",
+          "properties.name"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Look up the position itself",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtAsg",
+      "index": 4,
+      "inputs": {
+        "triggerInputCondition": {
+          "operator": "AND",
+          "filters": [
+            {
+              "property": "properties.positionId",
+              "filter": {
+                "operator": "EQUAL",
+                "value": "{{ n_Norm.outputs.result.positionId }}"
+              }
+            },
+            {
+              "property": "properties.effectiveStart",
+              "filter": {
+                "operator": "LTE",
+                "value": "{{ n_Norm.outputs.result.asOfEpoch }}"
+              }
+            }
+          ]
+        },
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "PayeePositionAssignment",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 200,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.payeeId",
+          "properties.effectiveStart",
+          "properties.effectiveEnd",
+          "properties.allocationPct"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Every assignment on this position that had already started",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Ids",
+      "index": 5,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "matches": {
+              "type": "array",
+              "title": "Matches",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "title": "Id"
+                  },
+                  "payeeId": {
+                    "type": "string",
+                    "title": "Payee Id"
+                  },
+                  "startEpoch": {
+                    "type": "integer",
+                    "title": "Start Epoch"
+                  },
+                  "endEpoch": {
+                    "type": "integer",
+                    "title": "End Epoch"
+                  },
+                  "allocationPct": {
+                    "type": "number",
+                    "title": "Allocation Pct"
+                  }
+                }
+              }
+            },
+            "payeeIds": {
+              "type": "array",
+              "title": "Payee Ids",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rows": {
+              "type": "array",
+              "title": "Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "asOfEpoch": {
+              "type": "integer",
+              "title": "As Of Epoch"
+            },
+            "valid": {
+              "type": "boolean",
+              "title": "Valid"
+            }
+          }
+        },
+        "code": "// Closes the window: an assignment covers asOf when it had started AND has\n// either not ended or ends on/after asOf. Missing, null and blank effectiveEnd\n// all mean \"still held\" - the platform stores an unset property as ABSENT, not\n// as an empty value, so all three are checked rather than assumed equivalent.\ndef matches = []\ndef ids = []\nlong asOf = Long.valueOf(String.valueOf(asOfEpoch))\nif (valid && rows != null) {\n    rows.each { r ->\n        def p = r.properties\n        def en = p?.effectiveEnd\n        boolean open = (en == null) || en.toString().trim().isEmpty()\n        boolean endOk = open || (Long.valueOf(String.valueOf(en)) >= asOf)\n        if (endOk) {\n            def pid = (p?.payeeId == null) ? '' : p.payeeId.toString().trim()\n            matches << [id: String.valueOf(r.id),\n                        payeeId: pid,\n                        startEpoch: (p?.effectiveStart == null) ? 0L : Long.valueOf(String.valueOf(p.effectiveStart)),\n                        endEpoch: open ? -1L : Long.valueOf(String.valueOf(en)),\n                        allocationPct: (p?.allocationPct == null) ? 0 : p.allocationPct]\n            if (!pid.isEmpty() && !ids.contains(pid)) ids << pid\n        }\n    }\n}\n// The '__none__' sentinel keeps the Payee fetch a clean no-op instead of an\n// unfiltered scan when nobody held the position.\nreturn [matches: matches, payeeIds: ids.isEmpty() ? ['__none__'] : ids]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "rows": "{{ n_FtAsg.outputs.objects }}",
+          "asOfEpoch": "{{ n_Norm.outputs.result.asOfEpoch }}",
+          "valid": "{{ n_Norm.outputs.result.valid }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Keep the assignments that actually cover the date",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtPay",
+      "index": 6,
+      "inputs": {
+        "triggerInputCondition": {
+          "operator": "AND",
+          "filters": [
+            {
+              "property": "id",
+              "filter": {
+                "operator": "IN",
+                "value": "{{ n_Ids.outputs.result.payeeIds }}"
+              }
+            }
+          ]
+        },
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Payee",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 200,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.employeeId",
+          "properties.name",
+          "properties.currencyId"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Look up the candidate occupants",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtCur",
+      "index": 7,
+      "inputs": {
+        "triggerInputCondition": {
+          "operator": "AND",
+          "filters": [
+            {
+              "property": "properties.active",
+              "filter": {
+                "operator": "EXISTS"
+              }
+            }
+          ]
+        },
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Currency",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 200,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.code",
+          "properties.symbol"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Resolve the payee's currency lookup to its code",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Pick",
+      "index": 8,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "outcome": {
+              "type": "string",
+              "title": "Outcome"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            },
+            "positionCode": {
+              "type": "string",
+              "title": "Position Code"
+            },
+            "positionName": {
+              "type": "string",
+              "title": "Position Name"
+            },
+            "payeeId": {
+              "type": "string",
+              "title": "Payee Id"
+            },
+            "employeeId": {
+              "type": "string",
+              "title": "Employee Id"
+            },
+            "payeeName": {
+              "type": "string",
+              "title": "Payee Name"
+            },
+            "payeeCurrency": {
+              "type": "string",
+              "title": "Payee Currency"
+            },
+            "payeeCurrencySymbol": {
+              "type": "string",
+              "title": "Payee Currency Symbol"
+            },
+            "effectiveStart": {
+              "type": "string",
+              "title": "Effective Start"
+            },
+            "effectiveEnd": {
+              "type": "string",
+              "title": "Effective End"
+            },
+            "allocationPct": {
+              "type": "number",
+              "title": "Allocation Pct"
+            },
+            "matchCount": {
+              "type": "integer",
+              "title": "Match Count"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "matches": {
+              "type": "array",
+              "title": "Matches",
+              "items": {
+                "type": "object"
+              }
+            },
+            "posRows": {
+              "type": "array",
+              "title": "Pos Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "payRows": {
+              "type": "array",
+              "title": "Pay Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "curRows": {
+              "type": "array",
+              "title": "Cur Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "asgRows": {
+              "type": "array",
+              "title": "Asg Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "asgTotal": {
+              "type": "integer",
+              "title": "Asg Total"
+            },
+            "valid": {
+              "type": "boolean",
+              "title": "Valid"
+            },
+            "reason": {
+              "type": "string",
+              "title": "Reason"
+            },
+            "asOfDay": {
+              "type": "string",
+              "title": "As Of Day"
+            },
+            "positionId": {
+              "type": "string",
+              "title": "Position Id"
+            }
+          }
+        },
+        "code": "// One node owns the whole outcome so the as-of rule has exactly one home.\ndef fmt = { long ms -> java.time.Instant.ofEpochMilli(ms).atZone(java.time.ZoneOffset.UTC).toLocalDate().toString() }\ndef ms = (matches == null) ? [] : matches\ndef r = [outcome: '', message: '', positionCode: '', positionName: '',\n         payeeId: '', employeeId: '', payeeName: '', payeeCurrency: '',\n         effectiveStart: '', effectiveEnd: '', allocationPct: 0, matchCount: ms.size()]\n\nif (!valid) { r.outcome = 'INVALID_INPUT'; r.message = reason; return r }\n\nif (posRows == null || posRows.isEmpty()) {\n    r.outcome = 'POSITION_NOT_FOUND'\n    r.message = 'No position with id ' + String.valueOf(positionId)\n    return r\n}\nr.positionCode = posRows[0].properties?.positionCode ?: ''\nr.positionName = posRows[0].properties?.name ?: ''\n\n// A bulk fetch that hit its limit lies by omission. Say so rather than answer\n// confidently from a partial set.\nint got = (asgRows == null) ? 0 : asgRows.size()\nint total = (asgTotal == null) ? got : Integer.valueOf(String.valueOf(asgTotal))\nif (got < total) {\n    r.outcome = 'AMBIGUOUS'\n    r.message = 'Position ' + r.positionCode + ' has ' + total + ' assignment rows but only ' + got +\n                ' were read - refusing to answer from a truncated set'\n    return r\n}\n\nif (ms.isEmpty()) {\n    r.outcome = 'VACANT'\n    r.message = 'Position ' + r.positionCode + ' was unoccupied on ' + String.valueOf(asOfDay)\n    return r\n}\nif (ms.size() > 1) {\n    r.outcome = 'AMBIGUOUS'\n    r.message = ms.size() + ' overlapping assignments cover ' + String.valueOf(asOfDay) +\n                ' on position ' + r.positionCode + ' - this is an assignment data bug, not a tie to break'\n    return r\n}\n\ndef m = ms[0]\nr.payeeId = String.valueOf(m.payeeId)\nr.effectiveStart = fmt(Long.valueOf(String.valueOf(m.startEpoch)))\nlong en = Long.valueOf(String.valueOf(m.endEpoch))\nr.effectiveEnd = (en < 0) ? '' : fmt(en)\nr.allocationPct = m.allocationPct\n\ndef pay = (payRows == null) ? null : payRows.find { String.valueOf(it.id) == r.payeeId }\nif (pay == null) {\n    r.outcome = 'PAYEE_NOT_FOUND'\n    r.message = 'Assignment points at payee ' + r.payeeId + ', which does not exist. ' +\n                'Foreign keys are not enforced on PayeePositionAssignment.'\n    return r\n}\nr.employeeId = pay.properties?.employeeId ?: ''\nr.payeeName  = pay.properties?.name ?: ''\n// Resolve the currency LOOKUP to its printable code. A missing currency row is\n// left blank rather than guessed: showing an amount against the wrong currency\n// is worse than showing it against none.\ndef curId = pay.properties?.currencyId\ndef cur = (curRows == null || curId == null) ? null : curRows.find { String.valueOf(it.id) == String.valueOf(curId) }\nr.payeeCurrency = (cur == null) ? '' : (cur.properties?.code ?: '')\nr.payeeCurrencySymbol = (cur == null) ? '' : (cur.properties?.symbol ?: '')\nr.outcome = 'RESOLVED'\nr.message = 'Position ' + r.positionCode + ' was held by ' + r.payeeName + ' on ' + String.valueOf(asOfDay)\nreturn r",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "matches": "{{ n_Ids.outputs.result.matches }}",
+          "posRows": "{{ n_FtPos.outputs.objects }}",
+          "payRows": "{{ n_FtPay.outputs.objects }}",
+          "curRows": "{{ n_FtCur.outputs.objects }}",
+          "asgRows": "{{ n_FtAsg.outputs.objects }}",
+          "asgTotal": "{{ n_FtAsg.outputs.total }}",
+          "valid": "{{ n_Norm.outputs.result.valid }}",
+          "reason": "{{ n_Norm.outputs.result.reason }}",
+          "asOfDay": "{{ n_Norm.outputs.result.asOfDay }}",
+          "positionId": "{{ n_Norm.outputs.result.positionId }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Decide the outcome and say why in words",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_IfOk",
+      "index": 9,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Pick.outputs.result.outcome }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": "RESOLVED"
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Was the position cleanly occupied?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfOk@root_id-1@y",
+      "id": "n_StOk",
+      "index": 10,
+      "inputs": {
+        "result": {
+          "asOfDate": "{{ n_Norm.outputs.result.asOfDay }}",
+          "asOfEpoch": "{{ n_Norm.outputs.result.asOfEpoch }}",
+          "positionId": "{{ n_Norm.outputs.result.positionId }}",
+          "positionCode": "{{ n_Pick.outputs.result.positionCode }}",
+          "positionName": "{{ n_Pick.outputs.result.positionName }}",
+          "message": "{{ n_Pick.outputs.result.message }}",
+          "matchCount": "{{ n_Pick.outputs.result.matchCount }}",
+          "status": "RESOLVED",
+          "success": true,
+          "payeeId": "{{ n_Pick.outputs.result.payeeId }}",
+          "employeeId": "{{ n_Pick.outputs.result.employeeId }}",
+          "payeeName": "{{ n_Pick.outputs.result.payeeName }}",
+          "payeeCurrency": "{{ n_Pick.outputs.result.payeeCurrency }}",
+          "payeeCurrencySymbol": "{{ n_Pick.outputs.result.payeeCurrencySymbol }}",
+          "effectiveStart": "{{ n_Pick.outputs.result.effectiveStart }}",
+          "effectiveEnd": "{{ n_Pick.outputs.result.effectiveEnd }}",
+          "allocationPct": "{{ n_Pick.outputs.result.allocationPct }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Exactly one person held this position that day",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfOk@root_id-1@n",
+      "id": "n_IfAmb",
+      "index": 11,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Pick.outputs.result.outcome }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": "AMBIGUOUS"
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Do two assignments cover the same day?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfAmb@n_IfOk@root_id-1@n@y",
+      "id": "n_StAmb",
+      "index": 12,
+      "inputs": {
+        "result": {
+          "asOfDate": "{{ n_Norm.outputs.result.asOfDay }}",
+          "asOfEpoch": "{{ n_Norm.outputs.result.asOfEpoch }}",
+          "positionId": "{{ n_Norm.outputs.result.positionId }}",
+          "positionCode": "{{ n_Pick.outputs.result.positionCode }}",
+          "positionName": "{{ n_Pick.outputs.result.positionName }}",
+          "message": "{{ n_Pick.outputs.result.message }}",
+          "matchCount": "{{ n_Pick.outputs.result.matchCount }}",
+          "payeeId": "",
+          "employeeId": "",
+          "payeeName": "",
+          "payeeCurrency": "",
+          "payeeCurrencySymbol": "",
+          "effectiveStart": "",
+          "effectiveEnd": "",
+          "allocationPct": 0,
+          "status": "AMBIGUOUS",
+          "success": false
+        }
+      },
+      "skip": false,
+      "subTitle": "Overlapping assignments - refuse rather than pick one",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfAmb@n_IfOk@root_id-1@n@n",
+      "id": "n_IfVac",
+      "index": 13,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Pick.outputs.result.outcome }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": "VACANT"
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Was the position empty on that date?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfVac@n_IfAmb@n_IfOk@root_id-1@n@n@y",
+      "id": "n_StVac",
+      "index": 14,
+      "inputs": {
+        "result": {
+          "asOfDate": "{{ n_Norm.outputs.result.asOfDay }}",
+          "asOfEpoch": "{{ n_Norm.outputs.result.asOfEpoch }}",
+          "positionId": "{{ n_Norm.outputs.result.positionId }}",
+          "positionCode": "{{ n_Pick.outputs.result.positionCode }}",
+          "positionName": "{{ n_Pick.outputs.result.positionName }}",
+          "message": "{{ n_Pick.outputs.result.message }}",
+          "matchCount": "{{ n_Pick.outputs.result.matchCount }}",
+          "payeeId": "",
+          "employeeId": "",
+          "payeeName": "",
+          "payeeCurrency": "",
+          "payeeCurrencySymbol": "",
+          "effectiveStart": "",
+          "effectiveEnd": "",
+          "allocationPct": 0,
+          "status": "VACANT",
+          "success": false
+        }
+      },
+      "skip": false,
+      "subTitle": "The position existed but nobody held it",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfVac@n_IfAmb@n_IfOk@root_id-1@n@n@n",
+      "id": "n_IfBad",
+      "index": 15,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Pick.outputs.result.outcome }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": "INVALID_INPUT"
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Was the request itself unusable?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@n_IfVac@n_IfAmb@n_IfOk@root_id-1@n@n@n@y",
+      "id": "n_StBad",
+      "index": 16,
+      "inputs": {
+        "result": {
+          "asOfDate": "{{ n_Norm.outputs.result.asOfDay }}",
+          "asOfEpoch": "{{ n_Norm.outputs.result.asOfEpoch }}",
+          "positionId": "{{ n_Norm.outputs.result.positionId }}",
+          "positionCode": "{{ n_Pick.outputs.result.positionCode }}",
+          "positionName": "{{ n_Pick.outputs.result.positionName }}",
+          "message": "{{ n_Pick.outputs.result.message }}",
+          "matchCount": "{{ n_Pick.outputs.result.matchCount }}",
+          "payeeId": "",
+          "employeeId": "",
+          "payeeName": "",
+          "payeeCurrency": "",
+          "payeeCurrencySymbol": "",
+          "effectiveStart": "",
+          "effectiveEnd": "",
+          "allocationPct": 0,
+          "status": "INVALID_INPUT",
+          "success": false
+        }
+      },
+      "skip": false,
+      "subTitle": "Caller sent a blank or unparseable date",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@n_IfVac@n_IfAmb@n_IfOk@root_id-1@n@n@n@n",
+      "id": "n_IfNoPay",
+      "index": 17,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Pick.outputs.result.outcome }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": "PAYEE_NOT_FOUND"
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Is the assignment's payee a dangling reference?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfNoPay@n_IfBad@n_IfVac@n_IfAmb@n_IfOk@root_id-1@n@n@n@n@y",
+      "id": "n_StNoPay",
+      "index": 18,
+      "inputs": {
+        "result": {
+          "asOfDate": "{{ n_Norm.outputs.result.asOfDay }}",
+          "asOfEpoch": "{{ n_Norm.outputs.result.asOfEpoch }}",
+          "positionId": "{{ n_Norm.outputs.result.positionId }}",
+          "positionCode": "{{ n_Pick.outputs.result.positionCode }}",
+          "positionName": "{{ n_Pick.outputs.result.positionName }}",
+          "message": "{{ n_Pick.outputs.result.message }}",
+          "matchCount": "{{ n_Pick.outputs.result.matchCount }}",
+          "payeeId": "",
+          "employeeId": "",
+          "payeeName": "",
+          "payeeCurrency": "",
+          "payeeCurrencySymbol": "",
+          "effectiveStart": "",
+          "effectiveEnd": "",
+          "allocationPct": 0,
+          "status": "PAYEE_NOT_FOUND",
+          "success": false
+        }
+      },
+      "skip": false,
+      "subTitle": "The assignment points at a payee that is gone",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfNoPay@n_IfBad@n_IfVac@n_IfAmb@n_IfOk@root_id-1@n@n@n@n@n",
+      "id": "n_StNoPos",
+      "index": 19,
+      "inputs": {
+        "result": {
+          "asOfDate": "{{ n_Norm.outputs.result.asOfDay }}",
+          "asOfEpoch": "{{ n_Norm.outputs.result.asOfEpoch }}",
+          "positionId": "{{ n_Norm.outputs.result.positionId }}",
+          "positionCode": "{{ n_Pick.outputs.result.positionCode }}",
+          "positionName": "{{ n_Pick.outputs.result.positionName }}",
+          "message": "{{ n_Pick.outputs.result.message }}",
+          "matchCount": "{{ n_Pick.outputs.result.matchCount }}",
+          "payeeId": "",
+          "employeeId": "",
+          "payeeName": "",
+          "payeeCurrency": "",
+          "payeeCurrencySymbol": "",
+          "effectiveStart": "",
+          "effectiveEnd": "",
+          "allocationPct": 0,
+          "status": "POSITION_NOT_FOUND",
+          "success": false
+        }
+      },
+      "skip": false,
+      "subTitle": "No such position - the caller sent a stale position id",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 372563,
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 0
+}

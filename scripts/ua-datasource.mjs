@@ -24,26 +24,21 @@
 // the platform which of the two types exists and uses that one, and says which
 // it used. A kit that hardcodes the same literal would inherit the same bug.
 //
-// Refuses the tool (production) environment outright.
+// Writes to PRODUCTION only with an explicit `--env tool` on the command line.
+//
+// The entity-type PROBE below matters more, not less, across two environments:
+// orbit has `e_data_source` where the devkit's tool assumes
+// `e_data_source_deployed`, and there is no reason to assume prod answers the
+// same way as orbit. It asks every time and says which it used.
 
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { APP_ID } from "./kit-config.mjs";
+import { resolveEnv } from "./env.mjs";
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const die = (m) => { console.error(`error: ${m}`); process.exit(1); };
 
-const vars = {};
-for (const line of fs.readFileSync(path.join(ROOT, ".env.local"), "utf8").split("\n")) {
-  const m = line.match(/^\s*([A-Z_]+)\s*=\s*"?([^"]*)"?\s*$/);
-  if (m && !line.trim().startsWith("#")) vars[m[1]] = m[2];
-}
-const env = vars.UA_DEFAULT_ENV || "orbit";
-if (env !== "orbit") die("refusing to create data sources anywhere but orbit");
-const baseUrl = vars.UA_ORBIT_URL, cookie = vars.UA_ORBIT_COOKIE;
-if (!baseUrl || !cookie) die("missing UA_ORBIT_URL or UA_ORBIT_COOKIE");
-const H = { cookie: `_at=${cookie}`, "content-type": "application/json" };
+const { env, baseUrl, headers: H, args: argv } = resolveEnv({ write: true });
 
 /** Ask the platform which data-source entity type it actually has. */
 async function resolveEntityType() {
@@ -88,7 +83,7 @@ function build(spec, entityType) {
   };
 }
 
-const [cmd, file] = process.argv.slice(2);
+const [cmd, file] = argv;
 if (!cmd || !file) die("usage: ua-datasource.mjs plan|create <spec.json>");
 const spec = JSON.parse(fs.readFileSync(path.resolve(file), "utf8"));
 
@@ -109,7 +104,7 @@ const text = await res.text();
 if (!res.ok) die(`HTTP ${res.status}: ${text.slice(0, 500)}`);
 const made = JSON.parse(text);
 const obj = Array.isArray(made) ? made[0] : made;
-console.log(`created data source "${obj.properties?.name}"`);
+console.log(`created data source "${obj.properties?.name}" on ${env}`);
 console.log(`  id          ${obj.id}`);
 console.log(`  entityType  ${obj.entityType}   (resolved by probe, not hardcoded)`);
 console.log(`  page        ${obj.properties?.interfacePageId}`);

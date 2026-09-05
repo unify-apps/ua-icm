@@ -19,26 +19,15 @@
 // A no-op round trip through /update is safe: schema and metadata come back
 // byte-identical, only `version` moves.
 //
-// Refuses the tool (production) environment outright.
+// Writes to PRODUCTION only with an explicit `--env tool` on the command line.
 
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { config, ENTITY_TAGS } from "./kit-config.mjs";
 import { expandField } from "./field-types.mjs";
+import { resolveEnv } from "./env.mjs";
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const die = (m) => { console.error(`error: ${m}`); process.exit(1); };
 
-const vars = {};
-for (const line of fs.readFileSync(path.join(ROOT, ".env.local"), "utf8").split("\n")) {
-  const m = line.match(/^\s*([A-Z_]+)\s*=\s*"?([^"]*)"?\s*$/);
-  if (m && !line.trim().startsWith("#")) vars[m[1]] = m[2];
-}
-const env = vars.UA_DEFAULT_ENV || "orbit";
-if (env !== "orbit") die("refusing to change schemas anywhere but orbit");
-const baseUrl = vars.UA_ORBIT_URL, cookie = vars.UA_ORBIT_COOKIE;
-if (!baseUrl || !cookie) die("missing UA_ORBIT_URL or UA_ORBIT_COOKIE");
+const { env, baseUrl, cookie, args: argv } = resolveEnv({ write: true });
 
 async function api(pathname, body) {
   const res = await fetch(baseUrl + pathname, {
@@ -113,7 +102,7 @@ async function addFields(objectType, fields) {
   console.log(`  ${objectType.padEnd(28)} added ${added.join(", ")}  (v${def.version} -> v${after.version})`);
 }
 
-const [cmd, ...rest] = process.argv.slice(2);
+const [cmd, ...rest] = argv;
 if (cmd !== "add-fields" || rest.length === 0) {
   die('usage: ua-schema.mjs add-fields <objectType> <name:type>... | add-fields --all-archivable\n  types: string|number|integer|boolean|date|fk:<Type>|fk:USER');
 }

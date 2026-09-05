@@ -17,6 +17,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { resolveEnv } from "./env.mjs";
 import { APP_ID } from "./kit-config.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -24,14 +25,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 function die(msg) { console.error(`error: ${msg}`); process.exit(1); }
 
 // ---- auth (same pattern as ua.mjs) ----
-const vars = {};
-for (const line of fs.readFileSync(path.join(ROOT, ".env.local"), "utf8").split("\n")) {
-  const m = line.match(/^\s*([A-Z_]+)\s*=\s*"?([^"]*)"?\s*$/);
-  if (m && !line.trim().startsWith("#")) vars[m[1]] = m[2];
-}
-const envName = vars.UA_DEFAULT_ENV || "orbit";
-const baseUrl = vars[envName === "orbit" ? "UA_ORBIT_URL" : "UA_TOOL_URL"];
-const cookie = vars[envName === "orbit" ? "UA_ORBIT_COOKIE" : "UA_TOOL_COOKIE"];
+const { env: envName, baseUrl, cookie, args: argv } = resolveEnv();
 
 async function fetchDef(id) {
   const res = await fetch(`${baseUrl}/api/workflow-definition/${id}`, {
@@ -295,7 +289,7 @@ function lint(def, knownRes, knownApps) {
 }
 
 // ---- main ----
-const args = process.argv.slice(2);
+const args = argv;
 if (!args.length) die("usage: lint <id> [<id>...] | lint --file <path.json>");
 const knownRes = knownResourceNames();
 const knownApps = knownAppNames();
