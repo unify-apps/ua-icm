@@ -1,0 +1,151 @@
+{
+  "name": "ICM | Resolve Position Occupant",
+  "fixtures": "tests/fixtures/positions.json - seed with: node scripts/fixtures.mjs seed positions",
+  "note": "Every case finds its fixture by BUSINESS key first, so no platform id is ever hardcoded. Read-only suite: it creates and deletes nothing, so it is safe to re-run.",
+  "cases": [
+    { "name": "find: closed-range position",  "entityFind": { "entityType": "Position", "filters": { "positionCode": "KITFIX-POS-01" } } },
+    { "name": "find: open-ended position",    "entityFind": { "entityType": "Position", "filters": { "positionCode": "KITFIX-POS-02" } } },
+    { "name": "find: contested position",     "entityFind": { "entityType": "Position", "filters": { "positionCode": "KITFIX-POS-03" } } },
+    { "name": "find: never-filled position",  "entityFind": { "entityType": "Position", "filters": { "positionCode": "KITFIX-POS-04" } } },
+    { "name": "find: dangling-payee position","entityFind": { "entityType": "Position", "filters": { "positionCode": "KITFIX-POS-05" } } },
+    { "name": "find: retired position",       "entityFind": { "entityType": "Position", "filters": { "positionCode": "KITFIX-POS-06" } } },
+    { "name": "find: Asha",               "entityFind": { "entityType": "Payee",    "filters": { "employeeId": "KITFIX-E001" } } },
+
+    {
+      "name": "RESOLVED - date inside a closed range",
+      "payload": { "positionId": "{{case:find: closed-range position:id}}", "asOfDate": "2026-02-15" },
+      "checks": [
+        { "path": "status", "equals": "RESOLVED" },
+        { "path": "success", "equals": true },
+        { "path": "matchCount", "equals": 1 },
+        { "path": "payeeId", "equals": "{{case:find: Asha:id}}" },
+        { "path": "employeeId", "equals": "KITFIX-E001" },
+        { "path": "positionCode", "equals": "KITFIX-POS-01" },
+        { "path": "effectiveStart", "equals": "2026-01-01" },
+        { "path": "effectiveEnd", "equals": "2026-03-31" },
+        { "path": "payeeCurrency", "equals": "KITFIX-INR" },
+        { "path": "asOfDate", "equals": "2026-02-15" }
+      ]
+    },
+    {
+      "name": "RESOLVED - open-ended assignment (the case a server-side effectiveEnd filter would break)",
+      "payload": { "positionId": "{{case:find: open-ended position:id}}", "asOfDate": "2026-08-20" },
+      "checks": [
+        { "path": "status", "equals": "RESOLVED" },
+        { "path": "employeeId", "equals": "KITFIX-E002" },
+        { "path": "effectiveEnd", "equals": "" },
+        { "path": "matchCount", "equals": 1 }
+      ]
+    },
+    {
+      "name": "RESOLVED - the currency LOOKUP resolves to the payee's OWN code, not the first row",
+      "payload": { "positionId": "{{case:find: contested position:id}}", "asOfDate": "2026-01-15" },
+      "checks": [
+        { "path": "status", "equals": "RESOLVED" },
+        { "path": "employeeId", "equals": "KITFIX-E001" },
+        { "path": "payeeCurrency", "equals": "KITFIX-INR" }
+      ]
+    },
+    {
+      "name": "RESOLVED - boundary: exactly on effectiveStart is inclusive",
+      "payload": { "positionId": "{{case:find: closed-range position:id}}", "asOfDate": "2026-01-01" },
+      "checks": [{ "path": "status", "equals": "RESOLVED" }, { "path": "matchCount", "equals": 1 }]
+    },
+    {
+      "name": "RESOLVED - boundary: exactly on effectiveEnd is inclusive",
+      "payload": { "positionId": "{{case:find: closed-range position:id}}", "asOfDate": "2026-03-31" },
+      "checks": [{ "path": "status", "equals": "RESOLVED" }, { "path": "matchCount", "equals": 1 }]
+    },
+    {
+      "name": "RESOLVED - a TERMINATED payee still held the position back then",
+      "payload": { "positionId": "{{case:find: retired position:id}}", "asOfDate": "2026-01-20" },
+      "checks": [
+        { "path": "status", "equals": "RESOLVED" },
+        { "path": "employeeId", "equals": "KITFIX-E004" }
+      ]
+    },
+    {
+      "name": "RESOLVED - epoch milliseconds are accepted as the second input form",
+      "payload": { "positionId": "{{case:find: closed-range position:id}}", "asOfDate": "1771113600000" },
+      "checks": [
+        { "path": "status", "equals": "RESOLVED" },
+        { "path": "asOfDate", "equals": "2026-02-15" }
+      ]
+    },
+
+    {
+      "name": "VACANT - one day before the assignment starts",
+      "payload": { "positionId": "{{case:find: closed-range position:id}}", "asOfDate": "2025-12-31" },
+      "checks": [
+        { "path": "status", "equals": "VACANT" },
+        { "path": "success", "equals": false },
+        { "path": "matchCount", "equals": 0 },
+        { "path": "payeeId", "equals": "" }
+      ]
+    },
+    {
+      "name": "VACANT - one day after the assignment ends",
+      "payload": { "positionId": "{{case:find: closed-range position:id}}", "asOfDate": "2026-04-01" },
+      "checks": [{ "path": "status", "equals": "VACANT" }, { "path": "matchCount", "equals": 0 }]
+    },
+    {
+      "name": "VACANT - a position nobody ever filled",
+      "payload": { "positionId": "{{case:find: never-filled position:id}}", "asOfDate": "2026-02-15" },
+      "checks": [{ "path": "status", "equals": "VACANT" }, { "path": "positionCode", "equals": "KITFIX-POS-04" }]
+    },
+
+    {
+      "name": "AMBIGUOUS - two assignments overlap that day, refuse rather than pick",
+      "payload": { "positionId": "{{case:find: contested position:id}}", "asOfDate": "2026-03-14" },
+      "checks": [
+        { "path": "status", "equals": "AMBIGUOUS" },
+        { "path": "success", "equals": false },
+        { "path": "matchCount", "equals": 2 },
+        { "path": "payeeId", "equals": "" }
+      ]
+    },
+    {
+      "name": "PAYEE_NOT_FOUND - the assignment points at a payee that does not exist",
+      "payload": { "positionId": "{{case:find: dangling-payee position:id}}", "asOfDate": "2026-02-15" },
+      "checks": [
+        { "path": "status", "equals": "PAYEE_NOT_FOUND" },
+        { "path": "success", "equals": false },
+        { "path": "matchCount", "equals": 1 }
+      ]
+    },
+    {
+      "name": "POSITION_NOT_FOUND - a well-formed id that matches nothing",
+      "payload": { "positionId": "e_111111111111111111111111", "asOfDate": "2026-02-15" },
+      "checks": [
+        { "path": "status", "equals": "POSITION_NOT_FOUND" },
+        { "path": "success", "equals": false },
+        { "path": "positionCode", "equals": "" }
+      ]
+    },
+
+    {
+      "name": "INVALID_INPUT - the all-empty-strings payload real callers send",
+      "payload": { "positionId": "", "asOfDate": "" },
+      "checks": [
+        { "path": "status", "equals": "INVALID_INPUT" },
+        { "path": "success", "equals": false },
+        { "path": "matchCount", "equals": 0 }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - a blank date on a real position never reaches a fetch",
+      "payload": { "positionId": "{{case:find: closed-range position:id}}", "asOfDate": "" },
+      "checks": [{ "path": "status", "equals": "INVALID_INPUT" }]
+    },
+    {
+      "name": "INVALID_INPUT - unparseable date",
+      "payload": { "positionId": "{{case:find: closed-range position:id}}", "asOfDate": "not-a-date" },
+      "checks": [{ "path": "status", "equals": "INVALID_INPUT" }]
+    },
+    {
+      "name": "INVALID_INPUT - a date-shaped string that is not a real day",
+      "payload": { "positionId": "{{case:find: closed-range position:id}}", "asOfDate": "2026-02-30" },
+      "checks": [{ "path": "status", "equals": "INVALID_INPUT" }]
+    }
+  ]
+}

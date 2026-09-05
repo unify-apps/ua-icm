@@ -28,7 +28,8 @@
 // Tags come from kit.config.json and cannot be typed in a spec - membership is
 // by TAG and a wrong tag silently orphans the object from every script here.
 //
-// Refuses the tool (production) environment outright.
+// Runs against orbit by default. Production requires BOTH UA_DEFAULT_ENV="tool"
+// and UA_ALLOW_PROD_WRITES="true" in .env.local.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -45,9 +46,17 @@ for (const line of fs.readFileSync(path.join(ROOT, ".env.local"), "utf8").split(
   if (m && !line.trim().startsWith("#")) vars[m[1]] = m[2];
 }
 const env = vars.UA_DEFAULT_ENV || "orbit";
-if (env !== "orbit") die("refusing to create object types anywhere but orbit");
-const baseUrl = vars.UA_ORBIT_URL, cookie = vars.UA_ORBIT_COOKIE;
-if (!baseUrl || !cookie) die("missing UA_ORBIT_URL or UA_ORBIT_COOKIE");
+if (env !== "orbit" && env !== "tool") die(`unknown env "${env}", use orbit or tool`);
+// Production writes are a STANDING, separate opt-in. Switching UA_DEFAULT_ENV to
+// "tool" so the read scripts can see prod must never be enough to write it too, so
+// the env flip and the write permission are two different keys on purpose.
+if (env === "tool" && vars.UA_ALLOW_PROD_WRITES !== "true") {
+  die('refusing to create object types on tool (production): set UA_ALLOW_PROD_WRITES="true" in .env.local to allow it');
+}
+const baseUrl = env === "tool" ? vars.UA_TOOL_URL : vars.UA_ORBIT_URL;
+const cookie = env === "tool" ? vars.UA_TOOL_COOKIE : vars.UA_ORBIT_COOKIE;
+if (!baseUrl || !cookie) die(`missing url or cookie for env "${env}"`);
+if (env === "tool") console.error("! tool (PRODUCTION) - this changes the data model for everyone");
 
 async function api(pathname, body) {
   const res = await fetch(baseUrl + pathname, {

@@ -11,8 +11,10 @@
 //
 // Snapshot and commit before using it. There is no undo here.
 //
-// Refuses to run against the `tool` (production) environment. Production is
-// read-only unless a human changes this file deliberately.
+// Writes the DRAFT ONLY, never the deployed copy. Orbit by default; production
+// requires UA_ALLOW_PROD_WRITES="true" in .env.local. Shipping the draft to callers
+// is deploy.mjs, gated separately, so editing prod and releasing prod stay two
+// distinct decisions.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -39,14 +41,17 @@ if (envFlagIdx !== -1) {
   args.splice(envFlagIdx, 2);
 }
 envName = envName || vars.UA_DEFAULT_ENV || "orbit";
-if (envName === "tool") {
-  die("refusing to write to tool (production). This script only writes to orbit.");
+if (envName !== "orbit" && envName !== "tool") die(`unknown env "${envName}"`);
+// Writes the DRAFT only. Deploying it to callers is deploy.mjs, gated separately by
+// UA_ALLOW_PROD_DEPLOY, so editing prod and shipping prod stay two decisions.
+if (envName === "tool" && vars.UA_ALLOW_PROD_WRITES !== "true") {
+  die('refusing to write to tool (production): set UA_ALLOW_PROD_WRITES="true" in .env.local to allow it');
 }
-if (envName !== "orbit") die(`unknown env "${envName}"`);
 
-const baseUrl = vars.UA_ORBIT_URL;
-const cookie = vars.UA_ORBIT_COOKIE;
-if (!baseUrl || !cookie) die("missing UA_ORBIT_URL or UA_ORBIT_COOKIE in .env.local");
+const baseUrl = envName === "tool" ? vars.UA_TOOL_URL : vars.UA_ORBIT_URL;
+const cookie = envName === "tool" ? vars.UA_TOOL_COOKIE : vars.UA_ORBIT_COOKIE;
+if (!baseUrl || !cookie) die(`missing url or cookie for env "${envName}"`);
+if (envName === "tool") console.error("! writing the DRAFT on tool (PRODUCTION) - deploy is still separate");
 
 const [command, id, file] = args;
 if (command !== "update" || !id || !file) {

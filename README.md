@@ -20,12 +20,13 @@ Needs **Node 18+**. Nothing to `npm install`; the scripts use only built-ins.
 cp .env.example .env.local && chmod 600 .env.local
 ```
 
-Get the cookie: open <https://orbit.uat.unifyapps.com>, log in, then
-**DevTools → Application → Cookies → the orbit origin → copy the value of `_at`**.
+Get the cookie: open the environment you are working against, log in, then
+**DevTools → Application → Cookies → that origin → copy the value of `_at`**.
 Paste it between the quotes:
 
 ```
-UA_ORBIT_COOKIE="<paste here>"
+UA_ORBIT_COOKIE="<paste here>"   # https://orbit.uat.unifyapps.com
+UA_TOOL_COOKIE="<paste here>"    # https://tool.prod-aps1.unifyapps.com
 ```
 
 The value must not contain a double quote, and nothing may follow the closing
@@ -38,7 +39,11 @@ node scripts/ua.mjs whoami
 Success prints the environment and a schema id. `cookie is stale` means it
 expired — grab a fresh one. **It expires every few days; that is normal.**
 
-Leave `UA_TOOL_COOKIE` blank. Tool is production and is read-only.
+**This kit currently defaults to `tool` (PRODUCTION)** — `UA_DEFAULT_ENV="tool"`.
+`ua-object.mjs`, `ua-schema.mjs` and `ua-datasource.mjs` will write prod when
+`UA_ALLOW_PROD_WRITES="true"`; `deploy.mjs`, `fixtures.mjs` and `ua-write.mjs`
+stay orbit-only whatever you set. See the safety rules in `CLAUDE.md`. Set
+`UA_DEFAULT_ENV="orbit"` to go back to UAT.
 
 ### 2. Application pages — 20 minutes, once
 
@@ -125,8 +130,9 @@ matches what is deployed is a bug to fix, not a stale doc to ignore.
 | `testrun.mjs` · `regress.mjs` | **Executes nodes against real data** |
 | `fixtures.mjs` | **Yes** — seeds and resets `KITFIX-` test records |
 | `agent.mjs` | **Yes** — drives the builder copilot |
-| `ua-object.mjs` · `ua-write.mjs` · `ua-schema.mjs` | **Yes** — orbit only, refuse production |
-| `ua-datasource.mjs` | **Yes** — creates the data source that lets a page call a callable. Orbit only |
+| `ua-write.mjs` | **Yes** — orbit only, refuses production |
+| `ua-object.mjs` · `ua-schema.mjs` | **Yes** — prod too, when `UA_ALLOW_PROD_WRITES="true"` |
+| `ua-datasource.mjs` | **Yes** — creates the data source that lets a page call a callable. Prod too, under the same key |
 | `deploy.mjs` | **Yes** — the only sanctioned deploy, four gates |
 
 `field-types.mjs` is a shared library, not a command: the one definition of how

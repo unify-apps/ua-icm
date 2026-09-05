@@ -15,7 +15,8 @@
 // whose prefixField value starts with the family's prefix, and it refuses to
 // run without --yes.
 //
-// Refuses the tool (production) environment outright.
+// Orbit by default. Production requires UA_DEFAULT_ENV="tool" AND
+// UA_ALLOW_PROD_DEPLOY="true".
 
 import fs from "node:fs";
 import path from "node:path";
@@ -30,9 +31,16 @@ for (const line of fs.readFileSync(path.join(ROOT, ".env.local"), "utf8").split(
   if (m && !line.trim().startsWith("#")) vars[m[1]] = m[2];
 }
 const env = vars.UA_DEFAULT_ENV || "orbit";
-if (env !== "orbit") die("refusing to write fixtures anywhere but orbit");
-const baseUrl = vars.UA_ORBIT_URL, cookie = vars.UA_ORBIT_COOKIE;
-if (!baseUrl || !cookie) die("missing UA_ORBIT_URL or UA_ORBIT_COOKIE");
+if (env !== "orbit" && env !== "tool") die(`unknown env "${env}", use orbit or tool`);
+// Seeding fixture records into production is armed by the same key as deploying,
+// because both put something in front of real users of a real environment.
+if (env === "tool" && vars.UA_ALLOW_PROD_DEPLOY !== "true") {
+  die('writing fixtures to tool (production) requires UA_ALLOW_PROD_DEPLOY="true" in .env.local');
+}
+const baseUrl = env === "tool" ? vars.UA_TOOL_URL : vars.UA_ORBIT_URL;
+const cookie = env === "tool" ? vars.UA_TOOL_COOKIE : vars.UA_ORBIT_COOKIE;
+if (!baseUrl || !cookie) die(`missing url or cookie for env "${env}"`);
+if (env === "tool") console.error("! writing KITFIX- fixture records to tool (PRODUCTION)");
 
 const H = { cookie: `_at=${cookie}`, "content-type": "application/json" };
 async function api(pathname, body) {

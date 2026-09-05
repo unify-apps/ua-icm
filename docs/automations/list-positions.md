@@ -1,5 +1,12 @@
 # ICM | List Positions
 
+**Also live on TOOL (PRODUCTION) since 2026-09-05**: id `6a9bcafbc4f2d5527e3c324c` (11 nodes, draft v0),
+a SEPARATE copy from the orbit one above — prod mints its own ids. Suite
+`tests/6a9bcafbc4f2d5527e3c324c.json` (re-keyed from the orbit suite, same cases) **22/22 green**
+against `KITFIX-` fixtures seeded into prod. `validate` + `lint` clean. Deployed
+through `deploy.mjs` with all four gates, verified by reading `deploymentState`
+back. This is what the `app-1621b11a65c8` code app calls.
+
 **Built state (2026-09-03)**: **DEPLOYED, workflowVersion 2, 11 nodes.**
 `ua.mjs validate` clean · `lint.mjs` clean · suite
 `tests/6a988a792ada0c631038457a.json` **22/22 green**. Deployed 2026-09-03 with
@@ -97,12 +104,33 @@ status, success, message, asOfDate, total, hasMore, offset, limit,
 occupancyResolved (bool), countsTruncated (bool),
 counts { total, occupied, vacant, conflict },
 positions [ { positionId, positionCode, name, active,
-          occupancy, payeeId, employeeId, payeeName, matchCount } ]
+          occupancy, payeeId, employeeId, payeeName, matchCount,
+          effectiveStart, effectiveEnd, allocationPct } ]
 ```
 
 `occupancy` is `OCCUPIED` · `VACANT` · `CONFLICT` · `UNKNOWN` (only when
 `includeOccupancy` was false). `required` is
 `["status","success","message","total","positions"]` and nothing more.
+
+**`effectiveStart` / `effectiveEnd` / `allocationPct` describe the ONE assignment
+that resolved the occupant, and are therefore `null` unless `occupancy` is
+`OCCUPIED`.** On a VACANT row no assignment covered the date; on a CONFLICT row
+several did and naming one would be the guess this callable refuses to make. They
+cost nothing: the assignment rows are already fetched for the fold, and only their
+projection dropped these fields.
+
+`effectiveEnd: null` on an OCCUPIED row means **open-ended — still held**, which is
+the same "absent means still held" rule the fold applies. So `null` carries two
+readings and `occupancy` is what separates them: read `effectiveEnd` only once you
+have checked `occupancy === 'OCCUPIED'`. Stated here because a caller that renders
+`effectiveEnd ?? 'End of Time'` on a VACANT row prints a confident answer about a
+position nobody holds.
+
+**This is deliberately NOT the whole occupant story.** `payeeCurrency`,
+`payeeCurrencySymbol` and the resolution `message` stay in `ICM | Resolve Position
+Occupant`, which a page calls on row select. A list callable that returned
+everything a detail panel wants would resolve currency for every row on every
+keystroke — the same scaling trap `counts` is fenced off for.
 
 **`counts` counts the CURRENT PAGE, and `countsTruncated` says so.** Counting
 occupancy across every position would mean resolving every position on every keystroke,
@@ -161,6 +189,9 @@ positions' occupancy honest rather than confidently wrong.
 | Positions page | create | **cascade** — its spec's open question 1 is answered by this callable, and its Callables table gains this token | `docs/pages/` is the only record of a page→callable dependency; a page in the builder not listed there is drift |
 | `Position` / `PayeePositionAssignment` / `Payee` | unaffected | **unaffected** — read-only, no schema change | `ua.mjs snap-types --tag icm` diff; a renamed field breaks the `fields` projection and the suite goes red |
 | The layer rule ("pages never touch objects") | handled already | **handled already** — this callable is what keeps it absolute rather than carved out | if a data source over `Position` ever appears in the app, `get_data_sources` shows it and the rule was abandoned quietly |
+| **This contract, 2026-09-05** | change the contract | **cascade** — three fields ADDED to `positions[]`, none renamed or removed, so every existing caller keeps reading exactly what it read. The Positions page is updated in the same change to render them; the suite gains the cases below | a caller reading `effectiveEnd` without checking `occupancy` first shows "End of Time" on a vacant position — the suite pins `null` on VACANT and CONFLICT for exactly that |
+| `n_PayIds` projection | change the contract | **cascade** — it dropped these three fields on the way into the fold; it now carries them, and its declared output schema says so. No extra fetch, no extra call | the suite's OCCUPIED cases assert real values, so a projection that silently drops one again goes red |
+| `ICM \| Resolve Position Occupant` | unaffected | **unaffected** — it already returns these three and keeps owning the richer detail answer (currency, message). This change does not duplicate it, it stops the LIST from being useless for a row summary | its own suite is untouched; if the two ever disagree on the same assignment, both suites run off one fixture family and one of them goes red |
 | Global conflict count | accepted | **accepted** — `counts` is per page, stated in the Output section and surfaced as `countsTruncated` | the page labels the chip as on-screen; a product ask for a true global count becomes its own aggregate callable |
 
 ## Tests
@@ -182,6 +213,11 @@ positions' occupancy honest rather than confidently wrong.
 | the open-ended assignment | `OCCUPIED` — the case a server-side `effectiveEnd` filter would break |
 | `asOfDate: "not-a-date"` | `INVALID_INPUT` |
 | `limit: "abc"` | `INVALID_INPUT` |
+| a date inside a closed assignment | `effectiveStart`/`effectiveEnd` are that assignment's real epochs, `allocationPct` its real value |
+| the open-ended assignment | `effectiveStart` set, `effectiveEnd` **null** — open-ended, still held |
+| a position nobody ever filled | all three **null**, because VACANT means no assignment applied |
+| the contested position on an overlap date | all three **null**, because CONFLICT means the callable refused to pick one |
+| `includeOccupancy: "false"` | all three **null** — the fold never ran |
 | counts on a page containing occupied + vacant + conflict | `counts` adds up to the page's position count |
 
 ## Notes

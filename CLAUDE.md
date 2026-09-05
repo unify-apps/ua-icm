@@ -55,8 +55,22 @@ literal app id or tag anywhere except `kit.config.json`.
 
 ## Safety rules (non-negotiable)
 
-- Orbit (UAT) is the working environment. Tool (prod) is look-but-don't-touch
-  unless a human explicitly says otherwise (`--env tool` to read).
+- **Changed 2026-09-05, by explicit human decision.** The default environment is
+  now `tool` (PRODUCTION), and three scripts may write it: `ua-object.mjs`,
+  `ua-schema.mjs`, `ua-datasource.mjs`. They are armed by a SECOND key,
+  `UA_ALLOW_PROD_WRITES="true"` in `.env.local` — reading prod must never imply
+  writing it, so the env flip alone does nothing. Each prints
+  `! tool (PRODUCTION)` before it writes.
+- **Still orbit-only, and not negotiable without another explicit yes:**
+  `deploy.mjs` (ships to callers), `fixtures.mjs` (writes records), and
+  `ua-write.mjs` (rewrites a workflow definition). They ignore
+  `UA_ALLOW_PROD_WRITES` entirely.
+- **`agent.mjs` and `testrun.mjs` have NO environment guard** and now point at
+  production by default. `agent.mjs` causes real edits to whatever workflow it
+  is aimed at; `testrun.mjs` executes nodes against real data. On prod that is
+  real pay data — the ICM rule below is now enforced by nothing but care.
+- Set `UA_DEFAULT_ENV="orbit"` to put the whole kit back on UAT; nothing else
+  needs changing.
 - Never deploy, delete, or publish anything without an explicit human yes in the
   current conversation. Agent edits only change the draft — that's fine;
   deploying is a separate, gated act.
@@ -217,10 +231,12 @@ production outright.
 
 `scripts/ua-object.mjs` — CREATES an object type from a compact spec. Changes
 the data model for everyone. `plan` prints the body without calling anything;
-`create` POSTs it. Never updates, retypes or deletes.
+`create` POSTs it. Never updates, retypes or deletes. Writes prod when
+`UA_DEFAULT_ENV="tool"` AND `UA_ALLOW_PROD_WRITES="true"`.
 
 `scripts/ua-schema.mjs` — adds properties to an object schema that already
-exists. Changes the data model for everyone. Never removes or retypes.
+exists. Changes the data model for everyone. Never removes or retypes. Writes
+prod under the same two keys as `ua-object.mjs`.
 
 `scripts/ua-datasource.mjs` — CREATES the page data source that lets a PAGE
 call a deployed automation. It exists because the devkit's own
@@ -228,7 +244,8 @@ call a deployed automation. It exists because the devkit's own
 does not exist on orbit — the failure reads as a permissions error and is not
 one. This script PROBES which data-source type the platform actually has and
 uses that, rather than inheriting the same hardcoded literal. `plan` prints the
-body without calling anything; `create` POSTs it. Orbit only.
+body without calling anything; `create` POSTs it. Writes prod under the same two
+keys as `ua-object.mjs`.
 
 `scripts/field-types.mjs` — the ONE definition of how a field spec becomes a
 platform property, shared by the two above. Not a command.

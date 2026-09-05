@@ -18,7 +18,8 @@
 // and say so in the commit - so that skipping is a visible act, not a
 // shortcut nobody sees.
 //
-// Orbit only. Never deploys to tool (production).
+// Orbit by default. Production requires UA_DEFAULT_ENV="tool" AND
+// UA_ALLOW_PROD_DEPLOY="true".
 
 import fs from "node:fs";
 import path from "node:path";
@@ -33,7 +34,18 @@ for (const line of fs.readFileSync(path.join(ROOT, ".env.local"), "utf8").split(
   const m = line.match(/^\s*([A-Z_]+)\s*=\s*"?([^"]*)"?\s*$/);
   if (m && !line.trim().startsWith("#")) vars[m[1]] = m[2];
 }
-if ((vars.UA_DEFAULT_ENV || "orbit") !== "orbit") die("deploys are orbit-only");
+const env = vars.UA_DEFAULT_ENV || "orbit";
+if (env !== "orbit" && env !== "tool") die(`unknown env "${env}", use orbit or tool`);
+// Shipping to production is armed by its OWN key, separate from UA_ALLOW_PROD_WRITES:
+// creating an object is reversible in a way that putting an automation in front of
+// real callers is not, so the two are disarmed independently.
+if (env === "tool" && vars.UA_ALLOW_PROD_DEPLOY !== "true") {
+  die('deploying to tool (production) requires UA_ALLOW_PROD_DEPLOY="true" in .env.local');
+}
+const BASE = env === "tool" ? vars.UA_TOOL_URL : vars.UA_ORBIT_URL;
+const COOKIE = env === "tool" ? vars.UA_TOOL_COOKIE : vars.UA_ORBIT_COOKIE;
+if (!BASE || !COOKIE) die(`missing url or cookie for env "${env}"`);
+if (env === "tool") console.error("! deploying to tool (PRODUCTION) - callers hit this immediately");
 
 const [id, notes] = process.argv.slice(2);
 if (!id) die("usage: deploy.mjs <workflowId> \"deployment notes\"");
@@ -84,16 +96,16 @@ for (const [n, script, label] of [[3, "ua.mjs", "validate"], [4, "lint.mjs", "li
 }
 
 // ---- deploy
-const headers = { cookie: `_at=${vars.UA_ORBIT_COOKIE}`, "content-type": "application/json" };
+const headers = { cookie: `_at=${COOKIE}`, "content-type": "application/json" };
 const fetchWf = async () => {
-  const r = await fetch(`${vars.UA_ORBIT_URL}/api/workflow-definition/${id}`, { headers });
+  const r = await fetch(`${BASE}/api/workflow-definition/${id}`, { headers });
   if (!r.ok) die(`could not read the workflow: HTTP ${r.status}`);
   return r.json();
 };
 
 const before = await fetchWf();
 console.log(`\ndeploying "${before.name}" draft v${before.version} ...`);
-const res = await fetch(`${vars.UA_ORBIT_URL}/api/workflow-definition/${id}/deploy`, {
+const res = await fetch(`${BASE}/api/workflow-definition/${id}/deploy`, {
   method: "POST", headers, body: JSON.stringify({ deploymentNotes: notes }),
 });
 if (!res.ok) die(`deploy failed: HTTP ${res.status} ${(await res.text()).slice(0, 300)}`);

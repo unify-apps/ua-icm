@@ -1,5 +1,12 @@
 # ICM | Resolve Position Occupant
 
+**Also live on TOOL (PRODUCTION) since 2026-09-05**: id `6a9bcafa4ea21f4020cad295` (19 nodes, draft v0),
+a SEPARATE copy from the orbit one above — prod mints its own ids. Suite
+`tests/6a9bcafa4ea21f4020cad295.json` (re-keyed from the orbit suite, same cases) **24/24 green**
+against `KITFIX-` fixtures seeded into prod. `validate` + `lint` clean. Deployed
+through `deploy.mjs` with all four gates, verified by reading `deploymentState`
+back. This is what the `app-1621b11a65c8` code app calls.
+
 **Built state (2026-09-03)**: **v2, 19 nodes — DEPLOYED.** `ua.mjs validate`
 clean · `lint.mjs` clean · suite `tests/6a9879742ada0c631031e64b.json`
 **24/24 green**. Deployed by Sarthak on 2026-09-03; verified by reading
