@@ -2,15 +2,15 @@
   "appsUsed": [],
   "createdTime": 1788594939330,
   "deleted": false,
-  "deployedVersion": 2,
+  "deployedVersion": 3,
   "deploymentState": {
-    "deployedAt": 1788602968712,
+    "deployedAt": 1788604744707,
     "deployedBy": 435691,
-    "deployedDefinitionId": "6a9bea585f22d93ee6e7e9a4",
-    "deploymentNotes": "Adds effectiveStart, effectiveEnd and allocationPct to positions[] - additive, no caller reads less than before. Suite 27/27 green on tool, validate and lint clean. Approved by krish.sharma in session 2026-09-05 so the Sales Commission Management Positions page can show the assignment window it was showing from seed data.",
+    "deployedDefinitionId": "6a9bf14857dcee3b720500d1",
+    "deploymentNotes": "Adds titleName and attributeEffectiveStart to positions[], from the PositionAttribute row in force on the as-of date. Additive only. Suite 30/30 green on tool, validate and lint clean. Approved by krish.sharma in session 2026-09-05 so the Positions page can render the title sub-line and effective-from column.",
     "status": "DEPLOYED",
-    "version": 2,
-    "workflowVersion": 2
+    "version": 3,
+    "workflowVersion": 3
   },
   "description": "A paged, searchable list of positions, optionally with who occupies each one as of a date - resolved in BULK so a page never makes one call per row. Spec: docs/automations/list-positions.md",
   "edges": [
@@ -116,9 +116,9 @@
   "id": "6a9bcafbc4f2d5527e3c324c",
   "lastModifiedBy": 435691,
   "lastPlatformUpdateBy": 435691,
-  "lastPlatformUpdateOn": 1788603974049,
+  "lastPlatformUpdateOn": 1788612589191,
   "lcName": "icm | list positions",
-  "modifiedTime": 1788603974049,
+  "modifiedTime": 1788612589191,
   "name": "ICM | List Positions",
   "nodes": [
     {
@@ -282,6 +282,10 @@
                   }
                 }
               }
+            },
+            "truncated": {
+              "type": "boolean",
+              "title": "Truncated"
             }
           }
         },
@@ -309,6 +313,22 @@
             "includeOccupancy": {
               "type": "string",
               "title": "Include Occupancy"
+            },
+            "positionCode": {
+              "type": "string",
+              "title": "Position Code"
+            },
+            "name": {
+              "type": "string",
+              "title": "Name"
+            },
+            "personName": {
+              "type": "string",
+              "title": "Person Name"
+            },
+            "occupancy": {
+              "type": "string",
+              "title": "Occupancy"
             }
           }
         }
@@ -370,6 +390,24 @@
             "filter": {
               "type": "object",
               "title": "Filter"
+            },
+            "fetchLimit": {
+              "type": "integer"
+            },
+            "fetchOffset": {
+              "type": "integer"
+            },
+            "postFilter": {
+              "type": "boolean"
+            },
+            "fPerson": {
+              "type": "string"
+            },
+            "fOcc": {
+              "type": "string"
+            },
+            "scanCap": {
+              "type": "integer"
             }
           }
         },
@@ -397,10 +435,22 @@
             "includeOccupancy": {
               "type": "string",
               "title": "Include Occupancy"
+            },
+            "positionCode": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "personName": {
+              "type": "string"
+            },
+            "occupancy": {
+              "type": "string"
             }
           }
         },
-        "code": "// Every default is applied HERE, never assumed from the caller. Real callers\n// send \"\" for what they did not fill, so \"\" is the value each branch is built\n// around rather than an edge case.\ndef s   = (search == null) ? '' : search.toString().trim()\ndef raw = (asOfDate == null) ? '' : asOfDate.toString().trim()\ndef lim = (limit == null) ? '' : limit.toString().trim()\ndef off = (offset == null) ? '' : offset.toString().trim()\ndef occ = (includeOccupancy == null) ? '' : includeOccupancy.toString().trim()\n\nboolean valid = true\nString reason = ''\nlong epoch = 0L\nString day = ''\n\nif (raw.isEmpty()) {\n    // default: TODAY, UTC - and it is echoed back so a caller in another\n    // timezone always knows which day it actually got\n    def d = java.time.LocalDate.now(java.time.ZoneOffset.UTC)\n    epoch = d.atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli()\n    day = d.toString()\n} else if (raw ==~ /^\\d{4}-\\d{2}-\\d{2}$/) {\n    try {\n        def d = java.time.LocalDate.parse(raw)\n        epoch = d.atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli()\n        day = raw\n    } catch (Exception e) { valid = false; reason = 'asOfDate is not a real calendar date: ' + raw }\n} else if (raw ==~ /^\\d{9,}$/) {\n    epoch = Long.parseLong(raw)\n    day = java.time.Instant.ofEpochMilli(epoch).atZone(java.time.ZoneOffset.UTC).toLocalDate().toString()\n} else {\n    valid = false; reason = 'asOfDate must be YYYY-MM-DD or epoch milliseconds, got: ' + raw\n}\n\nint pageLimit = 50\nif (!lim.isEmpty()) {\n    if (lim ==~ /^\\d+$/) { pageLimit = Integer.parseInt(lim) } else { valid = false; reason = 'limit must be a whole number, got: ' + lim }\n}\nif (pageLimit < 1) pageLimit = 1\nif (pageLimit > 200) pageLimit = 200\n\nint pageOffset = 0\nif (!off.isEmpty()) {\n    if (off ==~ /^\\d+$/) { pageOffset = Integer.parseInt(off) } else { valid = false; reason = 'offset must be a whole number, got: ' + off }\n}\n\nboolean wantOcc = occ.isEmpty() ? true : !(occ.equalsIgnoreCase('false'))\n\n// A nested OR group inside the AND. A filter node's STATIC config cannot\n// express this, but the runtime accepts the whole object built here and passed\n// as one pill (runtime-facts, proven 2026-08-24). Filtering after the fetch\n// instead would break `total` and paging.\ndef filters = []\nif (!valid) {\n    filters << [property: 'id', filter: [operator: 'EQUAL', value: '__invalid_input__']]\n} else if (!s.isEmpty()) {\n    filters << [operator: 'OR', filters: [\n        [property: 'properties.positionCode', filter: [operator: 'ICONTAINS', value: s]],\n        [property: 'properties.name',         filter: [operator: 'ICONTAINS', value: s]]]]\n}\nreturn [valid: valid, reason: reason, asOfEpoch: epoch, asOfDay: day,\n        pageLimit: pageLimit, pageOffset: pageOffset, wantOccupancy: wantOcc,\n        filter: [operator: 'AND', filters: filters]]",
+        "code": "// Every default is applied HERE, never assumed from the caller. Real callers\n// send \"\" for what they did not fill, so \"\" is the value each branch is built\n// around rather than an edge case.\ndef s   = (search == null) ? '' : search.toString().trim()\ndef raw = (asOfDate == null) ? '' : asOfDate.toString().trim()\ndef lim = (limit == null) ? '' : limit.toString().trim()\ndef off = (offset == null) ? '' : offset.toString().trim()\ndef occ = (includeOccupancy == null) ? '' : includeOccupancy.toString().trim()\n// A parameter whose template resolves to nothing is not bound AT ALL, so a\n// `== null` guard still throws \"No such property\". Callers that predate these\n// four fields send five keys and nothing else, and they must keep working.\ndef opt = { String k ->\n    if (!binding.hasVariable(k)) return ''\n    def v = binding.getVariable(k)\n    return (v == null) ? '' : v.toString().trim()\n}\ndef fCode = opt('positionCode')\ndef fName = opt('name')\ndef fPerson = opt('personName')\ndef fOcc = opt('occupancy').toUpperCase()\n\nboolean valid = true\nString reason = ''\nlong epoch = 0L\nString day = ''\n\nif (raw.isEmpty()) {\n    // default: TODAY, UTC - and it is echoed back so a caller in another\n    // timezone always knows which day it actually got\n    def d = java.time.LocalDate.now(java.time.ZoneOffset.UTC)\n    epoch = d.atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli()\n    day = d.toString()\n} else if (raw ==~ /^\\d{4}-\\d{2}-\\d{2}$/) {\n    try {\n        def d = java.time.LocalDate.parse(raw)\n        epoch = d.atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli()\n        day = raw\n    } catch (Exception e) { valid = false; reason = 'asOfDate is not a real calendar date: ' + raw }\n} else if (raw ==~ /^\\d{9,}$/) {\n    epoch = Long.parseLong(raw)\n    day = java.time.Instant.ofEpochMilli(epoch).atZone(java.time.ZoneOffset.UTC).toLocalDate().toString()\n} else {\n    valid = false; reason = 'asOfDate must be YYYY-MM-DD or epoch milliseconds, got: ' + raw\n}\n\nint pageLimit = 50\nif (!lim.isEmpty()) {\n    if (lim ==~ /^\\d+$/) { pageLimit = Integer.parseInt(lim) } else { valid = false; reason = 'limit must be a whole number, got: ' + lim }\n}\nif (pageLimit < 1) pageLimit = 1\nif (pageLimit > 200) pageLimit = 200\n\nint pageOffset = 0\nif (!off.isEmpty()) {\n    if (off ==~ /^\\d+$/) { pageOffset = Integer.parseInt(off) } else { valid = false; reason = 'offset must be a whole number, got: ' + off }\n}\n\nboolean wantOcc = occ.isEmpty() ? true : !(occ.equalsIgnoreCase('false'))\n\n// A nested OR group inside the AND. A filter node's STATIC config cannot\n// express this, but the runtime accepts the whole object built here and passed\n// as one pill (runtime-facts, proven 2026-08-24). Filtering after the fetch\n// instead would break `total` and paging.\ndef filters = []\nif (!valid) {\n    filters << [property: 'id', filter: [operator: 'EQUAL', value: '__invalid_input__']]\n} else {\n    if (!s.isEmpty()) {\n        filters << [operator: 'OR', filters: [\n            [property: 'properties.positionCode', filter: [operator: 'ICONTAINS', value: s]],\n            [property: 'properties.name',         filter: [operator: 'ICONTAINS', value: s]]]]\n    }\n    // positionCode and name live ON the row, so they narrow SERVER-side and paging\n    // stays exact however many positions exist.\n    if (!fCode.isEmpty())  filters << [property: 'properties.positionCode', filter: [operator: 'ICONTAINS', value: fCode]]\n    if (!fName.isEmpty())  filters << [property: 'properties.name',         filter: [operator: 'ICONTAINS', value: fName]]\n}\n\n// personName and occupancy do NOT live on the row - both are produced by the fold,\n// after the assignments are resolved as of the date. Filtering on them means\n// folding EVERY match first and paging in memory afterwards, which is the cost\n// this callable otherwise exists to avoid. So it is bounded: SCAN_CAP rows, and\n// `truncated` says plainly when the answer is partial rather than pretending.\nboolean postFilter = !fPerson.isEmpty() || !fOcc.isEmpty()\nif (!fOcc.isEmpty() && !(fOcc in ['OCCUPIED','VACANT','CONFLICT','UNKNOWN'])) {\n    valid = false; reason = 'occupancy must be OCCUPIED, VACANT, CONFLICT or UNKNOWN, got: ' + fOcc\n}\nfinal int SCAN_CAP = 500\nint fetchLimit  = postFilter ? SCAN_CAP : pageLimit\nint fetchOffset = postFilter ? 0 : pageOffset\nreturn [valid: valid, reason: reason, asOfEpoch: epoch, asOfDay: day,\n        pageLimit: pageLimit, pageOffset: pageOffset, wantOccupancy: wantOcc,\n        fetchLimit: fetchLimit, fetchOffset: fetchOffset, postFilter: postFilter,\n        fPerson: fPerson, fOcc: fOcc, scanCap: SCAN_CAP,\n        filter: [operator: 'AND', filters: filters]]",
         "compile_static": false,
         "captureStdOutput": false,
         "parameters": {
@@ -408,7 +458,11 @@
           "asOfDate": "{{ n_sTaRt.outputs.asOfDate }}",
           "limit": "{{ n_sTaRt.outputs.limit }}",
           "offset": "{{ n_sTaRt.outputs.offset }}",
-          "includeOccupancy": "{{ n_sTaRt.outputs.includeOccupancy }}"
+          "includeOccupancy": "{{ n_sTaRt.outputs.includeOccupancy }}",
+          "positionCode": "{{ n_sTaRt.outputs.positionCode }}",
+          "name": "{{ n_sTaRt.outputs.name }}",
+          "personName": "{{ n_sTaRt.outputs.personName }}",
+          "occupancy": "{{ n_sTaRt.outputs.occupancy }}"
         }
       },
       "skip": false,
@@ -437,8 +491,8 @@
         "translationsOption": "DEFAULT",
         "page": {
           "paginateBy": "OFFSET",
-          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
-          "offset": "{{ n_Norm.outputs.result.pageOffset }}"
+          "limit": "{{ n_Norm.outputs.result.fetchLimit }}",
+          "offset": "{{ n_Norm.outputs.result.fetchOffset }}"
         },
         "numberOfRecordsToFetch": "MULTIPLE",
         "includeTotalCount": true,
@@ -941,6 +995,10 @@
             "message": {
               "type": "string",
               "title": "Message"
+            },
+            "truncated": {
+              "type": "boolean",
+              "title": "Truncated"
             }
           }
         },
@@ -1016,10 +1074,25 @@
             "asOfEpoch": {
               "type": "integer",
               "title": "As Of Epoch"
+            },
+            "postFilter": {
+              "type": "boolean"
+            },
+            "fPerson": {
+              "type": "string"
+            },
+            "fOcc": {
+              "type": "string"
+            },
+            "scanCap": {
+              "type": "integer"
+            },
+            "pageLimit": {
+              "type": "integer"
             }
           }
         },
-        "code": "// The same as-of rule as ICM | Resolve Position Occupant, folded in memory for a\n// whole page at once. Two assignments covering the date is a CONFLICT and never\n// a pick - a position has one occupant on a day, and guessing would pay somebody\n// wrongly.\ndef byPos = [:]\nif (live != null) live.each { l ->\n    def k = String.valueOf(l.positionId)\n    if (!byPos.containsKey(k)) byPos[k] = []\n    byPos[k] << l\n}\n// The SAME as-of window rule the assignments get: a position's title is effective-dated\n// too, and an attribute row that ended before the date describes a position that has\n// since been re-titled. Absent/blank effectiveEnd means still in force.\ndef titleById = [:]\nif (titleRows != null) titleRows.each { t -> titleById[String.valueOf(t.id)] = t.properties?.name ?: '' }\ndef attrByPos = [:]\nlong asOfMs = Long.valueOf(String.valueOf(asOfEpoch))\nif (attrRows != null) attrRows.each { a ->\n    def ap = a.properties\n    def st = ap?.effectiveStart\n    def en = ap?.effectiveEnd\n    boolean started = (st == null) || (Long.valueOf(String.valueOf(st)) <= asOfMs)\n    boolean open = (en == null) || en.toString().trim().isEmpty()\n    if (started && (open || Long.valueOf(String.valueOf(en)) >= asOfMs)) {\n        def k = String.valueOf(ap?.positionId)\n        // several in force is a data problem, not a pick - keep the first and say nothing\n        if (!attrByPos.containsKey(k)) attrByPos[k] = ap\n    }\n}\n\ndef payById = [:]\nif (payRows != null) payRows.each { p -> payById[String.valueOf(p.id)] = p.properties }\n\nint occupied = 0, vacant = 0, conflict = 0\ndef positions = []\nif (posRows != null) posRows.each { r ->\n    def p = r.properties\n    def position = [positionId: String.valueOf(r.id),\n                positionCode: p?.positionCode ?: '',\n                name: p?.name ?: '',\n                // a boolean never set is MISSING, not false - treat absent as active\n                active: (p?.active == null) ? true : (p.active as boolean),\n                occupancy: 'UNKNOWN', payeeId: '', employeeId: '', payeeName: '', matchCount: 0,\n                // null unless ONE assignment resolved this row - a VACANT row has none and a\n                // CONFLICT row has several, and naming one would be the guess we refuse to make\n                effectiveStart: null, effectiveEnd: null, allocationPct: null,\n                // the position's own effective-dated attributes, independent of who holds it\n                titleName: '', attributeEffectiveStart: null]\n    def attr = attrByPos[String.valueOf(r.id)]\n    if (attr != null) {\n        position.titleName = titleById[String.valueOf(attr.titleId)] ?: ''\n        position.attributeEffectiveStart = (attr.effectiveStart == null) ? null : Long.valueOf(String.valueOf(attr.effectiveStart))\n    }\n    if (wantOccupancy) {\n        def hits = byPos[String.valueOf(r.id)] ?: []\n        position.matchCount = hits.size()\n        if (hits.size() == 0)      { position.occupancy = 'VACANT';   vacant++ }\n        else if (hits.size() > 1)  { position.occupancy = 'CONFLICT'; conflict++ }\n        else {\n            position.occupancy = 'OCCUPIED'; occupied++\n            position.payeeId = String.valueOf(hits[0].payeeId)\n            def pay = payById[position.payeeId]\n            position.employeeId = (pay == null) ? '' : (pay.employeeId ?: '')\n            position.payeeName  = (pay == null) ? '' : (pay.name ?: '')\n            position.effectiveStart = hits[0].effectiveStart\n            // null here means OPEN-ENDED, still held - not \"unknown\"\n            position.effectiveEnd   = hits[0].effectiveEnd\n            position.allocationPct  = hits[0].allocationPct\n        }\n    }\n    positions << position\n}\n\nint total = (posTotal == null) ? positions.size() : Integer.valueOf(String.valueOf(posTotal))\nint got   = (asgRows == null) ? 0 : asgRows.size()\nint asgTot = (asgTotal == null) ? got : Integer.valueOf(String.valueOf(asgTotal))\n\nreturn [positions: positions,\n        total: total,\n        hasMore: (pageOffset + positions.size()) < total,\n        counts: [total: positions.size(), occupied: occupied, vacant: vacant, conflict: conflict],\n        countsTruncated: got < asgTot,\n        message: wantOccupancy\n            ? (positions.size() + ' position(s) on this page, as of ' + String.valueOf(asOfDay))\n            : (positions.size() + ' position(s) on this page; occupancy not resolved')]",
+        "code": "// The same as-of rule as ICM | Resolve Position Occupant, folded in memory for a\n// whole page at once. Two assignments covering the date is a CONFLICT and never\n// a pick - a position has one occupant on a day, and guessing would pay somebody\n// wrongly.\ndef byPos = [:]\nif (live != null) live.each { l ->\n    def k = String.valueOf(l.positionId)\n    if (!byPos.containsKey(k)) byPos[k] = []\n    byPos[k] << l\n}\n// The SAME as-of window rule the assignments get: a position's title is effective-dated\n// too, and an attribute row that ended before the date describes a position that has\n// since been re-titled. Absent/blank effectiveEnd means still in force.\ndef titleById = [:]\nif (titleRows != null) titleRows.each { t -> titleById[String.valueOf(t.id)] = t.properties?.name ?: '' }\ndef attrByPos = [:]\nlong asOfMs = Long.valueOf(String.valueOf(asOfEpoch))\nif (attrRows != null) attrRows.each { a ->\n    def ap = a.properties\n    def st = ap?.effectiveStart\n    def en = ap?.effectiveEnd\n    boolean started = (st == null) || (Long.valueOf(String.valueOf(st)) <= asOfMs)\n    boolean open = (en == null) || en.toString().trim().isEmpty()\n    if (started && (open || Long.valueOf(String.valueOf(en)) >= asOfMs)) {\n        def k = String.valueOf(ap?.positionId)\n        // several in force is a data problem, not a pick - keep the first and say nothing\n        if (!attrByPos.containsKey(k)) attrByPos[k] = ap\n    }\n}\n\ndef payById = [:]\nif (payRows != null) payRows.each { p -> payById[String.valueOf(p.id)] = p.properties }\n\nint occupied = 0, vacant = 0, conflict = 0\ndef positions = []\nif (posRows != null) posRows.each { r ->\n    def p = r.properties\n    def position = [positionId: String.valueOf(r.id),\n                positionCode: p?.positionCode ?: '',\n                name: p?.name ?: '',\n                // a boolean never set is MISSING, not false - treat absent as active\n                active: (p?.active == null) ? true : (p.active as boolean),\n                occupancy: 'UNKNOWN', payeeId: '', employeeId: '', payeeName: '', matchCount: 0,\n                // null unless ONE assignment resolved this row - a VACANT row has none and a\n                // CONFLICT row has several, and naming one would be the guess we refuse to make\n                effectiveStart: null, effectiveEnd: null, allocationPct: null,\n                // the position's own effective-dated attributes, independent of who holds it\n                titleName: '', attributeEffectiveStart: null]\n    def attr = attrByPos[String.valueOf(r.id)]\n    if (attr != null) {\n        position.titleName = titleById[String.valueOf(attr.titleId)] ?: ''\n        position.attributeEffectiveStart = (attr.effectiveStart == null) ? null : Long.valueOf(String.valueOf(attr.effectiveStart))\n    }\n    if (wantOccupancy) {\n        def hits = byPos[String.valueOf(r.id)] ?: []\n        position.matchCount = hits.size()\n        if (hits.size() == 0)      { position.occupancy = 'VACANT';   vacant++ }\n        else if (hits.size() > 1)  { position.occupancy = 'CONFLICT'; conflict++ }\n        else {\n            position.occupancy = 'OCCUPIED'; occupied++\n            position.payeeId = String.valueOf(hits[0].payeeId)\n            def pay = payById[position.payeeId]\n            position.employeeId = (pay == null) ? '' : (pay.employeeId ?: '')\n            position.payeeName  = (pay == null) ? '' : (pay.name ?: '')\n            position.effectiveStart = hits[0].effectiveStart\n            // null here means OPEN-ENDED, still held - not \"unknown\"\n            position.effectiveEnd   = hits[0].effectiveEnd\n            position.allocationPct  = hits[0].allocationPct\n        }\n    }\n    positions << position\n}\n\n// Post-filters apply to what the fold PRODUCED, so they run here and the page is\n// cut afterwards - otherwise `total` and hasMore would describe the unfiltered set.\nboolean truncated = false\nif (postFilter) {\n    def keep = positions.findAll { p ->\n        boolean okOcc = fOcc == null || fOcc.toString().isEmpty() || p.occupancy == fOcc\n        boolean okPer = fPerson == null || fPerson.toString().isEmpty() ||\n                        (p.payeeName != null && p.payeeName.toLowerCase().contains(fPerson.toString().toLowerCase()))\n        okOcc && okPer\n    }\n    truncated = positions.size() >= Integer.valueOf(String.valueOf(scanCap))\n    occupied = keep.count { it.occupancy == 'OCCUPIED' }\n    vacant   = keep.count { it.occupancy == 'VACANT' }\n    conflict = keep.count { it.occupancy == 'CONFLICT' }\n    int from = Math.min(pageOffset, keep.size())\n    int to   = Math.min(from + Integer.valueOf(String.valueOf(pageLimit)), keep.size())\n    positions = keep.subList(from, to)\n    posTotal = keep.size()\n}\n\nint total = (posTotal == null) ? positions.size() : Integer.valueOf(String.valueOf(posTotal))\nint got   = (asgRows == null) ? 0 : asgRows.size()\nint asgTot = (asgTotal == null) ? got : Integer.valueOf(String.valueOf(asgTotal))\n\nreturn [positions: positions,\n        truncated: truncated,\n        total: total,\n        hasMore: (pageOffset + positions.size()) < total,\n        counts: [total: positions.size(), occupied: occupied, vacant: vacant, conflict: conflict],\n        countsTruncated: got < asgTot,\n        message: wantOccupancy\n            ? (positions.size() + ' position(s) on this page, as of ' + String.valueOf(asOfDay))\n            : (positions.size() + ' position(s) on this page; occupancy not resolved')]",
         "compile_static": false,
         "captureStdOutput": false,
         "parameters": {
@@ -1034,7 +1107,12 @@
           "pageOffset": "{{ n_Norm.outputs.result.pageOffset }}",
           "attrRows": "{{ n_FtAttr.outputs.objects }}",
           "titleRows": "{{ n_FtTitle.outputs.objects }}",
-          "asOfEpoch": "{{ n_Norm.outputs.result.asOfEpoch }}"
+          "asOfEpoch": "{{ n_Norm.outputs.result.asOfEpoch }}",
+          "postFilter": "{{ n_Norm.outputs.result.postFilter }}",
+          "fPerson": "{{ n_Norm.outputs.result.fPerson }}",
+          "fOcc": "{{ n_Norm.outputs.result.fOcc }}",
+          "scanCap": "{{ n_Norm.outputs.result.scanCap }}",
+          "pageLimit": "{{ n_Norm.outputs.result.pageLimit }}"
         }
       },
       "skip": false,
@@ -1138,7 +1216,8 @@
             "ua:type": "mappedArray",
             "source": "{{ n_Fold.outputs.result.positions }}",
             "items": "{{ n_Fold.outputs.result.positions[0] }}"
-          }
+          },
+          "truncated": "{{ n_Fold.outputs.result.truncated }}"
         }
       },
       "skip": false,
@@ -1161,5 +1240,5 @@
   "tags": [
     "icm"
   ],
-  "version": 3
+  "version": 5
 }

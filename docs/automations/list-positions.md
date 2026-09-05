@@ -81,6 +81,35 @@ Touches neither. No `periodId`, no amount, no rounding point.
 | `limit` | string | no | `""` → `50`. Clamped to 1..200 |
 | `offset` | string | no | `""` → `0` |
 | `includeOccupancy` | string | no | `""` → `"true"`. `"false"` skips the two extra fetches and the fold |
+| `positionCode` | string | no | `""` → no filter. `ICONTAINS`, narrows **server-side** |
+| `name` | string | no | `""` → no filter. `ICONTAINS`, narrows **server-side** |
+| `personName` | string | no | `""` → no filter. Matches the RESOLVED occupant — see the scan note |
+| `occupancy` | string | no | `""` → no filter. One of `OCCUPIED` `VACANT` `CONFLICT` `UNKNOWN`; anything else is `INVALID_INPUT` |
+
+### The two kinds of filter, and why one costs more
+
+`positionCode` and `name` live ON the Position row, so they join the same AND
+group as `search` and the database does the narrowing. `total`, `hasMore` and
+paging stay exact however many positions exist.
+
+`personName` and `occupancy` **do not exist until the fold has run** — they are
+produced by resolving assignments as of the date. Filtering on them means folding
+every match first and cutting the page in memory afterwards, which is the cost
+this callable was built to avoid. So it is bounded rather than forbidden: the
+scan stops at **500 rows** and `truncated: true` says plainly that the answer is
+partial. Same honest-bound pattern as `countsTruncated`, for the same reason —
+a wrong number that looks right is worse than a number that admits its limit.
+
+When a post-filter runs, `total` and `counts` are recomputed from the FILTERED
+set before the page is cut. Reporting the unfiltered total there would make the
+pager offer pages that do not exist, and the "1 conflict" chip would sit next to
+a list of twenty.
+
+**A parameter that resolves to nothing is not bound at all.** Adding these four
+inputs turned the whole suite red with `No such property: positionCode`, because
+every existing caller sends five keys and the templates for the other four
+resolved to nothing — and a `== null` guard cannot catch a variable that was
+never bound. `n_Norm` reads them through `binding.hasVariable()` for that reason.
 
 Every default is applied INSIDE the automation. Real callers send empty strings
 for what they don't fill, so `""` is the value each of these is designed
@@ -248,6 +277,11 @@ positions' occupancy honest rather than confidently wrong.
 | the open-ended assignment | `OCCUPIED` — the case a server-side `effectiveEnd` filter would break |
 | `asOfDate: "not-a-date"` | `INVALID_INPUT` |
 | `limit: "abc"` | `INVALID_INPUT` |
+| `positionCode` / `name` | narrows server-side, `total` reflects the filter |
+| `occupancy: "CONFLICT"` | only the contested seat, and `total` counts the FILTERED set |
+| `personName` | matches the resolved occupant, which is not a stored field |
+| `personName` + `occupancy` together | both must hold |
+| `occupancy: "MAYBE"` | `INVALID_INPUT` — not one of the four states |
 | a position with an attribute row in force | `titleName` is that Title's name, `attributeEffectiveStart` set |
 | a position with no attribute row | `titleName: ""`, `attributeEffectiveStart` absent |
 | a date BEFORE the attribute row starts | same — effective dating applies to titles too |

@@ -205,6 +205,65 @@
       ]
     },
     {
+      "name": "filter - positionCode narrows SERVER-side, and total reflects it",
+      "payload": { "search": "", "asOfDate": "2026-03-14", "limit": "", "offset": "", "includeOccupancy": "", "positionCode": "KITFIX-POS-01", "name": "", "personName": "", "occupancy": "" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "total", "equals": 1 },
+        { "path": "positions.0.positionCode", "equals": "KITFIX-POS-01" },
+        { "path": "truncated", "equals": false }
+      ]
+    },
+    {
+      "name": "filter - name is a separate field from positionCode",
+      "payload": { "search": "", "asOfDate": "2026-03-14", "limit": "", "offset": "", "includeOccupancy": "", "positionCode": "", "name": "Contested", "personName": "", "occupancy": "" },
+      "checks": [
+        { "path": "total", "equals": 1 },
+        { "path": "positions.0.positionCode", "equals": "KITFIX-POS-03" }
+      ]
+    },
+    {
+      "name": "filter - occupancy CONFLICT, and total counts the FILTERED set not the page",
+      "payload": { "search": "KITFIX-", "asOfDate": "2026-03-14", "limit": "", "offset": "", "includeOccupancy": "", "positionCode": "", "name": "", "personName": "", "occupancy": "CONFLICT" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "total", "equals": 1 },
+        { "path": "positions.0.positionCode", "equals": "KITFIX-POS-03" },
+        { "path": "positions.0.occupancy", "equals": "CONFLICT" }
+      ]
+    },
+    {
+      "name": "filter - occupancy VACANT returns only vacant seats",
+      "payload": { "search": "KITFIX-", "asOfDate": "2026-03-14", "limit": "", "offset": "", "includeOccupancy": "", "positionCode": "", "name": "", "personName": "", "occupancy": "VACANT" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "positions.0.occupancy", "equals": "VACANT" },
+        { "path": "counts.conflict", "equals": 0 }
+      ]
+    },
+    {
+      "name": "filter - personName matches the resolved occupant, which is not a stored field",
+      "payload": { "search": "", "asOfDate": "2026-03-14", "limit": "", "offset": "", "includeOccupancy": "", "positionCode": "", "name": "", "personName": "bhavna", "occupancy": "" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "total", "equals": 1 },
+        { "path": "positions.0.payeeName", "equals": "KITFIX-Bhavna Iyer" }
+      ]
+    },
+    {
+      "name": "filter - occupancy and personName together, both must hold",
+      "payload": { "search": "", "asOfDate": "2026-03-14", "limit": "", "offset": "", "includeOccupancy": "", "positionCode": "", "name": "", "personName": "bhavna", "occupancy": "VACANT" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "total", "equals": 0 }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - an occupancy that is not one of the four states",
+      "payload": { "search": "", "asOfDate": "", "limit": "", "offset": "", "includeOccupancy": "", "positionCode": "", "name": "", "personName": "", "occupancy": "MAYBE" },
+      "checks": [{ "path": "status", "equals": "INVALID_INPUT" }]
+    },
+    {
       "name": "window - closed range: the assignment's own start, end and split come back",
       "payload": { "search": "KITFIX-POS-01", "asOfDate": "2026-02-15", "limit": "", "offset": "", "includeOccupancy": "" },
       "checks": [
