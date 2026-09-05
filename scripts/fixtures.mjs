@@ -15,7 +15,18 @@
 // whose prefixField value starts with the family's prefix, and it refuses to
 // run without --yes.
 //
-// Refuses the tool (production) environment outright.
+// ORBIT ONLY, DELIBERATELY, and the ONE script left that way.
+//
+// Every other write script became `--env`-aware on 2026-09-05 when the product
+// moved to tool prod. This one did not, and the asymmetry is the point: seeding
+// is harmless but `reset` DELETES, and its safety rests entirely on a prefix
+// match. A typo'd prefixField, a family file edited in a hurry, or a fixture
+// family that grows to cover an object real records also live in, and the blast
+// radius on prod is somebody's pay history.
+//
+// Test data belongs on UAT. If you ever genuinely need a fixture family on prod,
+// that is a decision to take deliberately with the product team and write down —
+// not a flag to add here.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -30,7 +41,10 @@ for (const line of fs.readFileSync(path.join(ROOT, ".env.local"), "utf8").split(
   if (m && !line.trim().startsWith("#")) vars[m[1]] = m[2];
 }
 const env = vars.UA_DEFAULT_ENV || "orbit";
-if (env !== "orbit") die("refusing to write fixtures anywhere but orbit");
+if (env !== "orbit") {
+  die("refusing to write fixtures anywhere but orbit - `reset` deletes by prefix match, " +
+      "and test data does not belong on production. See the header.");
+}
 const baseUrl = vars.UA_ORBIT_URL, cookie = vars.UA_ORBIT_COOKIE;
 if (!baseUrl || !cookie) die("missing UA_ORBIT_URL or UA_ORBIT_COOKIE");
 

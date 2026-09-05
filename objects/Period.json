@@ -1,0 +1,16 @@
+{
+  "id": "Period",
+  "name": "Period",
+  "pluralName": "Periods",
+  "description": "One fiscal period - a month, quarter or year - with its dates and its lock state. The comp calendar every quota, credit and calculation references. `status` is the product's state machine: nothing writes into a period that is not writable.",
+  "nameField": "name",
+  "uniqueKeyFields": ["name"],
+  "properties": {
+    "name":           { "type": "string", "required": true, "uniqueKey": true, "searchable": true, "title": "Name" },
+    "periodType":     { "type": "string", "required": true, "title": "Period Type" },
+    "startDate":      { "type": "date", "required": true, "title": "Start Date" },
+    "endDate":        { "type": "date", "required": true, "title": "End Date" },
+    "status":         { "type": "string", "required": true, "title": "Status" },
+    "parentPeriodId": { "type": "fk:Period", "title": "Parent Period Id" }
+  }
+}

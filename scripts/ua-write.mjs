@@ -11,42 +11,19 @@
 //
 // Snapshot and commit before using it. There is no undo here.
 //
-// Refuses to run against the `tool` (production) environment. Production is
-// read-only unless a human changes this file deliberately.
+// Writes to PRODUCTION only with an explicit `--env tool` on the command line.
+// This is a FULL REPLACE with no undo, so snapshot and commit first — on prod
+// that advice stops being advice.
 
 import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+import { resolveEnv } from "./env.mjs";
 
 function die(msg) {
   console.error(`error: ${msg}`);
   process.exit(1);
 }
 
-const vars = {};
-for (const line of fs.readFileSync(path.join(ROOT, ".env.local"), "utf8").split("\n")) {
-  const m = line.match(/^\s*([A-Z_]+)\s*=\s*"?([^"]*)"?\s*$/);
-  if (m && !line.trim().startsWith("#")) vars[m[1]] = m[2];
-}
-
-const args = process.argv.slice(2);
-const envFlagIdx = args.indexOf("--env");
-let envName = null;
-if (envFlagIdx !== -1) {
-  envName = args[envFlagIdx + 1];
-  args.splice(envFlagIdx, 2);
-}
-envName = envName || vars.UA_DEFAULT_ENV || "orbit";
-if (envName === "tool") {
-  die("refusing to write to tool (production). This script only writes to orbit.");
-}
-if (envName !== "orbit") die(`unknown env "${envName}"`);
-
-const baseUrl = vars.UA_ORBIT_URL;
-const cookie = vars.UA_ORBIT_COOKIE;
-if (!baseUrl || !cookie) die("missing UA_ORBIT_URL or UA_ORBIT_COOKIE in .env.local");
+const { env: envName, baseUrl, cookie, args } = resolveEnv({ write: true });
 
 const [command, id, file] = args;
 if (command !== "update" || !id || !file) {

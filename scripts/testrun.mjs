@@ -14,6 +14,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { resolveEnv } from "./env.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -22,17 +23,10 @@ function die(msg) {
   process.exit(1);
 }
 
-const vars = {};
-for (const line of fs.readFileSync(path.join(ROOT, ".env.local"), "utf8").split("\n")) {
-  const m = line.match(/^\s*([A-Z_]+)\s*=\s*"?([^"]*)"?\s*$/);
-  if (m && !line.trim().startsWith("#")) vars[m[1]] = m[2];
-}
-const env = vars.UA_DEFAULT_ENV || "orbit";
-const baseUrl = vars[env === "orbit" ? "UA_ORBIT_URL" : "UA_TOOL_URL"];
-const cookie = vars[env === "orbit" ? "UA_ORBIT_COOKIE" : "UA_TOOL_COOKIE"];
+const { env, baseUrl, cookie, args: argv } = resolveEnv();
 if (!baseUrl || !cookie) die(`missing url or cookie for env "${env}"`);
 
-const [workflowId, payloadArg] = process.argv.slice(2);
+const [workflowId, payloadArg] = argv;
 if (!workflowId) die('usage: node scripts/testrun.mjs <workflowId> [\'{"input":"json"}\']');
 const payload = payloadArg ? JSON.parse(payloadArg) : {};
 

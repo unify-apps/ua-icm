@@ -1,0 +1,333 @@
+{
+  "appsUsed": [],
+  "createdTime": 1788594897769,
+  "deleted": false,
+  "description": "Given a periodId, says whether that period currently accepts writes. The shared guard every automation that writes with a periodId calls first.",
+  "edges": [
+    {
+      "fromNodeId": "n_sTaRt",
+      "id": "next@n_sTaRt@n_FtPer",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtPer",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtPer",
+      "id": "next@n_FtPer@n_IfNF",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfNF",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfNF",
+      "id": "if@n_IfNF@n_StNF",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StNF",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfNF",
+      "id": "next@n_IfNF@n_IfOpn",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfOpn",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfOpn",
+      "id": "if@n_IfOpn@n_StOk",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StOk",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfOpn",
+      "id": "next@n_IfOpn@n_StNo",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StNo",
+      "type": "next"
+    }
+  ],
+  "id": "6a9bcad14ea21f4020cac3fe",
+  "lastModifiedBy": 372563,
+  "lastPlatformUpdateBy": 372563,
+  "lastPlatformUpdateOn": 1788594897769,
+  "lcName": "icm | check period writable",
+  "modifiedTime": 1788594897769,
+  "name": "ICM | Check Period Writable",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_sTaRt",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "status": {
+              "type": "string",
+              "title": "Status"
+            },
+            "writable": {
+              "type": "boolean",
+              "title": "Writable"
+            },
+            "periodName": {
+              "type": "string",
+              "title": "Period Name"
+            },
+            "periodStatus": {
+              "type": "string",
+              "title": "Period Status"
+            },
+            "reason": {
+              "type": "string",
+              "title": "Reason"
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "periodId": {
+              "type": "string",
+              "title": "Period Id"
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtPer",
+      "index": 2,
+      "inputs": {
+        "triggerInputCondition": {
+          "operator": "AND",
+          "filters": [
+            {
+              "property": "id",
+              "filter": {
+                "operator": "EQUAL",
+                "value": "{{ n_sTaRt.outputs.periodId }}"
+              }
+            }
+          ]
+        },
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Period",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 1,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "readThroughSessionVariables": false,
+        "includeTotalCount": true,
+        "fields": [
+          "id",
+          "properties.name",
+          "properties.status"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Look up the period being written to",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_IfNF",
+      "index": 3,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_FtPer.outputs.total }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": 0
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "No such period? refuse before anything writes",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfNF@root_id-1@y",
+      "id": "n_StNF",
+      "index": 4,
+      "inputs": {
+        "result": {
+          "status": "PERIOD_NOT_FOUND",
+          "writable": false,
+          "periodName": "",
+          "periodStatus": "",
+          "reason": "No period exists with that id."
+        }
+      },
+      "skip": false,
+      "subTitle": "Caller sent an id that does not exist",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfNF@root_id-1@n",
+      "id": "n_IfOpn",
+      "index": 5,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_FtPer.outputs.objects[0].properties.status }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": "OPEN"
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Only an OPEN period accepts money writes",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfOpn@n_IfNF@root_id-1@n@y",
+      "id": "n_StOk",
+      "index": 6,
+      "inputs": {
+        "result": {
+          "status": "WRITABLE",
+          "writable": true,
+          "periodName": "{{ n_FtPer.outputs.objects[0].properties.name }}",
+          "periodStatus": "{{ n_FtPer.outputs.objects[0].properties.status }}",
+          "reason": ""
+        }
+      },
+      "skip": false,
+      "subTitle": "Period is open - caller may write",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfOpn@n_IfNF@root_id-1@n@n",
+      "id": "n_StNo",
+      "index": 7,
+      "inputs": {
+        "result": {
+          "status": "PERIOD_NOT_WRITABLE",
+          "writable": false,
+          "periodName": "{{ n_FtPer.outputs.objects[0].properties.name }}",
+          "periodStatus": "{{ n_FtPer.outputs.objects[0].properties.status }}",
+          "reason": "Period is not OPEN, so it cannot accept writes."
+        }
+      },
+      "skip": false,
+      "subTitle": "Period is closed or calculating - refuse the write",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 372563,
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 0
+}

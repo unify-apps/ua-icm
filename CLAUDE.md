@@ -25,16 +25,23 @@ They are not yet proven *here*, because this repo has built nothing. So:
 
 ## Setup (once per person)
 
-Node 18+ and a browser cookie in `.env.local` (git-ignored, never commit it):
+Node 18+ and **two** browser cookies in `.env.local` (git-ignored, never commit
+it). Both, because the product is built on tool prod and proved on orbit:
 
 ```
 UA_ORBIT_URL="https://orbit.uat.unifyapps.com"
-UA_ORBIT_COOKIE="<value of the _at cookie from Chrome dev tools>"
+UA_ORBIT_COOKIE="<the _at cookie from orbit>"
+UA_TOOL_URL="https://tool.prod-aps1.unifyapps.com"
+UA_TOOL_COOKIE="<the _at cookie from tool prod>"
 UA_DEFAULT_ENV="orbit"
 ```
 
-Check it works: `node scripts/ua.mjs whoami`. A 401 means the cookie went stale
-— paste a fresh one.
+Check both: `node scripts/ua.mjs whoami` and `node scripts/ua.mjs whoami --env
+tool`. A 401 means that cookie went stale — paste a fresh one. They expire every
+few days; that is normal.
+
+Leave `UA_DEFAULT_ENV="orbit"`. It is the safe default, and it is deliberately
+**not** how you reach production — see the environment rule below.
 
 ## Before anything: the identifiers are placeholders
 
@@ -55,8 +62,20 @@ literal app id or tag anywhere except `kit.config.json`.
 
 ## Safety rules (non-negotiable)
 
-- Orbit (UAT) is the working environment. Tool (prod) is look-but-don't-touch
-  unless a human explicitly says otherwise (`--env tool` to read).
+- **The product lives on tool (production).** That changed on 2026-09-05: the
+  ICM objects and callables were built and proved on orbit, then replicated to
+  tool prod, which is where the app `app-1621b11a65c8` ("Ledger") runs. Orbit
+  keeps its copy and is still where you prove anything you are unsure of.
+- **Production must be typed, never inherited.** Every script that writes takes
+  `--env tool` on the command line, and `UA_DEFAULT_ENV` alone can never select
+  it. That is enforced in `scripts/env.mjs`, in one place, so it cannot drift:
+  a stale default in somebody's `.env.local` can never point a create, an
+  update or a deploy at prod. Reads are not gated that way — reading prod
+  changes nothing, and making it awkward only teaches people to flip the
+  default, which is the accident being prevented.
+- **`fixtures.mjs` is orbit-only and stays that way.** It is the one write
+  script with no `--env`. `reset` deletes by prefix match, and test data does
+  not belong on production.
 - Never deploy, delete, or publish anything without an explicit human yes in the
   current conversation. Agent edits only change the draft — that's fine;
   deploying is a separate, gated act.
@@ -212,12 +231,24 @@ run, and can turn a failing run's payload straight into a regression case
 id from `kit.config.json` and now flags a WRONG applicationId, not just a
 missing one.
 
-`scripts/ua-write.mjs` — direct workflow-definition update. Orbit only; refuses
-production outright.
+`scripts/env.mjs` — the ONE definition of how a script chooses an environment,
+and of the rule that production must be typed rather than inherited. Shared by
+every script that talks to the platform. Not a command.
+
+`scripts/ua-write.mjs` — direct workflow-definition update. A FULL REPLACE with
+no undo: snapshot and commit first.
 
 `scripts/ua-object.mjs` — CREATES an object type from a compact spec. Changes
 the data model for everyone. `plan` prints the body without calling anything;
 `create` POSTs it. Never updates, retypes or deletes.
+
+`scripts/ua-automation.mjs` — CREATES an automation from a snapshot, via
+`POST /api/workflow-definition`. This is how an automation proved on one
+environment is replicated onto another: it strips the fields the server owns
+(`id`, `version`, timestamps, ownership, `deploymentState`), takes tags from
+`kit.config.json` rather than the snapshot, and refuses a duplicate name on the
+target. It creates a DRAFT and never deploys — that is `deploy.mjs` and its
+gates. `plan` prints what would be sent without calling anything.
 
 `scripts/ua-schema.mjs` — adds properties to an object schema that already
 exists. Changes the data model for everyone. Never removes or retypes.
@@ -227,8 +258,10 @@ call a deployed automation. It exists because the devkit's own
 `create_data_source` hardcodes `entityType: 'e_data_source_deployed'`, which
 does not exist on orbit — the failure reads as a permissions error and is not
 one. This script PROBES which data-source type the platform actually has and
-uses that, rather than inheriting the same hardcoded literal. `plan` prints the
-body without calling anything; `create` POSTs it. Orbit only.
+uses that, rather than inheriting the same hardcoded literal — and that probe
+matters more across two environments, not less, since nothing says prod answers
+the way orbit does. `plan` prints the body without calling anything; `create`
+POSTs it.
 
 `scripts/field-types.mjs` — the ONE definition of how a field spec becomes a
 platform property, shared by the two above. Not a command.
@@ -256,9 +289,14 @@ is the mechanism behind the ICM rule about never testing on real pay data.
 ## Objects: the data model you own
 
 ICM object types are the ones tagged per `kit.config.json`, and that family is
-the only one we snapshot into `snapshots/orbit/entity-types/`. Refresh with
-`node scripts/ua.mjs snap-types --tag <tag>`; re-run it when the team adds
-objects.
+the only one we snapshot. Snapshots are **per environment** —
+`snapshots/orbit/…` and `snapshots/tool/…` — because the two can legitimately
+differ while something is being proved on orbit before it reaches prod. Refresh
+with `node scripts/ua.mjs snap-types --tag <tag> [--env tool]`; re-run it when
+the team adds objects.
+
+Run `drift` against BOTH before designing anything. A drift check that only
+looks at orbit will happily tell you a change is safe while prod says otherwise.
 
 The proposed model, its invariants, and the questions still open on it are in
 `docs/model/00-domain-model.md`. Until objects exist on the platform, that file
@@ -386,7 +424,8 @@ to query it.
   deployed copy, so a card that is not green is not in the product yet.
 
 When the map and a snapshot disagree, the snapshot is right. Start every session
-with `ua.mjs drift --tag icm`.
+with `ua.mjs drift --tag icm` **and** `ua.mjs drift --tag icm --env tool` — the
+product runs on prod, so an orbit-only drift check is half a picture.
 
 ## Keeping the repo describable (you run the regenerators; one check runs itself)
 

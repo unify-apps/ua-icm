@@ -28,26 +28,19 @@
 // Tags come from kit.config.json and cannot be typed in a spec - membership is
 // by TAG and a wrong tag silently orphans the object from every script here.
 //
-// Refuses the tool (production) environment outright.
+// Writes to PRODUCTION only with an explicit `--env tool` on the command line.
 
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { resolveEnv } from "./env.mjs";
 import { ENTITY_TAGS, TEST_TAG } from "./kit-config.mjs";
 import { expandField, titleOf } from "./field-types.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const die = (m) => { console.error(`error: ${m}`); process.exit(1); };
 
-const vars = {};
-for (const line of fs.readFileSync(path.join(ROOT, ".env.local"), "utf8").split("\n")) {
-  const m = line.match(/^\s*([A-Z_]+)\s*=\s*"?([^"]*)"?\s*$/);
-  if (m && !line.trim().startsWith("#")) vars[m[1]] = m[2];
-}
-const env = vars.UA_DEFAULT_ENV || "orbit";
-if (env !== "orbit") die("refusing to create object types anywhere but orbit");
-const baseUrl = vars.UA_ORBIT_URL, cookie = vars.UA_ORBIT_COOKIE;
-if (!baseUrl || !cookie) die("missing UA_ORBIT_URL or UA_ORBIT_COOKIE");
+const { env, baseUrl, cookie, args: argv } = resolveEnv({ write: true });
 
 async function api(pathname, body) {
   const res = await fetch(baseUrl + pathname, {
@@ -149,8 +142,8 @@ function build(spec, { test }) {
   };
 }
 
-const [cmd, file, ...rest] = process.argv.slice(2);
-if (!cmd || !file) die("usage: ua-object.mjs plan|create <spec.json> [--test]");
+const [cmd, file, ...rest] = argv;
+if (!cmd || !file) die("usage: ua-object.mjs plan|create <spec.json> [--test] [--env orbit|tool]");
 const test = rest.includes("--test");
 const spec = JSON.parse(fs.readFileSync(path.resolve(file), "utf8"));
 const body = build(spec, { test });
@@ -169,7 +162,7 @@ if (existing && existing.includes(`"id"`) && existing.includes(body.id)) {
 }
 
 const out = await api("/api/entity-type", body);
-console.log(`created ${body.id}  tags=${JSON.stringify(body.tags)}  fields=${Object.keys(spec.properties).length}`);
+console.log(`created ${body.id} on ${env}  tags=${JSON.stringify(body.tags)}  fields=${Object.keys(spec.properties).length}`);
 console.log(`  uniqueKeyFields=${JSON.stringify(body.metadata.uniqueKeyFields)}  nameField=${body.metadata.nameField}`);
 console.log(`  server returned id=${out.id ?? "(none)"} version=${out.version ?? "(none)"}`);
 console.log(`next: node scripts/ua.mjs snap-types --tag ${test ? TEST_TAG : ENTITY_TAGS[0]}`);

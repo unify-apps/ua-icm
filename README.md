@@ -20,25 +20,29 @@ Needs **Node 18+**. Nothing to `npm install`; the scripts use only built-ins.
 cp .env.example .env.local && chmod 600 .env.local
 ```
 
-Get the cookie: open <https://orbit.uat.unifyapps.com>, log in, then
-**DevTools → Application → Cookies → the orbit origin → copy the value of `_at`**.
-Paste it between the quotes:
+You need **two** cookies, because the product is built on tool prod and proved
+on orbit. For each of <https://orbit.uat.unifyapps.com> and
+<https://tool.prod-aps1.unifyapps.com>: log in, then **DevTools → Application →
+Cookies → that origin → copy the value of `_at`**. Paste each between the quotes:
 
 ```
 UA_ORBIT_COOKIE="<paste here>"
+UA_TOOL_COOKIE="<paste here>"
 ```
 
 The value must not contain a double quote, and nothing may follow the closing
-quote — the parser is a small regex, not dotenv. Check it:
+quote — the parser is a small regex, not dotenv. Check both:
 
 ```bash
 node scripts/ua.mjs whoami
+node scripts/ua.mjs whoami --env tool
 ```
 
 Success prints the environment and a schema id. `cookie is stale` means it
-expired — grab a fresh one. **It expires every few days; that is normal.**
+expired — grab a fresh one. **They expire every few days; that is normal.**
 
-Leave `UA_TOOL_COOKIE` blank. Tool is production and is read-only.
+Leave `UA_DEFAULT_ENV="orbit"`. Production is reached by typing `--env tool` on
+the command, never by changing that default — see *Two environments* below.
 
 ### 2. Application pages — 20 minutes, once
 
@@ -76,6 +80,36 @@ Use the `page-design` skill whenever the task is about how a page LOOKS.
 > For prod, clone the devkit again with its own port and cookie.
 
 ---
+
+## Two environments
+
+The ICM objects and callables were built and proved on **orbit** (UAT), then
+replicated to **tool prod** on 2026-09-05, which is where the app runs. Both
+copies exist; orbit stays the place to prove anything you are unsure of.
+
+One rule covers every script, and it lives in `scripts/env.mjs` so it cannot
+drift:
+
+| | |
+|---|---|
+| `--env orbit\|tool` | on the command line, wins over everything |
+| `UA_DEFAULT_ENV` | otherwise |
+| `orbit` | otherwise |
+
+**Anything that writes — create, update, deploy — additionally refuses to touch
+production unless `--env tool` is literally typed.** `UA_DEFAULT_ENV="tool"` on
+its own is not enough and never will be, so a stale default in your `.env.local`
+cannot point a deploy at prod. Reads are not gated that way, because reading
+prod changes nothing and making it awkward only teaches people to flip the
+default.
+
+`fixtures.mjs` is the single exception: orbit-only, no `--env`, on purpose. It
+deletes by prefix match, and test data does not belong on production.
+
+```bash
+node scripts/ua.mjs drift --tag icm              # orbit
+node scripts/ua.mjs drift --tag icm --env tool   # prod — run both
+```
 
 ## Before you build anything
 
@@ -115,6 +149,7 @@ matches what is deployed is a bug to fix, not a stale doc to ignore.
 
 | script | changes the platform? |
 |---|---|
+| `env.mjs` | No — shared library: how a script picks its environment |
 | `ua.mjs` | No — read-only by design |
 | `lint.mjs` | No — kit rules the platform doesn't enforce |
 | `debugrun.mjs` | No — reads a run's per-node data |
@@ -125,9 +160,10 @@ matches what is deployed is a bug to fix, not a stale doc to ignore.
 | `testrun.mjs` · `regress.mjs` | **Executes nodes against real data** |
 | `fixtures.mjs` | **Yes** — seeds and resets `KITFIX-` test records |
 | `agent.mjs` | **Yes** — drives the builder copilot |
-| `ua-object.mjs` · `ua-write.mjs` · `ua-schema.mjs` | **Yes** — orbit only, refuse production |
-| `ua-datasource.mjs` | **Yes** — creates the data source that lets a page call a callable. Orbit only |
-| `deploy.mjs` | **Yes** — the only sanctioned deploy, four gates |
+| `ua-object.mjs` · `ua-write.mjs` · `ua-schema.mjs` | **Yes** — prod needs an explicit `--env tool` |
+| `ua-automation.mjs` | **Yes** — creates an automation from a snapshot; this is how one environment's work is replicated onto another. Creates a DRAFT, never deploys |
+| `ua-datasource.mjs` | **Yes** — creates the data source that lets a page call a callable |
+| `deploy.mjs` | **Yes** — the only sanctioned deploy, four gates, and it passes the target env down to all four |
 
 `field-types.mjs` is a shared library, not a command: the one definition of how
 a field spec becomes a platform property, used by `ua-object.mjs` and
