@@ -105,7 +105,8 @@ occupancyResolved (bool), countsTruncated (bool),
 counts { total, occupied, vacant, conflict },
 positions [ { positionId, positionCode, name, active,
           occupancy, payeeId, employeeId, payeeName, matchCount,
-          effectiveStart, effectiveEnd, allocationPct } ]
+          effectiveStart, effectiveEnd, allocationPct,
+          titleName, attributeEffectiveStart } ]
 ```
 
 `occupancy` is `OCCUPIED` · `VACANT` · `CONFLICT` · `UNKNOWN` (only when
@@ -150,6 +151,29 @@ which is the scaling trap this callable exists to avoid. The page's "Conflicts
 true global conflict count it is a different, aggregate-shaped callable and
 should be built as one. Written here rather than discovered when a customer has
 4,000 positions.
+
+**`titleName` / `attributeEffectiveStart` describe the POSITION, not its occupant**, and
+are therefore independent of `occupancy` — a vacant seat still has a title. They come
+from the `PositionAttribute` row **in force on the as-of date**, resolved with the same
+window rule the assignments get: an attribute row that ended before the date describes
+a position that has since been re-titled.
+
+`titleName` is `''` when no attribute row applies, or when its `titleId` points at a
+Title that no longer exists — a dangling reference degrades to an empty title rather
+than crashing the page, the same way a dangling `payeeId` degrades to an empty name.
+That is not hypothetical: the KITFIX Title was deleted from tool mid-session on
+2026-09-05 and this is exactly what the run did. `attributeEffectiveStart` is absent
+when no attribute row applies.
+
+**Cost: two more fetches, both O(1) per page.** `PositionAttribute` reuses the position
+IN filter the assignments already build, and `Title` is fetched WHOLE — it is a
+reference table of 8 rows, and collecting ids to narrow it would cost a node to save
+almost no traffic. Five fetches per call now, still none per row.
+
+**There is no `businessGroup` and no `incentiveStart` in this model.** A caller wanting
+those columns is asking for fields nobody has defined; `Territory` is the real grouping
+dimension and `attributeEffectiveStart` is the real date. Naming a column for data it
+does not hold is how a comp screen starts lying quietly.
 
 ## Node plan
 
@@ -224,6 +248,9 @@ positions' occupancy honest rather than confidently wrong.
 | the open-ended assignment | `OCCUPIED` — the case a server-side `effectiveEnd` filter would break |
 | `asOfDate: "not-a-date"` | `INVALID_INPUT` |
 | `limit: "abc"` | `INVALID_INPUT` |
+| a position with an attribute row in force | `titleName` is that Title's name, `attributeEffectiveStart` set |
+| a position with no attribute row | `titleName: ""`, `attributeEffectiveStart` absent |
+| a date BEFORE the attribute row starts | same — effective dating applies to titles too |
 | a date inside a closed assignment | `effectiveStart`/`effectiveEnd` are that assignment's real epochs, `allocationPct` its real value (100) |
 | the open-ended assignment | `effectiveStart` set, `effectiveEnd` **absent** — open-ended, still held |
 | a position nobody ever filled | all three **absent**, because VACANT means no assignment applied |

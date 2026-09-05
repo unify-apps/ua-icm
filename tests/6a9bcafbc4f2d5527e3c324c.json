@@ -245,6 +245,30 @@
       ]
     },
     {
+      "name": "attributes - the position's title and the date it took effect come back",
+      "payload": { "search": "KITFIX-POS-01", "asOfDate": "2026-02-15", "limit": "", "offset": "", "includeOccupancy": "" },
+      "checks": [
+        { "path": "positions.0.titleName", "equals": "KITFIX-Account Executive" },
+        { "path": "positions.0.attributeEffectiveStart", "type": "number" }
+      ]
+    },
+    {
+      "name": "attributes - a position with no attribute row reports an empty title, not a crash",
+      "payload": { "search": "KITFIX-POS-04", "asOfDate": "2026-03-14", "limit": "", "offset": "", "includeOccupancy": "" },
+      "checks": [
+        { "path": "positions.0.titleName", "equals": "" },
+        { "path": "positions.0.attributeEffectiveStart", "absent": true }
+      ]
+    },
+    {
+      "name": "attributes - effective dating: a date BEFORE the attribute row starts reports no title",
+      "payload": { "search": "KITFIX-POS-01", "asOfDate": "2025-06-01", "limit": "", "offset": "", "includeOccupancy": "" },
+      "checks": [
+        { "path": "positions.0.titleName", "equals": "" },
+        { "path": "positions.0.attributeEffectiveStart", "absent": true }
+      ]
+    },
+    {
       "name": "window - includeOccupancy false: the fold never ran, so there is nothing to report",
       "payload": { "search": "KITFIX-POS-01", "asOfDate": "2026-02-15", "limit": "", "offset": "", "includeOccupancy": "false" },
       "checks": [
