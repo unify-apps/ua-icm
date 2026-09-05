@@ -1,0 +1,1346 @@
+{
+  "appsUsed": [],
+  "createdTime": 1788604261542,
+  "deleted": false,
+  "deployedVersion": 1,
+  "deploymentState": {
+    "deployedAt": 1788604726886,
+    "deployedBy": 388282,
+    "deployedDefinitionId": "6a9bf136723e7964da56af35",
+    "status": "DEPLOYED",
+    "version": 1,
+    "workflowVersion": 1
+  },
+  "description": "List, create and edit Title records behind one callable. Unique key pre-checked before any write; every outcome is a distinct status.",
+  "edges": [
+    {
+      "fromNodeId": "n_sTaRt",
+      "id": "next@n_sTaRt@n_Norm",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Norm",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Norm",
+      "id": "next@n_Norm@n_IfBad",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfBad",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "if@n_IfBad@n_StBad",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StBad",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "next@n_IfBad@n_IfList",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfList",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfList",
+      "id": "if@n_IfList@n_FtList",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtList",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_FtList",
+      "id": "next@n_FtList@n_Rows",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Rows",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Rows",
+      "id": "next@n_Rows@n_StList",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StList",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfList",
+      "id": "next@n_IfList@n_FtDup",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtDup",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtDup",
+      "id": "next@n_FtDup@n_FtOne",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtOne",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtOne",
+      "id": "next@n_FtOne@n_Guard",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Guard",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Guard",
+      "id": "next@n_Guard@n_IfDup",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfDup",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfDup",
+      "id": "if@n_IfDup@n_StDup",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StDup",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfDup",
+      "id": "next@n_IfDup@n_IfNF",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfNF",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfNF",
+      "id": "if@n_IfNF@n_StNF",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StNF",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfNF",
+      "id": "next@n_IfNF@n_IfCr",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfCr",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfCr",
+      "id": "if@n_IfCr@n_Create",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Create",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_Create",
+      "id": "next@n_Create@n_StCr",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StCr",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfCr",
+      "id": "next@n_IfCr@n_Update",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Update",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Update",
+      "id": "next@n_Update@n_StUp",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StUp",
+      "type": "next"
+    }
+  ],
+  "id": "6a9bef655f22d93ee6e9b03a",
+  "lastModifiedBy": 388282,
+  "lastPlatformUpdateBy": 388282,
+  "lastPlatformUpdateOn": 1788604726887,
+  "lcName": "icm | manage titles",
+  "modifiedTime": 1788604726887,
+  "name": "ICM | Manage Titles",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_sTaRt",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "success",
+            "message",
+            "total",
+            "titles"
+          ],
+          "properties": {
+            "status": {
+              "type": "string",
+              "title": "Status"
+            },
+            "success": {
+              "type": "boolean",
+              "title": "Success"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            },
+            "action": {
+              "type": "string",
+              "title": "Action"
+            },
+            "total": {
+              "type": "integer",
+              "title": "Total"
+            },
+            "hasMore": {
+              "type": "boolean",
+              "title": "Has More"
+            },
+            "offset": {
+              "type": "integer",
+              "title": "Offset"
+            },
+            "limit": {
+              "type": "integer",
+              "title": "Limit"
+            },
+            "titles": {
+              "type": "array",
+              "title": "Titles",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "titleId": {
+                    "type": "string",
+                    "title": "Title Id"
+                  },
+                  "titleCode": {
+                    "type": "string",
+                    "title": "Title Code"
+                  },
+                  "name": {
+                    "type": "string",
+                    "title": "Name"
+                  },
+                  "description": {
+                    "type": "string",
+                    "title": "Description"
+                  },
+                  "category": {
+                    "type": "string",
+                    "title": "Category"
+                  },
+                  "level": {
+                    "type": "string",
+                    "title": "Level"
+                  },
+                  "market": {
+                    "type": "string",
+                    "title": "Market"
+                  },
+                  "function": {
+                    "type": "string",
+                    "title": "Function"
+                  },
+                  "payPeriod": {
+                    "type": "string",
+                    "title": "Pay Period"
+                  }
+                }
+              }
+            },
+            "title": {
+              "type": "object",
+              "properties": {
+                "titleId": {
+                  "type": "string",
+                  "title": "Title Id"
+                },
+                "titleCode": {
+                  "type": "string",
+                  "title": "Title Code"
+                },
+                "name": {
+                  "type": "string",
+                  "title": "Name"
+                },
+                "description": {
+                  "type": "string",
+                  "title": "Description"
+                },
+                "category": {
+                  "type": "string",
+                  "title": "Category"
+                },
+                "level": {
+                  "type": "string",
+                  "title": "Level"
+                },
+                "market": {
+                  "type": "string",
+                  "title": "Market"
+                },
+                "function": {
+                  "type": "string",
+                  "title": "Function"
+                },
+                "payPeriod": {
+                  "type": "string",
+                  "title": "Pay Period"
+                }
+              },
+              "title": "Title"
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "action": {
+              "type": "string",
+              "title": "Action"
+            },
+            "titleId": {
+              "type": "string",
+              "title": "Title Id"
+            },
+            "titleCode": {
+              "type": "string",
+              "title": "Title Code"
+            },
+            "name": {
+              "type": "string",
+              "title": "Name"
+            },
+            "description": {
+              "type": "string",
+              "title": "Description"
+            },
+            "category": {
+              "type": "string",
+              "title": "Category"
+            },
+            "level": {
+              "type": "string",
+              "title": "Level"
+            },
+            "market": {
+              "type": "string",
+              "title": "Market"
+            },
+            "function": {
+              "type": "string",
+              "title": "Function"
+            },
+            "payPeriod": {
+              "type": "string",
+              "title": "Pay Period"
+            },
+            "search": {
+              "type": "string",
+              "title": "Search"
+            },
+            "limit": {
+              "type": "string",
+              "title": "Limit"
+            },
+            "offset": {
+              "type": "string",
+              "title": "Offset"
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Norm",
+      "index": 2,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "valid": {
+              "type": "boolean",
+              "title": "Valid"
+            },
+            "reason": {
+              "type": "string",
+              "title": "Reason"
+            },
+            "action": {
+              "type": "string",
+              "title": "Action"
+            },
+            "titleId": {
+              "type": "string",
+              "title": "Title Id"
+            },
+            "titleCode": {
+              "type": "string",
+              "title": "Title Code"
+            },
+            "pageLimit": {
+              "type": "integer",
+              "title": "Page Limit"
+            },
+            "pageOffset": {
+              "type": "integer",
+              "title": "Page Offset"
+            },
+            "listFilter": {
+              "type": "object",
+              "title": "List Filter"
+            },
+            "dupFilter": {
+              "type": "object",
+              "title": "Dup Filter"
+            },
+            "oneFilter": {
+              "type": "object",
+              "title": "One Filter"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "action": {
+              "type": "string",
+              "title": "Action"
+            },
+            "titleId": {
+              "type": "string",
+              "title": "Title Id"
+            },
+            "titleCode": {
+              "type": "string",
+              "title": "Title Code"
+            },
+            "name": {
+              "type": "string",
+              "title": "Name"
+            },
+            "description": {
+              "type": "string",
+              "title": "Description"
+            },
+            "category": {
+              "type": "string",
+              "title": "Category"
+            },
+            "level": {
+              "type": "string",
+              "title": "Level"
+            },
+            "market": {
+              "type": "string",
+              "title": "Market"
+            },
+            "functionName": {
+              "type": "string",
+              "title": "Function"
+            },
+            "payPeriod": {
+              "type": "string",
+              "title": "Pay Period"
+            },
+            "search": {
+              "type": "string",
+              "title": "Search"
+            },
+            "limit": {
+              "type": "string",
+              "title": "Limit"
+            },
+            "offset": {
+              "type": "string",
+              "title": "Offset"
+            }
+          }
+        },
+        "code": "// Defaults are applied HERE. Real callers send \"\" for what they did not fill,\n// so \"\" is the value every branch is built around, not an edge case.\ndef t = { v -> v == null ? '' : v.toString().trim() }\ndef act  = t(action).toUpperCase()\nif (act.isEmpty()) act = 'LIST'\ndef id   = t(titleId)\ndef code = t(titleCode)\ndef nm   = t(name)\ndef s    = t(search)\ndef lim  = t(limit)\ndef off  = t(offset)\n\nboolean valid = true\nString reason = ''\n\nif (!(act in ['LIST', 'CREATE', 'UPDATE'])) {\n    valid = false; reason = 'action must be LIST, CREATE or UPDATE, got: ' + act\n} else if (act == 'CREATE') {\n    // titleCode is the object's unique key and name is required on the schema.\n    if (code.isEmpty()) { valid = false; reason = 'titleCode is required to create a title' }\n    else if (nm.isEmpty()) { valid = false; reason = 'name is required to create a title' }\n} else if (act == 'UPDATE' && id.isEmpty()) {\n    valid = false; reason = 'titleId is required to update a title'\n}\n\nint pageLimit = 50\nif (!lim.isEmpty()) {\n    if (lim ==~ /^\\d+$/) { pageLimit = Integer.parseInt(lim) } else { valid = false; reason = 'limit must be a whole number, got: ' + lim }\n}\nif (pageLimit < 1) pageLimit = 1\nif (pageLimit > 200) pageLimit = 200\n\nint pageOffset = 0\nif (!off.isEmpty()) {\n    if (off ==~ /^\\d+$/) { pageOffset = Integer.parseInt(off) } else { valid = false; reason = 'offset must be a whole number, got: ' + off }\n}\n\n// LIST search: a nested OR inside the AND, built here and passed as ONE pill.\n// A node's static config cannot express this; the runtime accepts it.\ndef lf = []\nif (!valid) {\n    lf << [property: 'id', filter: [operator: 'EQUAL', value: '__invalid_input__']]\n} else if (!s.isEmpty()) {\n    lf << [operator: 'OR', filters: [\n        [property: 'properties.titleCode',   filter: [operator: 'ICONTAINS', value: s]],\n        [property: 'properties.name',        filter: [operator: 'ICONTAINS', value: s]],\n        [property: 'properties.description', filter: [operator: 'ICONTAINS', value: s]]]]\n}\n\n// The unique-key pre-check. A unique hit at WRITE time is a raw Mongo E11000\n// that kills the run - it is never save-time visible, so it is checked first.\ndef df = (valid && act != 'LIST' && !code.isEmpty())\n    ? [[property: 'properties.titleCode', filter: [operator: 'EQUAL', value: code]]]\n    : [[property: 'id', filter: [operator: 'EQUAL', value: '__none__']]]\n\n// The UPDATE target, read back so a missing id is NOT_FOUND rather than an engine error.\ndef of = (valid && act == 'UPDATE')\n    ? [[property: 'id', filter: [operator: 'EQUAL', value: id]]]\n    : [[property: 'id', filter: [operator: 'EQUAL', value: '__none__']]]\n\nreturn [valid: valid, reason: reason, action: act, titleId: id, titleCode: code,\n        pageLimit: pageLimit, pageOffset: pageOffset,\n        listFilter: [operator: 'AND', filters: lf],\n        dupFilter:  [operator: 'AND', filters: df],\n        oneFilter:  [operator: 'AND', filters: of]]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "action": "{{ n_sTaRt.outputs.action }}",
+          "titleId": "{{ n_sTaRt.outputs.titleId }}",
+          "titleCode": "{{ n_sTaRt.outputs.titleCode }}",
+          "name": "{{ n_sTaRt.outputs.name }}",
+          "description": "{{ n_sTaRt.outputs.description }}",
+          "category": "{{ n_sTaRt.outputs.category }}",
+          "level": "{{ n_sTaRt.outputs.level }}",
+          "market": "{{ n_sTaRt.outputs.market }}",
+          "functionName": "{{ n_sTaRt.outputs.function }}",
+          "payPeriod": "{{ n_sTaRt.outputs.payPeriod }}",
+          "search": "{{ n_sTaRt.outputs.search }}",
+          "limit": "{{ n_sTaRt.outputs.limit }}",
+          "offset": "{{ n_sTaRt.outputs.offset }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Validate the request and build every filter",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_IfBad",
+      "index": 3,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Norm.outputs.result.valid }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": false
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Was the request itself unusable?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@y",
+      "id": "n_StBad",
+      "index": 4,
+      "inputs": {
+        "result": {
+          "action": "{{ n_Norm.outputs.result.action }}",
+          "hasMore": false,
+          "total": 0,
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "titles": [],
+          "status": "INVALID_INPUT",
+          "success": false,
+          "message": "{{ n_Norm.outputs.result.reason }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Caller sent an unusable action or a missing required field",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_IfList",
+      "index": 5,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Norm.outputs.result.action }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": "LIST"
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Is this a read?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfList@n_IfBad@root_id-1@n@y",
+      "id": "n_FtList",
+      "index": 6,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.listFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Title",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}"
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.titleCode",
+          "properties.name",
+          "properties.description",
+          "properties.category",
+          "properties.level",
+          "properties.market",
+          "properties.function",
+          "properties.payPeriod"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The page of titles the caller asked for",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfList@n_IfBad@root_id-1@n@y",
+      "id": "n_Rows",
+      "index": 7,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "titles": {
+              "type": "array",
+              "title": "Titles",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "titleId": {
+                    "type": "string",
+                    "title": "Title Id"
+                  },
+                  "titleCode": {
+                    "type": "string",
+                    "title": "Title Code"
+                  },
+                  "name": {
+                    "type": "string",
+                    "title": "Name"
+                  },
+                  "description": {
+                    "type": "string",
+                    "title": "Description"
+                  },
+                  "category": {
+                    "type": "string",
+                    "title": "Category"
+                  },
+                  "level": {
+                    "type": "string",
+                    "title": "Level"
+                  },
+                  "market": {
+                    "type": "string",
+                    "title": "Market"
+                  },
+                  "function": {
+                    "type": "string",
+                    "title": "Function"
+                  },
+                  "payPeriod": {
+                    "type": "string",
+                    "title": "Pay Period"
+                  }
+                }
+              }
+            },
+            "total": {
+              "type": "integer",
+              "title": "Total"
+            },
+            "hasMore": {
+              "type": "boolean",
+              "title": "Has More"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rows": {
+              "type": "array",
+              "title": "Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "total": {
+              "type": "integer",
+              "title": "Total"
+            },
+            "pageOffset": {
+              "type": "integer",
+              "title": "Page Offset"
+            }
+          }
+        },
+        "code": "// Flatten properties into the row shape the contract promises. A field never\n// set on a record is MISSING, not null - it is defaulted to '' so the UI never\n// renders \"null\".\ndef out = []\ndef v = { m, k -> (m != null && m[k] != null) ? m[k].toString() : '' }\nif (rows != null) rows.each { r ->\n    def p = r.properties\n    out << [titleId: String.valueOf(r.id), titleCode: v(p, 'titleCode'), name: v(p, 'name'),\n            description: v(p, 'description'), category: v(p, 'category'), level: v(p, 'level'),\n            market: v(p, 'market'), function: v(p, 'function'), payPeriod: v(p, 'payPeriod')]\n}\nint tot = (total == null) ? out.size() : (total as int)\nreturn [titles: out, total: tot, hasMore: (pageOffset + out.size()) < tot,\n        message: out.isEmpty() ? 'No titles matched.' : (out.size() + ' title(s).')]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "rows": "{{ n_FtList.outputs.objects }}",
+          "total": "{{ n_FtList.outputs.total }}",
+          "pageOffset": "{{ n_Norm.outputs.result.pageOffset }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Shape the rows into the contract's title objects",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfList@n_IfBad@root_id-1@n@y",
+      "id": "n_StList",
+      "index": 8,
+      "inputs": {
+        "result": {
+          "status": "OK",
+          "success": true,
+          "message": "{{ n_Rows.outputs.result.message }}",
+          "action": "{{ n_Norm.outputs.result.action }}",
+          "total": "{{ n_Rows.outputs.result.total }}",
+          "hasMore": "{{ n_Rows.outputs.result.hasMore }}",
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "titles": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Rows.outputs.result.titles }}",
+            "items": "{{ n_Rows.outputs.result.titles[0] }}"
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "The list, however long - empty is OK, not an error",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfList@n_IfBad@root_id-1@n@n",
+      "id": "n_FtDup",
+      "index": 9,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.dupFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Title",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 5,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.titleCode"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Is this titleCode already taken? (unique key pre-check)",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfList@n_IfBad@root_id-1@n@n",
+      "id": "n_FtOne",
+      "index": 10,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.oneFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Title",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 1,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.titleCode",
+          "properties.name",
+          "properties.description",
+          "properties.category",
+          "properties.level",
+          "properties.market",
+          "properties.function",
+          "properties.payPeriod"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The UPDATE target, read back before it is written",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfList@n_IfBad@root_id-1@n@n",
+      "id": "n_Guard",
+      "index": 11,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "isDup": {
+              "type": "boolean",
+              "title": "Is Dup"
+            },
+            "notFound": {
+              "type": "boolean",
+              "title": "Not Found"
+            },
+            "record": {
+              "type": "object",
+              "title": "Record"
+            },
+            "dupMessage": {
+              "type": "string",
+              "title": "Dup Message"
+            },
+            "nfMessage": {
+              "type": "string",
+              "title": "Nf Message"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "action": {
+              "type": "string",
+              "title": "Action"
+            },
+            "titleId": {
+              "type": "string",
+              "title": "Title Id"
+            },
+            "titleCode": {
+              "type": "string",
+              "title": "Title Code"
+            },
+            "name": {
+              "type": "string",
+              "title": "Name"
+            },
+            "description": {
+              "type": "string",
+              "title": "Description"
+            },
+            "category": {
+              "type": "string",
+              "title": "Category"
+            },
+            "level": {
+              "type": "string",
+              "title": "Level"
+            },
+            "market": {
+              "type": "string",
+              "title": "Market"
+            },
+            "functionName": {
+              "type": "string",
+              "title": "Function"
+            },
+            "payPeriod": {
+              "type": "string",
+              "title": "Pay Period"
+            },
+            "dupRows": {
+              "type": "array",
+              "title": "Dup Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "oneRows": {
+              "type": "array",
+              "title": "One Rows",
+              "items": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "code": "def t = { v -> v == null ? '' : v.toString().trim() }\ndef act  = t(action).toUpperCase()\nif (act.isEmpty()) act = 'LIST'\ndef id   = t(titleId)\ndef code = t(titleCode)\n\n// DUPLICATE: any OTHER record already carries this titleCode. On UPDATE the\n// record's own row is not a clash with itself.\nboolean isDup = false\nif (dupRows != null) dupRows.each { r -> if (String.valueOf(r.id) != id) isDup = true }\n\n// NOT_FOUND: an UPDATE whose target no longer exists.\nboolean notFound = (act == 'UPDATE') && (oneRows == null || oneRows.isEmpty())\n\ndef cur = (oneRows != null && !oneRows.isEmpty() && oneRows[0].properties != null) ? oneRows[0].properties : [:]\ndef curV = { k -> cur[k] == null ? '' : cur[k].toString() }\n\n// On UPDATE the caller is a form that posts every field, so an OPTIONAL field\n// arriving blank means \"clear it\". The two REQUIRED fields fall back to what is\n// already stored, so a partial payload can never blank out the unique key.\ndef rec = [:]\nif (act == 'CREATE') {\n    rec = [titleCode: code, name: t(name), description: t(description), category: t(category),\n           level: t(level), market: t(market), function: t(functionName), payPeriod: t(payPeriod)]\n} else {\n    rec = [titleCode: code.isEmpty() ? curV('titleCode') : code,\n           name: t(name).isEmpty() ? curV('name') : t(name),\n           description: t(description), category: t(category), level: t(level),\n           market: t(market), function: t(functionName), payPeriod: t(payPeriod)]\n}\nreturn [isDup: isDup, notFound: notFound, record: rec,\n        dupMessage: 'A title with code \"' + code + '\" already exists.',\n        nfMessage: 'No title with id \"' + id + '\" exists.']",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "action": "{{ n_sTaRt.outputs.action }}",
+          "titleId": "{{ n_sTaRt.outputs.titleId }}",
+          "titleCode": "{{ n_sTaRt.outputs.titleCode }}",
+          "name": "{{ n_sTaRt.outputs.name }}",
+          "description": "{{ n_sTaRt.outputs.description }}",
+          "category": "{{ n_sTaRt.outputs.category }}",
+          "level": "{{ n_sTaRt.outputs.level }}",
+          "market": "{{ n_sTaRt.outputs.market }}",
+          "functionName": "{{ n_sTaRt.outputs.function }}",
+          "payPeriod": "{{ n_sTaRt.outputs.payPeriod }}",
+          "dupRows": "{{ n_FtDup.outputs.objects }}",
+          "oneRows": "{{ n_FtOne.outputs.objects }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Decide duplicate / not-found, and build the record to write",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfList@n_IfBad@root_id-1@n@n",
+      "id": "n_IfDup",
+      "index": 12,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Guard.outputs.result.isDup }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": true
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Is the titleCode already taken?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfDup@n_IfList@n_IfBad@root_id-1@n@n@y",
+      "id": "n_StDup",
+      "index": 13,
+      "inputs": {
+        "result": {
+          "action": "{{ n_Norm.outputs.result.action }}",
+          "hasMore": false,
+          "total": 0,
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "titles": [],
+          "status": "DUPLICATE_TITLE_CODE",
+          "success": false,
+          "message": "{{ n_Guard.outputs.result.dupMessage }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Unique key would collide - refused BEFORE any write",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfDup@n_IfList@n_IfBad@root_id-1@n@n@n",
+      "id": "n_IfNF",
+      "index": 14,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Guard.outputs.result.notFound }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": true
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Does the UPDATE target still exist?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfNF@n_IfDup@n_IfList@n_IfBad@root_id-1@n@n@n@y",
+      "id": "n_StNF",
+      "index": 15,
+      "inputs": {
+        "result": {
+          "action": "{{ n_Norm.outputs.result.action }}",
+          "hasMore": false,
+          "total": 0,
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "titles": [],
+          "status": "NOT_FOUND",
+          "success": false,
+          "message": "{{ n_Guard.outputs.result.nfMessage }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Stale id - the record was deleted between load and save",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfNF@n_IfDup@n_IfList@n_IfBad@root_id-1@n@n@n@n",
+      "id": "n_IfCr",
+      "index": 16,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Norm.outputs.result.action }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": "CREATE"
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Create or update?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_create_record",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfCr@n_IfNF@n_IfDup@n_IfList@n_IfBad@root_id-1@n@n@n@n@y",
+      "id": "n_Create",
+      "index": 17,
+      "inputs": {
+        "useRawPayload": false,
+        "writeThroughSessionVariables": false,
+        "object_type": "Title",
+        "skipIfBlank": false,
+        "inlineRefresh": false,
+        "record": "{{ n_Guard.outputs.result.record }}",
+        "useUuid": false,
+        "batching": false
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The new title - runs only after both guards passed",
+      "title": "Create record",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfCr@n_IfNF@n_IfDup@n_IfList@n_IfBad@root_id-1@n@n@n@n@y",
+      "id": "n_StCr",
+      "index": 18,
+      "inputs": {
+        "result": {
+          "action": "{{ n_Norm.outputs.result.action }}",
+          "hasMore": false,
+          "total": 1,
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "titles": [],
+          "status": "CREATED",
+          "success": true,
+          "message": "Title created.",
+          "title": {
+            "titleId": "{{ n_Create.outputs.id }}",
+            "titleCode": "{{ n_Guard.outputs.result.record.titleCode }}",
+            "name": "{{ n_Guard.outputs.result.record.name }}",
+            "description": "{{ n_Guard.outputs.result.record.description }}",
+            "category": "{{ n_Guard.outputs.result.record.category }}",
+            "level": "{{ n_Guard.outputs.result.record.level }}",
+            "market": "{{ n_Guard.outputs.result.record.market }}",
+            "function": "{{ n_Guard.outputs.result.record.function }}",
+            "payPeriod": "{{ n_Guard.outputs.result.record.payPeriod }}"
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Created",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_update_record_by_id",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfCr@n_IfNF@n_IfDup@n_IfList@n_IfBad@root_id-1@n@n@n@n@n",
+      "id": "n_Update",
+      "index": 19,
+      "inputs": {
+        "recordId": "{{ n_Norm.outputs.result.titleId }}",
+        "object_type": "Title",
+        "record": "{{ n_Guard.outputs.result.record }}",
+        "upsert": false
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The edited title - runs only after both guards passed",
+      "title": "Update record by id",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfCr@n_IfNF@n_IfDup@n_IfList@n_IfBad@root_id-1@n@n@n@n@n",
+      "id": "n_StUp",
+      "index": 20,
+      "inputs": {
+        "result": {
+          "action": "{{ n_Norm.outputs.result.action }}",
+          "hasMore": false,
+          "total": 1,
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "titles": [],
+          "status": "UPDATED",
+          "success": true,
+          "message": "Title updated.",
+          "title": {
+            "titleId": "{{ n_Update.outputs.object.id }}",
+            "titleCode": "{{ n_Guard.outputs.result.record.titleCode }}",
+            "name": "{{ n_Guard.outputs.result.record.name }}",
+            "description": "{{ n_Guard.outputs.result.record.description }}",
+            "category": "{{ n_Guard.outputs.result.record.category }}",
+            "level": "{{ n_Guard.outputs.result.record.level }}",
+            "market": "{{ n_Guard.outputs.result.record.market }}",
+            "function": "{{ n_Guard.outputs.result.record.function }}",
+            "payPeriod": "{{ n_Guard.outputs.result.record.payPeriod }}"
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Updated",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 388282,
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 1
+}

@@ -1,0 +1,845 @@
+{
+  "appsUsed": [],
+  "createdTime": 1788607978540,
+  "deleted": false,
+  "description": "A paged, searchable list of positions, optionally with who occupies each one as of a date - resolved in BULK so a page never makes one call per row. Spec: docs/automations/list-positions.md",
+  "edges": [
+    {
+      "fromNodeId": "n_sTaRt",
+      "id": "next@n_sTaRt@n_Norm",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Norm",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Norm",
+      "id": "next@n_Norm@n_IfBad",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfBad",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "if@n_IfBad@n_StBad",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StBad",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "next@n_IfBad@n_FtDup",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtDup",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtDup",
+      "id": "next@n_FtDup@n_FtTitle",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtTitle",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtTitle",
+      "id": "next@n_FtTitle@n_FtPayee",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtPayee",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtPayee",
+      "id": "next@n_FtPayee@n_Chk",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Chk",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Chk",
+      "id": "next@n_Chk@n_IfChk",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfChk",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfChk",
+      "id": "if@n_IfChk@n_StChk",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StChk",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfChk",
+      "id": "next@n_IfChk@n_CrPos",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_CrPos",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_CrPos",
+      "id": "next@n_CrPos@n_CrAttr",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_CrAttr",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_CrAttr",
+      "id": "next@n_CrAttr@n_IfAsg",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfAsg",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfAsg",
+      "id": "if@n_IfAsg@n_CrAsg",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_CrAsg",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfAsg",
+      "id": "next@n_IfAsg@n_StOk",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StOk",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_CrAsg",
+      "id": "next@n_CrAsg@n_StOkA",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StOkA",
+      "type": "next"
+    }
+  ],
+  "id": "6a9bfdeac4f2d5527e4c9a63",
+  "lastModifiedBy": 435691,
+  "lastPlatformUpdateBy": 435691,
+  "lastPlatformUpdateOn": 1788608174176,
+  "lcName": "icm | create position",
+  "modifiedTime": 1788608174176,
+  "name": "ICM | Create Position",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_sTaRt",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "success",
+            "message"
+          ],
+          "properties": {
+            "status": {
+              "type": "string",
+              "title": "Status"
+            },
+            "success": {
+              "type": "boolean",
+              "title": "Success"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            },
+            "positionId": {
+              "type": "string",
+              "title": "Position Id"
+            },
+            "positionCode": {
+              "type": "string",
+              "title": "Position Code"
+            },
+            "attributeId": {
+              "type": "string",
+              "title": "Attribute Id"
+            },
+            "assignmentId": {
+              "type": "string",
+              "title": "Assignment Id"
+            },
+            "effectiveStart": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "title": "Effective Start"
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "positionCode",
+            "name",
+            "titleId"
+          ],
+          "properties": {
+            "positionCode": {
+              "type": "string",
+              "title": "Position Code"
+            },
+            "name": {
+              "type": "string",
+              "title": "Position Name"
+            },
+            "titleId": {
+              "type": "string",
+              "title": "Title Id"
+            },
+            "payeeId": {
+              "type": "string",
+              "title": "Payee Id"
+            },
+            "effectiveStart": {
+              "type": "string",
+              "title": "Effective Start"
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Norm",
+      "index": 2,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "valid": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "code": {
+              "type": "string"
+            },
+            "nm": {
+              "type": "string"
+            },
+            "titleId": {
+              "type": "string"
+            },
+            "payeeId": {
+              "type": "string"
+            },
+            "epoch": {
+              "type": "integer"
+            },
+            "wantAssign": {
+              "type": "boolean"
+            },
+            "dupFilter": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "titleFilter": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "payeeFilter": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "positionCode": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "titleId": {
+              "type": "string"
+            },
+            "payeeId": {
+              "type": "string"
+            },
+            "effectiveStart": {
+              "type": "string"
+            }
+          }
+        },
+        "compile_static": false,
+        "code": "\n// Every default applied HERE. Callers send \"\" for what they did not fill, so \"\"\n// is what each branch is built around rather than an edge case.\ndef t = { v -> v == null ? '' : v.toString().trim() }\ndef code = t(positionCode); def nm = t(name)\ndef tid = t(titleId); def pid = t(payeeId); def raw = t(effectiveStart)\n\nboolean valid = true; String reason = ''\nlong epoch = 0L\nif (code.isEmpty())      { valid = false; reason = 'positionCode is required' }\nelse if (nm.isEmpty())   { valid = false; reason = 'name is required' }\nelse if (tid.isEmpty())  { valid = false; reason = 'titleId is required' }\n\nif (valid) {\n    if (raw.isEmpty()) {\n        // default: TODAY, UTC - echoed back so a caller elsewhere knows which day it got\n        def dd = java.time.LocalDate.now(java.time.ZoneOffset.UTC)\n        epoch = dd.atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli()\n    } else if (raw ==~ /^\\d{4}-\\d{2}-\\d{2}$/) {\n        try {\n            def dd = java.time.LocalDate.parse(raw)\n            epoch = dd.atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli()\n        } catch (Exception e) { valid = false; reason = 'effectiveStart is not a real calendar date: ' + raw }\n    } else if (raw ==~ /^\\d{9,}$/) { epoch = Long.parseLong(raw) }\n    else { valid = false; reason = 'effectiveStart must be YYYY-MM-DD or epoch milliseconds, got: ' + raw }\n}\n\n// '__none__' keeps a blank lookup a clean no-match instead of an unfiltered scan\ndef one = { p, v -> [operator:'AND', filters:[[property:p, filter:[operator:'EQUAL', value: (v == null || v.isEmpty()) ? '__none__' : v]]]] }\nreturn [valid: valid, reason: reason, code: code, nm: nm, titleId: tid, payeeId: pid,\n        epoch: epoch, wantAssign: !pid.isEmpty(),\n        dupFilter: one('properties.positionCode', code),\n        titleFilter: one('id', tid),\n        payeeFilter: one('id', pid)]",
+        "captureStdOutput": false,
+        "parameters": {
+          "positionCode": "{{ n_sTaRt.outputs.positionCode }}",
+          "name": "{{ n_sTaRt.outputs.name }}",
+          "titleId": "{{ n_sTaRt.outputs.titleId }}",
+          "payeeId": "{{ n_sTaRt.outputs.payeeId }}",
+          "effectiveStart": "{{ n_sTaRt.outputs.effectiveStart }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Validate the request and resolve the effective date",
+      "title": "Execute Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_IfBad",
+      "index": 3,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Norm.outputs.result.valid }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": false
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Was the request itself unusable?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_StBad",
+      "index": 4,
+      "inputs": {
+        "result": {
+          "status": "INVALID_INPUT",
+          "success": false,
+          "message": "{{ n_Norm.outputs.result.reason }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Caller sent something unusable - nothing was written",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtDup",
+      "index": 5,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.dupFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Position",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 1,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.positionCode"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Does this position code already exist? It is a real unique index",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtTitle",
+      "index": 6,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.titleFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Title",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 1,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.name"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Does the title exist?",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtPayee",
+      "index": 7,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.payeeFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Payee",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 1,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.name"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Does the payee exist? Only asked when one was named",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Chk",
+      "index": 8,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "status": {
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "dupTotal": {
+              "type": "integer"
+            },
+            "titleTotal": {
+              "type": "integer"
+            },
+            "payeeTotal": {
+              "type": "integer"
+            },
+            "wantAssign": {
+              "type": "boolean"
+            },
+            "code": {
+              "type": "string"
+            },
+            "titleId": {
+              "type": "string"
+            },
+            "payeeId": {
+              "type": "string"
+            }
+          }
+        },
+        "compile_static": false,
+        "code": "\n// Ordered deliberately: a duplicate code is the caller's most likely mistake and\n// naming it first is more useful than reporting whichever lookup happened to fail.\nint dup = (dupTotal == null) ? 0 : Integer.valueOf(String.valueOf(dupTotal))\nint ttl = (titleTotal == null) ? 0 : Integer.valueOf(String.valueOf(titleTotal))\nint pay = (payeeTotal == null) ? 0 : Integer.valueOf(String.valueOf(payeeTotal))\nboolean ok = true; String status = 'OK'; String message = ''\nif (dup > 0)                    { ok=false; status='DUPLICATE_CODE';   message='A position with code ' + code + ' already exists' }\nelse if (ttl == 0)              { ok=false; status='TITLE_NOT_FOUND';  message='No title with id ' + titleId }\nelse if (wantAssign && pay == 0){ ok=false; status='PAYEE_NOT_FOUND';  message='No payee with id ' + payeeId }\nreturn [ok: ok, status: status, message: message]",
+        "captureStdOutput": false,
+        "parameters": {
+          "dupTotal": "{{ n_FtDup.outputs.total }}",
+          "titleTotal": "{{ n_FtTitle.outputs.total }}",
+          "payeeTotal": "{{ n_FtPayee.outputs.total }}",
+          "wantAssign": "{{ n_Norm.outputs.result.wantAssign }}",
+          "code": "{{ n_Norm.outputs.result.code }}",
+          "titleId": "{{ n_Norm.outputs.result.titleId }}",
+          "payeeId": "{{ n_Norm.outputs.result.payeeId }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "One verdict from the three lookups",
+      "title": "Execute Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_IfChk",
+      "index": 9,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Chk.outputs.result.ok }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": false
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Did a check refuse the write?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_StChk",
+      "index": 10,
+      "inputs": {
+        "result": {
+          "status": "{{ n_Chk.outputs.result.status }}",
+          "success": false,
+          "message": "{{ n_Chk.outputs.result.message }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Refused before writing anything",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceVersion": 864,
+        "resourceName": "storage_by_unifyapps_create_record",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_CrPos",
+      "index": 11,
+      "inputs": {
+        "writeThroughSessionVariables": false,
+        "object_type": "Position",
+        "record": {
+          "positionCode": "{{ n_Norm.outputs.result.code }}",
+          "name": "{{ n_Norm.outputs.result.nm }}",
+          "active": true
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The seat itself",
+      "title": "Create record",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceVersion": 864,
+        "resourceName": "storage_by_unifyapps_create_record",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_CrAttr",
+      "index": 12,
+      "inputs": {
+        "writeThroughSessionVariables": false,
+        "object_type": "PositionAttribute",
+        "record": {
+          "name": "{{ n_Norm.outputs.result.nm }} attributes",
+          "positionId": "{{ n_CrPos.outputs.id }}",
+          "titleId": "{{ n_Norm.outputs.result.titleId }}",
+          "effectiveStart": "{{ n_Norm.outputs.result.epoch }}"
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The title it carries, effective-dated",
+      "title": "Create record",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_IfAsg",
+      "index": 13,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Norm.outputs.result.wantAssign }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": true
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Was a person named? Blank means an open seat",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceVersion": 864,
+        "resourceName": "storage_by_unifyapps_create_record",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_CrAsg",
+      "index": 14,
+      "inputs": {
+        "writeThroughSessionVariables": false,
+        "object_type": "PayeePositionAssignment",
+        "record": {
+          "name": "{{ n_Norm.outputs.result.nm }} assignment",
+          "payeeId": "{{ n_Norm.outputs.result.payeeId }}",
+          "positionId": "{{ n_CrPos.outputs.id }}",
+          "effectiveStart": "{{ n_Norm.outputs.result.epoch }}",
+          "allocationPct": 100
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Who holds it, from the same effective date",
+      "title": "Create record",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_StOkA",
+      "index": 15,
+      "inputs": {
+        "result": {
+          "status": "OK",
+          "success": true,
+          "message": "Position created and assigned",
+          "positionId": "{{ n_CrPos.outputs.id }}",
+          "positionCode": "{{ n_Norm.outputs.result.code }}",
+          "attributeId": "{{ n_CrAttr.outputs.id }}",
+          "assignmentId": "{{ n_CrAsg.outputs.id }}",
+          "effectiveStart": "{{ n_Norm.outputs.result.epoch }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Created, and occupied",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_StOk",
+      "index": 16,
+      "inputs": {
+        "result": {
+          "status": "OK",
+          "success": true,
+          "message": "Position created as an open seat",
+          "positionId": "{{ n_CrPos.outputs.id }}",
+          "positionCode": "{{ n_Norm.outputs.result.code }}",
+          "attributeId": "{{ n_CrAttr.outputs.id }}",
+          "effectiveStart": "{{ n_Norm.outputs.result.epoch }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Created as an open seat",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 435691,
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 1
+}

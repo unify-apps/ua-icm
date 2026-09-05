@@ -1,0 +1,85 @@
+{
+  "name": "ICM | Create Position",
+  "fixtures": "tests/fixtures/positions.json - seed with: node scripts/fixtures.mjs seed positions",
+  "note": "The two OK cases WRITE. They are made idempotent by deleting what they create, at both ends: allowZero cleanup first (leftovers from a run that died mid-way are the healthy case there), then the real cleanup after, where matching zero means a record escaped. No platform id is hardcoded - ids are minted per reseed, so the title and payee are found by the business key a human recognises.",
+  "cases": [
+    { "name": "pre-clean assignment A", "entityDelete": { "entityType": "PayeePositionAssignment", "filters": { "name": "KITFIX-New Assigned Seat assignment" }, "allowZero": true } },
+    { "name": "pre-clean attrs A", "entityDelete": { "entityType": "PositionAttribute", "filters": { "name": "KITFIX-New Open Seat attributes" }, "allowZero": true } },
+    { "name": "pre-clean attrs B", "entityDelete": { "entityType": "PositionAttribute", "filters": { "name": "KITFIX-New Assigned Seat attributes" }, "allowZero": true } },
+    { "name": "pre-clean position A", "entityDelete": { "entityType": "Position", "filters": { "positionCode": "KITFIX-NEW-A" }, "allowZero": true } },
+    { "name": "pre-clean position B", "entityDelete": { "entityType": "Position", "filters": { "positionCode": "KITFIX-NEW-B" }, "allowZero": true } },
+
+    { "name": "find title", "entityFind": { "entityType": "Title", "filters": { "titleCode": "KITFIX-T-AE" } } },
+    { "name": "find payee", "entityFind": { "entityType": "Payee", "filters": { "employeeId": "KITFIX-E003" } } },
+
+    {
+      "name": "INVALID_INPUT - no position code, and the code is a real unique index",
+      "payload": { "positionCode": "", "name": "AE - West 05", "titleId": "{{case:find title:id}}", "payeeId": "", "effectiveStart": "" },
+      "checks": [
+        { "path": "status", "equals": "INVALID_INPUT" },
+        { "path": "success", "equals": false },
+        { "path": "positionId", "absent": true }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - a date-shaped string that is not a real day",
+      "payload": { "positionCode": "KITFIX-NEW-X", "name": "AE - West 05", "titleId": "{{case:find title:id}}", "payeeId": "", "effectiveStart": "2026-02-31" },
+      "checks": [
+        { "path": "status", "equals": "INVALID_INPUT" },
+        { "path": "positionId", "absent": true }
+      ]
+    },
+    {
+      "name": "DUPLICATE_CODE - refused BEFORE any write, not as an E11000 mid-run",
+      "payload": { "positionCode": "KITFIX-POS-01", "name": "AE - West 05", "titleId": "{{case:find title:id}}", "payeeId": "", "effectiveStart": "" },
+      "checks": [
+        { "path": "status", "equals": "DUPLICATE_CODE" },
+        { "path": "success", "equals": false },
+        { "path": "positionId", "absent": true }
+      ]
+    },
+    {
+      "name": "TITLE_NOT_FOUND - a well-formed id that matches nothing",
+      "payload": { "positionCode": "KITFIX-NEW-Y", "name": "AE - West 05", "titleId": "e_doesnotexist", "payeeId": "", "effectiveStart": "" },
+      "checks": [
+        { "path": "status", "equals": "TITLE_NOT_FOUND" },
+        { "path": "positionId", "absent": true }
+      ]
+    },
+    {
+      "name": "PAYEE_NOT_FOUND - the title is fine, the person is not",
+      "payload": { "positionCode": "KITFIX-NEW-Z", "name": "AE - West 05", "titleId": "{{case:find title:id}}", "payeeId": "e_doesnotexist", "effectiveStart": "" },
+      "checks": [
+        { "path": "status", "equals": "PAYEE_NOT_FOUND" },
+        { "path": "positionId", "absent": true }
+      ]
+    },
+    {
+      "name": "OK - open seat: position and attribute written, no assignment",
+      "payload": { "positionCode": "KITFIX-NEW-A", "name": "KITFIX-New Open Seat", "titleId": "{{case:find title:id}}", "payeeId": "", "effectiveStart": "2026-03-01" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "success", "equals": true },
+        { "path": "positionId", "type": "string", "minLen": 3 },
+        { "path": "attributeId", "type": "string", "minLen": 3 },
+        { "path": "assignmentId", "absent": true }
+      ]
+    },
+    {
+      "name": "OK - assigned: the third write happens only when a person was named",
+      "payload": { "positionCode": "KITFIX-NEW-B", "name": "KITFIX-New Assigned Seat", "titleId": "{{case:find title:id}}", "payeeId": "{{case:find payee:id}}", "effectiveStart": "2026-03-01" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "positionId", "type": "string", "minLen": 3 },
+        { "path": "attributeId", "type": "string", "minLen": 3 },
+        { "path": "assignmentId", "type": "string", "minLen": 3 }
+      ]
+    },
+
+    { "name": "clean up assignment B", "entityDelete": { "entityType": "PayeePositionAssignment", "filters": { "name": "KITFIX-New Assigned Seat assignment" } } },
+    { "name": "clean up attrs A", "entityDelete": { "entityType": "PositionAttribute", "filters": { "name": "KITFIX-New Open Seat attributes" } } },
+    { "name": "clean up attrs B", "entityDelete": { "entityType": "PositionAttribute", "filters": { "name": "KITFIX-New Assigned Seat attributes" } } },
+    { "name": "clean up position A", "entityDelete": { "entityType": "Position", "filters": { "positionCode": "KITFIX-NEW-A" } } },
+    { "name": "clean up position B", "entityDelete": { "entityType": "Position", "filters": { "positionCode": "KITFIX-NEW-B" } } }
+  ]
+}
