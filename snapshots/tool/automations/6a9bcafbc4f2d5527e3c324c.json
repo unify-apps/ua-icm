@@ -100,9 +100,9 @@
   "id": "6a9bcafbc4f2d5527e3c324c",
   "lastModifiedBy": 435691,
   "lastPlatformUpdateBy": 435691,
-  "lastPlatformUpdateOn": 1788595821080,
+  "lastPlatformUpdateOn": 1788602539442,
   "lcName": "icm | list positions",
-  "modifiedTime": 1788595821080,
+  "modifiedTime": 1788602539442,
   "name": "ICM | List Positions",
   "nodes": [
     {
@@ -231,6 +231,27 @@
                   "matchCount": {
                     "type": "integer",
                     "title": "Match Count"
+                  },
+                  "effectiveStart": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "title": "Effective Start"
+                  },
+                  "effectiveEnd": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "title": "Effective End"
+                  },
+                  "allocationPct": {
+                    "type": [
+                      "number",
+                      "null"
+                    ],
+                    "title": "Allocation Pct"
                   }
                 }
               }
@@ -510,7 +531,8 @@
           "properties.positionId",
           "properties.payeeId",
           "properties.effectiveStart",
-          "properties.effectiveEnd"
+          "properties.effectiveEnd",
+          "properties.allocationPct"
         ]
       },
       "options": {
@@ -554,6 +576,27 @@
                   "payeeId": {
                     "type": "string",
                     "title": "Payee Id"
+                  },
+                  "effectiveStart": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "title": "Effective Start"
+                  },
+                  "effectiveEnd": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "title": "Effective End"
+                  },
+                  "allocationPct": {
+                    "type": [
+                      "number",
+                      "null"
+                    ],
+                    "title": "Allocation Pct"
                   }
                 }
               }
@@ -585,7 +628,7 @@
             }
           }
         },
-        "code": "// Close the window in memory: missing, null and blank effectiveEnd all mean\n// \"still held\" - the platform stores an unset property as ABSENT, so all three\n// are checked rather than assumed equivalent.\ndef live = []\ndef ids = []\nlong asOf = Long.valueOf(String.valueOf(asOfEpoch))\nif (rows != null) {\n    rows.each { r ->\n        def p = r.properties\n        def en = p?.effectiveEnd\n        boolean open = (en == null) || en.toString().trim().isEmpty()\n        if (open || (Long.valueOf(String.valueOf(en)) >= asOf)) {\n            def pid = (p?.payeeId == null) ? '' : p.payeeId.toString().trim()\n            live << [positionId: String.valueOf(p?.positionId), payeeId: pid]\n            if (!pid.isEmpty() && !ids.contains(pid)) ids << pid\n        }\n    }\n}\nreturn [live: live, payeeIds: ids.isEmpty() ? ['__none__'] : ids]",
+        "code": "// Close the window in memory: missing, null and blank effectiveEnd all mean\n// \"still held\" - the platform stores an unset property as ABSENT, so all three\n// are checked rather than assumed equivalent.\ndef live = []\ndef ids = []\nlong asOf = Long.valueOf(String.valueOf(asOfEpoch))\nif (rows != null) {\n    rows.each { r ->\n        def p = r.properties\n        def en = p?.effectiveEnd\n        boolean open = (en == null) || en.toString().trim().isEmpty()\n        if (open || (Long.valueOf(String.valueOf(en)) >= asOf)) {\n            def pid = (p?.payeeId == null) ? '' : p.payeeId.toString().trim()\n            // carry the window and the split through: the fold needs them for an OCCUPIED\n            // row, and re-fetching them later would be a second call for data already here\n            live << [positionId: String.valueOf(p?.positionId), payeeId: pid,\n                     effectiveStart: (p?.effectiveStart == null) ? null : Long.valueOf(String.valueOf(p.effectiveStart)),\n                     effectiveEnd:   (en == null || en.toString().trim().isEmpty()) ? null : Long.valueOf(String.valueOf(en)),\n                     allocationPct:  (p?.allocationPct == null) ? null : Double.valueOf(String.valueOf(p.allocationPct))]\n            if (!pid.isEmpty() && !ids.contains(pid)) ids << pid\n        }\n    }\n}\nreturn [live: live, payeeIds: ids.isEmpty() ? ['__none__'] : ids]",
         "compile_static": false,
         "captureStdOutput": false,
         "parameters": {
@@ -711,6 +754,27 @@
                   "matchCount": {
                     "type": "integer",
                     "title": "Match Count"
+                  },
+                  "effectiveStart": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "title": "Effective Start"
+                  },
+                  "effectiveEnd": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "title": "Effective End"
+                  },
+                  "allocationPct": {
+                    "type": [
+                      "number",
+                      "null"
+                    ],
+                    "title": "Allocation Pct"
                   }
                 }
               }
@@ -810,7 +874,7 @@
             }
           }
         },
-        "code": "// The same as-of rule as ICM | Resolve Position Occupant, folded in memory for a\n// whole page at once. Two assignments covering the date is a CONFLICT and never\n// a pick - a position has one occupant on a day, and guessing would pay somebody\n// wrongly.\ndef byPos = [:]\nif (live != null) live.each { l ->\n    def k = String.valueOf(l.positionId)\n    if (!byPos.containsKey(k)) byPos[k] = []\n    byPos[k] << l\n}\ndef payById = [:]\nif (payRows != null) payRows.each { p -> payById[String.valueOf(p.id)] = p.properties }\n\nint occupied = 0, vacant = 0, conflict = 0\ndef positions = []\nif (posRows != null) posRows.each { r ->\n    def p = r.properties\n    def position = [positionId: String.valueOf(r.id),\n                positionCode: p?.positionCode ?: '',\n                name: p?.name ?: '',\n                // a boolean never set is MISSING, not false - treat absent as active\n                active: (p?.active == null) ? true : (p.active as boolean),\n                occupancy: 'UNKNOWN', payeeId: '', employeeId: '', payeeName: '', matchCount: 0]\n    if (wantOccupancy) {\n        def hits = byPos[String.valueOf(r.id)] ?: []\n        position.matchCount = hits.size()\n        if (hits.size() == 0)      { position.occupancy = 'VACANT';   vacant++ }\n        else if (hits.size() > 1)  { position.occupancy = 'CONFLICT'; conflict++ }\n        else {\n            position.occupancy = 'OCCUPIED'; occupied++\n            position.payeeId = String.valueOf(hits[0].payeeId)\n            def pay = payById[position.payeeId]\n            position.employeeId = (pay == null) ? '' : (pay.employeeId ?: '')\n            position.payeeName  = (pay == null) ? '' : (pay.name ?: '')\n        }\n    }\n    positions << position\n}\n\nint total = (posTotal == null) ? positions.size() : Integer.valueOf(String.valueOf(posTotal))\nint got   = (asgRows == null) ? 0 : asgRows.size()\nint asgTot = (asgTotal == null) ? got : Integer.valueOf(String.valueOf(asgTotal))\n\nreturn [positions: positions,\n        total: total,\n        hasMore: (pageOffset + positions.size()) < total,\n        counts: [total: positions.size(), occupied: occupied, vacant: vacant, conflict: conflict],\n        countsTruncated: got < asgTot,\n        message: wantOccupancy\n            ? (positions.size() + ' position(s) on this page, as of ' + String.valueOf(asOfDay))\n            : (positions.size() + ' position(s) on this page; occupancy not resolved')]",
+        "code": "// The same as-of rule as ICM | Resolve Position Occupant, folded in memory for a\n// whole page at once. Two assignments covering the date is a CONFLICT and never\n// a pick - a position has one occupant on a day, and guessing would pay somebody\n// wrongly.\ndef byPos = [:]\nif (live != null) live.each { l ->\n    def k = String.valueOf(l.positionId)\n    if (!byPos.containsKey(k)) byPos[k] = []\n    byPos[k] << l\n}\ndef payById = [:]\nif (payRows != null) payRows.each { p -> payById[String.valueOf(p.id)] = p.properties }\n\nint occupied = 0, vacant = 0, conflict = 0\ndef positions = []\nif (posRows != null) posRows.each { r ->\n    def p = r.properties\n    def position = [positionId: String.valueOf(r.id),\n                positionCode: p?.positionCode ?: '',\n                name: p?.name ?: '',\n                // a boolean never set is MISSING, not false - treat absent as active\n                active: (p?.active == null) ? true : (p.active as boolean),\n                occupancy: 'UNKNOWN', payeeId: '', employeeId: '', payeeName: '', matchCount: 0,\n                // null unless ONE assignment resolved this row - a VACANT row has none and a\n                // CONFLICT row has several, and naming one would be the guess we refuse to make\n                effectiveStart: null, effectiveEnd: null, allocationPct: null]\n    if (wantOccupancy) {\n        def hits = byPos[String.valueOf(r.id)] ?: []\n        position.matchCount = hits.size()\n        if (hits.size() == 0)      { position.occupancy = 'VACANT';   vacant++ }\n        else if (hits.size() > 1)  { position.occupancy = 'CONFLICT'; conflict++ }\n        else {\n            position.occupancy = 'OCCUPIED'; occupied++\n            position.payeeId = String.valueOf(hits[0].payeeId)\n            def pay = payById[position.payeeId]\n            position.employeeId = (pay == null) ? '' : (pay.employeeId ?: '')\n            position.payeeName  = (pay == null) ? '' : (pay.name ?: '')\n            position.effectiveStart = hits[0].effectiveStart\n            // null here means OPEN-ENDED, still held - not \"unknown\"\n            position.effectiveEnd   = hits[0].effectiveEnd\n            position.allocationPct  = hits[0].allocationPct\n        }\n    }\n    positions << position\n}\n\nint total = (posTotal == null) ? positions.size() : Integer.valueOf(String.valueOf(posTotal))\nint got   = (asgRows == null) ? 0 : asgRows.size()\nint asgTot = (asgTotal == null) ? got : Integer.valueOf(String.valueOf(asgTotal))\n\nreturn [positions: positions,\n        total: total,\n        hasMore: (pageOffset + positions.size()) < total,\n        counts: [total: positions.size(), occupied: occupied, vacant: vacant, conflict: conflict],\n        countsTruncated: got < asgTot,\n        message: wantOccupancy\n            ? (positions.size() + ' position(s) on this page, as of ' + String.valueOf(asOfDay))\n            : (positions.size() + ' position(s) on this page; occupancy not resolved')]",
         "compile_static": false,
         "captureStdOutput": false,
         "parameters": {
@@ -949,5 +1013,5 @@
   "tags": [
     "icm"
   ],
-  "version": 0
+  "version": 2
 }

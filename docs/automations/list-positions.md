@@ -33,7 +33,7 @@ a human opens. The fix is the `{ua:type: "mappedArray", source, items}` shape.
 | Token / name | `ICM \| List Positions` (`6a988a792ada0c631038457a`), tags from `kit.config.json` (`icm`), CALLABLE |
 | Purpose | A paged, searchable list of positions — optionally with **who occupies each one as of a date**, resolved in bulk. |
 | Replaces | Nothing. It exists because the Positions page needs a position picker and **a page may not query `Position` directly** (`docs/architecture.html` layer rule). This is the first callable built purely to keep that rule absolute. |
-| Callers | **Pages** — Positions (`docs/pages/positions.md`) for its picker, its filter chips and its counts. Any later admin screen listing positions. |
+| Callers | **Pages** — Positions (`docs/pages/positions.md`) for its picker, its filter chips and its counts. Any later admin screen listing positions. **Also the `Sales-Commission-Management` CODE app on tool** (`app-1621b11a65c8`), whose `/organization/positions` screen reads it through dataSource `e_6a9bd839f684ae7710066170`. That app lives in its own repo and there is no `docs/pages/` entry for it — the dependency is recorded HERE because nothing else records it. |
 | Authorization | **Any authenticated caller**, same reasoning as `ICM \| Resolve Position Occupant`: the response carries org structure and no money. No amount, quota, attainment or payout field appears in it. Adding one changes this row and the caller check together, or the change is refused. |
 
 ## Why occupancy is resolved HERE and not per row
@@ -113,18 +113,29 @@ positions [ { positionId, positionCode, name, active,
 `["status","success","message","total","positions"]` and nothing more.
 
 **`effectiveStart` / `effectiveEnd` / `allocationPct` describe the ONE assignment
-that resolved the occupant, and are therefore `null` unless `occupancy` is
+that resolved the occupant, and are therefore ABSENT unless `occupancy` is
 `OCCUPIED`.** On a VACANT row no assignment covered the date; on a CONFLICT row
-several did and naming one would be the guess this callable refuses to make. They
-cost nothing: the assignment rows are already fetched for the fold, and only their
-projection dropped these fields.
+several did and naming one would be the guess this callable refuses to make.
 
-`effectiveEnd: null` on an OCCUPIED row means **open-ended — still held**, which is
-the same "absent means still held" rule the fold applies. So `null` carries two
-readings and `occupancy` is what separates them: read `effectiveEnd` only once you
-have checked `occupancy === 'OCCUPIED'`. Stated here because a caller that renders
-`effectiveEnd ?? 'End of Time'` on a VACANT row prints a confident answer about a
-position nobody holds.
+**Absent, not `null`** — measured, not assumed (2026-09-05): the runtime DROPS null
+properties from a response rather than serialising them, so a suite case asserting
+`equals: null` fails with `missing` and a caller must treat the key as optional.
+Every "no answer" in this callable's output therefore reads as an absent key, and
+`required` still names only the five fields it always sends.
+
+`effectiveEnd` absent on an OCCUPIED row means **open-ended — still held**, the same
+"absent means still held" rule the fold applies to the source assignment. So absence
+carries two readings and `occupancy` is what separates them: read `effectiveEnd` only
+once you have checked `occupancy === 'OCCUPIED'`. Stated here because a caller that
+renders `effectiveEnd ?? 'End of Time'` on a VACANT row prints a confident answer
+about a position nobody holds.
+
+**`allocationPct` needed the fetch projection widened**, which the first attempt
+missed: `n_FtAsg` listed only `positionId`, `payeeId`, `effectiveStart` and
+`effectiveEnd`, so the field was never on the row to carry through. A projection is
+a contract too — adding an output field means checking that the fetch actually reads
+it, and the suite catches this because it asserts a real value (100) rather than a
+type.
 
 **This is deliberately NOT the whole occupant story.** `payeeCurrency`,
 `payeeCurrencySymbol` and the resolution `message` stay in `ICM | Resolve Position
@@ -213,11 +224,11 @@ positions' occupancy honest rather than confidently wrong.
 | the open-ended assignment | `OCCUPIED` — the case a server-side `effectiveEnd` filter would break |
 | `asOfDate: "not-a-date"` | `INVALID_INPUT` |
 | `limit: "abc"` | `INVALID_INPUT` |
-| a date inside a closed assignment | `effectiveStart`/`effectiveEnd` are that assignment's real epochs, `allocationPct` its real value |
-| the open-ended assignment | `effectiveStart` set, `effectiveEnd` **null** — open-ended, still held |
-| a position nobody ever filled | all three **null**, because VACANT means no assignment applied |
-| the contested position on an overlap date | all three **null**, because CONFLICT means the callable refused to pick one |
-| `includeOccupancy: "false"` | all three **null** — the fold never ran |
+| a date inside a closed assignment | `effectiveStart`/`effectiveEnd` are that assignment's real epochs, `allocationPct` its real value (100) |
+| the open-ended assignment | `effectiveStart` set, `effectiveEnd` **absent** — open-ended, still held |
+| a position nobody ever filled | all three **absent**, because VACANT means no assignment applied |
+| the contested position on an overlap date | all three **absent**, because CONFLICT means the callable refused to pick one |
+| `includeOccupancy: "false"` | all three **absent** — the fold never ran |
 | counts on a page containing occupied + vacant + conflict | `counts` adds up to the page's position count |
 
 ## Notes

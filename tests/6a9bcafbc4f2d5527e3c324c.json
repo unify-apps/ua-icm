@@ -203,6 +203,55 @@
         { "path": "asOfDate", "equals": "2026-02-15" },
         { "path": "positions.0.occupancy", "equals": "OCCUPIED" }
       ]
+    },
+    {
+      "name": "window - closed range: the assignment's own start, end and split come back",
+      "payload": { "search": "KITFIX-POS-01", "asOfDate": "2026-02-15", "limit": "", "offset": "", "includeOccupancy": "" },
+      "checks": [
+        { "path": "positions.0.occupancy", "equals": "OCCUPIED" },
+        { "path": "positions.0.effectiveStart", "type": "number" },
+        { "path": "positions.0.effectiveEnd", "type": "number" },
+        { "path": "positions.0.allocationPct", "equals": 100 }
+      ]
+    },
+    {
+      "name": "window - open-ended assignment: effectiveEnd is ABSENT, meaning STILL HELD and not unknown",
+      "payload": { "search": "KITFIX-POS-02", "asOfDate": "2026-03-14", "limit": "", "offset": "", "includeOccupancy": "" },
+      "checks": [
+        { "path": "positions.0.occupancy", "equals": "OCCUPIED" },
+        { "path": "positions.0.effectiveStart", "type": "number" },
+        { "path": "positions.0.effectiveEnd", "absent": true },
+        { "path": "positions.0.allocationPct", "equals": 100 }
+      ]
+    },
+    {
+      "name": "window - VACANT: no assignment applied, so there is no window to report",
+      "payload": { "search": "KITFIX-POS-04", "asOfDate": "2026-03-14", "limit": "", "offset": "", "includeOccupancy": "" },
+      "checks": [
+        { "path": "positions.0.occupancy", "equals": "VACANT" },
+        { "path": "positions.0.effectiveStart", "absent": true },
+        { "path": "positions.0.effectiveEnd", "absent": true },
+        { "path": "positions.0.allocationPct", "absent": true }
+      ]
+    },
+    {
+      "name": "window - CONFLICT: several assignments covered the date, so naming one window would be the guess we refuse",
+      "payload": { "search": "KITFIX-POS-03", "asOfDate": "2026-03-14", "limit": "", "offset": "", "includeOccupancy": "" },
+      "checks": [
+        { "path": "positions.0.occupancy", "equals": "CONFLICT" },
+        { "path": "positions.0.matchCount", "equals": 2 },
+        { "path": "positions.0.effectiveStart", "absent": true },
+        { "path": "positions.0.allocationPct", "absent": true }
+      ]
+    },
+    {
+      "name": "window - includeOccupancy false: the fold never ran, so there is nothing to report",
+      "payload": { "search": "KITFIX-POS-01", "asOfDate": "2026-02-15", "limit": "", "offset": "", "includeOccupancy": "false" },
+      "checks": [
+        { "path": "positions.0.occupancy", "equals": "UNKNOWN" },
+        { "path": "positions.0.effectiveStart", "absent": true },
+        { "path": "positions.0.allocationPct", "absent": true }
+      ]
     }
   ]
 }
