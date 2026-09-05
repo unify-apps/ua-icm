@@ -1,0 +1,15 @@
+{
+  "id": "PositionHierarchy",
+  "name": "Position Hierarchy",
+  "pluralName": "PositionHierarchies",
+  "description": "The org chart, drawn between SEATS rather than people. Table 5 of the design walkthrough. Manager rollup credit depends on it: the manager's name is nowhere on a deal, so the engine starts at the rep's seat and walks up this table. Seat-to-seat because replacing the person in a manager seat would otherwise mean re-pointing every report. Effective-dated because re-orgs happen, so a March deal rolls up to the manager who held the seat in March. A top seat simply has no row here - that is how the walk knows to stop.",
+  "nameField": "name",
+  "uniqueKeyFields": [],
+  "properties": {
+    "name":             { "type": "string", "required": true, "searchable": true },
+    "positionId":       { "type": "fk:Position", "required": true, "title": "Position" },
+    "parentPositionId": { "type": "fk:Position", "required": true, "title": "Parent Position" },
+    "effectiveStart":   { "type": "date", "required": true, "title": "Effective Start" },
+    "effectiveEnd":     { "type": "date", "title": "Effective End" }
+  }
+}

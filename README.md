@@ -158,7 +158,8 @@ matches what is deployed is a bug to fix, not a stale doc to ignore.
 | `page.mjs` | Starts the page tool server and drives the devkit's safety commands |
 | `check-docs.mjs` | No — fails when something exists that the docs don't describe |
 | `testrun.mjs` · `regress.mjs` | **Executes nodes against real data** |
-| `fixtures.mjs` | **Yes** — seeds and resets `KITFIX-` test records |
+| `fixtures.mjs` | **Yes** — seeds and resets `KITFIX-` test records. Orbit only, permanently |
+| `ua-records.mjs` | **Yes** — seeds the product's REAL records from `records/`. Seed-only: never deletes, never updates |
 | `agent.mjs` | **Yes** — drives the builder copilot |
 | `ua-object.mjs` · `ua-write.mjs` · `ua-schema.mjs` | **Yes** — prod needs an explicit `--env tool` |
 | `ua-automation.mjs` | **Yes** — creates an automation from a snapshot; this is how one environment's work is replicated onto another. Creates a DRAFT, never deploys |
