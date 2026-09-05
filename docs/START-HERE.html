@@ -367,6 +367,19 @@
     </div>
   </section>
 
+  <!-- ============ SECURITY TESTING ============ -->
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">New, and pointed at nothing yet</div>
+      <h2>Strix pentests what we build, never what runs</h2>
+    </div>
+    <div class="panel">
+      <p><a href="https://github.com/usestrix/strix">Strix</a> is an autonomous pentesting agent. The CLI is installed per person (<code>uv tool install strix-agent</code>); nine skills in <code>.claude/skills/</code> drive it, pinned by <code>skills-lock.json</code> and refreshed with <code>npx skills update</code>. Reach for <code>find-security-vulnerabilities-in-code</code> for a white-box read of this repo, <code>web-app-penetration-testing</code> or <code>api-security-testing</code> against something running, <code>managed-pentesting-with-strix</code> when there is no local Docker. The moment to reach for one is a change that touches authorization, a page's data path, or anything a caller supplies.</p>
+      <p>It needs <b>Docker running</b> and an LLM key (<code>STRIX_LLM</code>, <code>LLM_API_KEY</code>). Without a container runtime the local CLI does nothing — that is a missing prerequisite, not a broken install. Findings land in <code>strix_runs/&lt;run-name&gt;/</code>, git-ignored because they are output, and because a report full of working exploits is not review material.</p>
+      <p><b>The target is ours, or it is nobody's.</b> A pentest is an attack — it sends real payloads and writes real records. Point it at the working tree, or at orbit. <b>Never at <code>tool.prod-aps1</code></b>: the ICM rule about never testing against real pay data covers a scan exactly as it covers a test run, and covers it harder, because a scan is <i>trying</i> to get through.</p>
+    </div>
+  </section>
+
   <div class="closer">Intend it in <span>docs/</span>, prove it in <span>tests/</span>, record what is real in <span>snapshots/</span>. <span>Everything else is a tool for moving between those three.</span></div>
 
 </div>

@@ -31,3 +31,7 @@ designs/*.html
 # looking-at-the-page session. Regenerated on demand, never review material.
 .playwright-mcp/
 /*.png
+
+# Strix pentest output: findings and working exploits, regenerated per run.
+# Output, not review material, and never something to push to a remote.
+strix_runs/
