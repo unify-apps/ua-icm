@@ -1178,3 +1178,40 @@ show/hide is:
 `filter.value` is always TEXT whatever the operator wants — `"0"`, not `0`.
 Note `create_block` DOES accept `visibility.value` as a prop path while
 `update_blocks` does not; the two verbs disagree, and only the update refuses.
+
+## A null property is DROPPED from a callable's response, not serialised (ICM, 2026-09-05)
+
+`ICM | List Positions` gained three fields that are only meaningful when a single
+assignment resolved the row — `effectiveStart`, `effectiveEnd`, `allocationPct` — and
+the fold sets them to `null` otherwise. They do not arrive as `null`. **They do not
+arrive at all.**
+
+Suite cases written as `{ "path": "positions.0.effectiveStart", "equals": null }`
+failed with `missing`, on every VACANT and CONFLICT row, and for `effectiveEnd` on an
+open-ended assignment. Rewriting them as `{ "absent": true }` turned all five green
+against the same draft.
+
+So for any callable output:
+
+| you mean | write it as | assert it as |
+|---|---|---|
+| "no answer for this row" | `null` in Groovy | `"absent": true` |
+| "the answer is empty text" | `''` | `"equals": ""` |
+
+The distinction matters twice over. A caller's type must be **optional**
+(`effectiveStart?: number`), not nullable — a `number \| null` field typechecks a
+`?? fallback` that then never fires, because `??` fires on null and the key is simply
+gone. And `required` in the callable's typed contract must not name a field that is
+sometimes absent, or the contract lies about its own output.
+
+The same rule is why every "nobody here" string in this callable is `''` rather than
+`null`: an empty string SURVIVES the response, an absent key does not, and mixing the
+two conventions in one row shape is how a caller ends up writing `?? '—'` for one
+field and `|| '—'` for the next.
+
+**Corollary — a projection is a contract.** The same change added `allocationPct` to
+the output and it came back missing even on rows that should have read `100`, because
+`n_FtAsg`'s `fields` list named four properties and this was not one of them. The
+field was never on the row to carry through. Adding an output field means checking the
+fetch that feeds it, and asserting a REAL VALUE in the suite rather than a type —
+`{ "type": "number" }` would have passed on nothing at all.
