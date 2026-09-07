@@ -1,0 +1,39 @@
+{
+  "name": "ICM | List Attainment Measures",
+  "note": "periodType is the field the rule editor renders beside the picker, so the suite asserts it survives the projection rather than only that a row came back.",
+  "cases": [
+    { "name": "pre-clean KITFIX-AM-1", "entityDelete": { "entityType": "AttainmentMeasure", "filters": { "measureId": "KITFIX-AM-1" }, "allowZero": true } },
+    { "name": "pre-clean KITFIX-AM-2", "entityDelete": { "entityType": "AttainmentMeasure", "filters": { "measureId": "KITFIX-AM-2" }, "allowZero": true } },
+    { "name": "seed KITFIX-AM-1", "entityCreate": { "entityType": "AttainmentMeasure", "properties": { "measureId": "KITFIX-AM-1", "name": "KITFIX-Bookings QTD", "periodType": "QTD" } } },
+    { "name": "seed KITFIX-AM-2", "entityCreate": { "entityType": "AttainmentMeasure", "properties": { "measureId": "KITFIX-AM-2", "name": "KITFIX-Bookings YTD", "periodType": "YTD" } } },
+    { "name": "let the search index catch up with the seeds", "sleepMs": 15000 },
+    {
+      "name": "OK - both seeds, with the grain intact",
+      "payload": { "search": "KITFIX-", "periodType": "", "limit": "", "offset": "" },
+      "checks": [ { "path": "status", "equals": "OK" }, { "path": "total", "equals": 2 } ]
+    },
+    {
+      "name": "OK - periodType narrows, and carries the grain the editor shows",
+      "payload": { "search": "KITFIX-", "periodType": "QTD", "limit": "", "offset": "" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "total", "equals": 1 },
+        { "path": "measures.0.measureId", "equals": "KITFIX-AM-1" },
+        { "path": "measures.0.periodType", "equals": "QTD" },
+        { "path": "measures.0.name", "equals": "KITFIX-Bookings QTD" }
+      ]
+    },
+    {
+      "name": "OK - a periodType matching nothing is a result, not an error",
+      "payload": { "search": "KITFIX-", "periodType": "Month", "limit": "", "offset": "" },
+      "checks": [ { "path": "status", "equals": "OK" }, { "path": "total", "equals": 0 } ]
+    },
+    {
+      "name": "INVALID_INPUT - offset is not a number",
+      "payload": { "search": "", "periodType": "", "limit": "", "offset": "x" },
+      "checks": [ { "path": "status", "equals": "INVALID_INPUT" } ]
+    },
+    { "name": "clean up KITFIX-AM-1", "entityDelete": { "entityType": "AttainmentMeasure", "filters": { "measureId": "KITFIX-AM-1" } } },
+    { "name": "clean up KITFIX-AM-2", "entityDelete": { "entityType": "AttainmentMeasure", "filters": { "measureId": "KITFIX-AM-2" } } }
+  ]
+}

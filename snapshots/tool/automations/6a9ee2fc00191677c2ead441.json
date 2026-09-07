@@ -1,0 +1,453 @@
+{
+  "appsUsed": [],
+  "createdTime": 1788797692921,
+  "deleted": false,
+  "deployedVersion": 1,
+  "deploymentState": {
+    "deployedAt": 1788797956234,
+    "deployedBy": 435691,
+    "deployedDefinitionId": "6a9ee404057e966846d246c9",
+    "deploymentNotes": "Rule editor pickers",
+    "status": "DEPLOYED",
+    "version": 1,
+    "workflowVersion": 1
+  },
+  "description": "The controlled credit-type registry. Serves the Credit Type field on a credit rule and the Credit Types multi-select on a payout rule. `activeOnly` exists because a retired type must still resolve for history but must never be offered for a new rule.",
+  "edges": [
+    {
+      "fromNodeId": "n_sTaRt",
+      "id": "next@n_sTaRt@n_Norm",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Norm",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Norm",
+      "id": "next@n_Norm@n_Ft",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Ft",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Ft",
+      "id": "next@n_Ft@n_Shape",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Shape",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Shape",
+      "id": "next@n_Shape@n_IfBad",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfBad",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "if@n_IfBad@n_StBad",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StBad",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "next@n_IfBad@n_StOk",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StOk",
+      "type": "next"
+    }
+  ],
+  "id": "6a9ee2fc00191677c2ead441",
+  "lastModifiedBy": 435691,
+  "lastPlatformUpdateBy": 435691,
+  "lastPlatformUpdateOn": 1788797956235,
+  "lcName": "icm | list credit types",
+  "modifiedTime": 1788797956235,
+  "name": "ICM | List Credit Types",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_sTaRt",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "success",
+            "message"
+          ],
+          "properties": {
+            "status": {
+              "type": "string"
+            },
+            "success": {
+              "type": "boolean"
+            },
+            "message": {
+              "type": "string"
+            },
+            "total": {
+              "type": "integer"
+            },
+            "hasMore": {
+              "type": "boolean"
+            },
+            "offset": {
+              "type": "integer"
+            },
+            "limit": {
+              "type": "integer"
+            },
+            "creditTypes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {}
+              }
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "search": {
+              "type": "string",
+              "title": "search"
+            },
+            "activeOnly": {
+              "type": "string",
+              "title": "activeOnly"
+            },
+            "limit": {
+              "type": "string",
+              "title": "limit"
+            },
+            "offset": {
+              "type": "string",
+              "title": "offset"
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Norm",
+      "index": 2,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "valid": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "filter": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "pageLimit": {
+              "type": "integer"
+            },
+            "pageOffset": {
+              "type": "integer"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "search": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "ruleType": {
+              "type": "string"
+            },
+            "limit": {
+              "type": "string"
+            },
+            "offset": {
+              "type": "string"
+            }
+          }
+        },
+        "compile_static": false,
+        "code": "\ndef opt = { String k -> if (!binding.hasVariable(k)) return ''\n                        def v = binding.getVariable(k); return (v == null) ? '' : v.toString().trim() }\ndef s = opt('search'); def act = opt('activeOnly')\ndef lim = opt('limit'); def off = opt('offset')\n\nboolean valid = true; String reason = ''\nint pageLimit = 50\nif (!lim.isEmpty()) { if (lim ==~ /^\\d+$/) pageLimit = Integer.parseInt(lim) else { valid=false; reason='limit must be a whole number, got: ' + lim } }\nif (pageLimit < 1) pageLimit = 1\nif (pageLimit > 200) pageLimit = 200\nint pageOffset = 0\nif (!off.isEmpty()) { if (off ==~ /^\\d+$/) pageOffset = Integer.parseInt(off) else { valid=false; reason='offset must be a whole number, got: ' + off } }\n\ndef leaves = []\nif (!s.isEmpty()) leaves << [operator:'OR', filters:[\n    [property:'properties.name',           filter:[operator:'ICONTAINS', value:s]],\n    [property:'properties.creditTypeCode', filter:[operator:'ICONTAINS', value:s]]]]\n// A retired type must still RESOLVE for historical credits, so this is a caller\n// choice rather than a permanent filter. The rule editors pass true.\nif (act.equalsIgnoreCase('true')) leaves << [property:'properties.active', filter:[operator:'EQUAL', value:true]]\nif (!valid) leaves = [[property:'id', filter:[operator:'EQUAL', value:'__invalid_input__']]]\nreturn [valid: valid, reason: reason, filter: [operator:'AND', filters: leaves],\n        pageLimit: pageLimit, pageOffset: pageOffset]\n",
+        "captureStdOutput": false,
+        "parameters": {
+          "search": "{{ n_sTaRt.outputs.search }}",
+          "activeOnly": "{{ n_sTaRt.outputs.activeOnly }}",
+          "limit": "{{ n_sTaRt.outputs.limit }}",
+          "offset": "{{ n_sTaRt.outputs.offset }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Apply the defaults and build the filter",
+      "title": "Execute Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Ft",
+      "index": 3,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.filter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "CreditType",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}"
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.creditTypeCode",
+          "properties.name",
+          "properties.description",
+          "properties.active"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The page of rules the caller asked for",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Shape",
+      "index": 4,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            "total": {
+              "type": "integer"
+            },
+            "hasMore": {
+              "type": "boolean"
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rows": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            "total": {
+              "type": "integer"
+            },
+            "pageOffset": {
+              "type": "integer"
+            }
+          }
+        },
+        "compile_static": false,
+        "code": "\ndef out = []\nif (rows != null) rows.each { r ->\n    def p = r.properties\n    out << [creditTypeCode: p?.creditTypeCode ?: '', recordId: String.valueOf(r.id),\n            name: p?.name ?: '', description: p?.description ?: '', active: (p?.active == true)]\n}\nint tot = (total == null) ? out.size() : Integer.valueOf(String.valueOf(total))\nreturn [creditTypes: out, total: tot, hasMore: (pageOffset + out.size()) < tot,\n        message: out.size() + ' credit type' + (out.size() == 1 ? '' : 's') + ' on this page']\n",
+        "captureStdOutput": false,
+        "parameters": {
+          "rows": "{{ n_Ft.outputs.objects }}",
+          "total": "{{ n_Ft.outputs.total }}",
+          "pageOffset": "{{ n_Norm.outputs.result.pageOffset }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "One row per rule, with the list sizes a table can show",
+      "title": "Execute Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_IfBad",
+      "index": 5,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Norm.outputs.result.valid }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": false
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Was the request itself unusable?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@y",
+      "id": "n_StBad",
+      "index": 6,
+      "inputs": {
+        "result": {
+          "status": "INVALID_INPUT",
+          "success": false,
+          "message": "{{ n_Norm.outputs.result.reason }}",
+          "total": 0,
+          "creditTypes": []
+        }
+      },
+      "skip": false,
+      "subTitle": "Caller sent an unusable limit or offset",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_StOk",
+      "index": 7,
+      "inputs": {
+        "result": {
+          "status": "OK",
+          "success": true,
+          "message": "{{ n_Shape.outputs.result.message }}",
+          "total": "{{ n_Shape.outputs.result.total }}",
+          "hasMore": "{{ n_Shape.outputs.result.hasMore }}",
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "creditTypes": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Shape.outputs.result.creditTypes }}",
+            "items": "{{ n_Shape.outputs.result.creditTypes[0] }}"
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "The page of rules",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 435691,
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 1
+}

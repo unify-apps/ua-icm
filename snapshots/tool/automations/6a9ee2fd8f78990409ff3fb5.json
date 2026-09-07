@@ -1,0 +1,459 @@
+{
+  "appsUsed": [],
+  "createdTime": 1788797693202,
+  "deleted": false,
+  "deployedVersion": 1,
+  "deploymentState": {
+    "deployedAt": 1788798034039,
+    "deployedBy": 435691,
+    "deployedDefinitionId": "6a9ee451ff41994689bd63e7",
+    "deploymentNotes": "Rule editor pickers",
+    "status": "DEPLOYED",
+    "version": 1,
+    "workflowVersion": 1
+  },
+  "description": "Quota targets, filterable by measure. A Quota is one position's target for one measure in one period, so `measureId` is the filter the rule editor uses to narrow the picker to the measure already chosen.",
+  "edges": [
+    {
+      "fromNodeId": "n_sTaRt",
+      "id": "next@n_sTaRt@n_Norm",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Norm",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Norm",
+      "id": "next@n_Norm@n_Ft",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Ft",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Ft",
+      "id": "next@n_Ft@n_Shape",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Shape",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Shape",
+      "id": "next@n_Shape@n_IfBad",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfBad",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "if@n_IfBad@n_StBad",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StBad",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "next@n_IfBad@n_StOk",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StOk",
+      "type": "next"
+    }
+  ],
+  "id": "6a9ee2fd8f78990409ff3fb5",
+  "lastModifiedBy": 435691,
+  "lastPlatformUpdateBy": 435691,
+  "lastPlatformUpdateOn": 1788798034040,
+  "lcName": "icm | list quotas",
+  "modifiedTime": 1788798034039,
+  "name": "ICM | List Quotas",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_sTaRt",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "success",
+            "message"
+          ],
+          "properties": {
+            "status": {
+              "type": "string"
+            },
+            "success": {
+              "type": "boolean"
+            },
+            "message": {
+              "type": "string"
+            },
+            "total": {
+              "type": "integer"
+            },
+            "hasMore": {
+              "type": "boolean"
+            },
+            "offset": {
+              "type": "integer"
+            },
+            "limit": {
+              "type": "integer"
+            },
+            "quotas": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {}
+              }
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "search": {
+              "type": "string",
+              "title": "search"
+            },
+            "measureId": {
+              "type": "string",
+              "title": "measureId"
+            },
+            "positionId": {
+              "type": "string",
+              "title": "positionId"
+            },
+            "limit": {
+              "type": "string",
+              "title": "limit"
+            },
+            "offset": {
+              "type": "string",
+              "title": "offset"
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Norm",
+      "index": 2,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "valid": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "filter": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "pageLimit": {
+              "type": "integer"
+            },
+            "pageOffset": {
+              "type": "integer"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "search": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "ruleType": {
+              "type": "string"
+            },
+            "limit": {
+              "type": "string"
+            },
+            "offset": {
+              "type": "string"
+            }
+          }
+        },
+        "compile_static": false,
+        "code": "\ndef opt = { String k -> if (!binding.hasVariable(k)) return ''\n                        def v = binding.getVariable(k); return (v == null) ? '' : v.toString().trim() }\ndef s = opt('search'); def mid = opt('measureId'); def pid = opt('positionId')\ndef lim = opt('limit'); def off = opt('offset')\n\nboolean valid = true; String reason = ''\nint pageLimit = 50\nif (!lim.isEmpty()) { if (lim ==~ /^\\d+$/) pageLimit = Integer.parseInt(lim) else { valid=false; reason='limit must be a whole number, got: ' + lim } }\nif (pageLimit < 1) pageLimit = 1\nif (pageLimit > 200) pageLimit = 200\nint pageOffset = 0\nif (!off.isEmpty()) { if (off ==~ /^\\d+$/) pageOffset = Integer.parseInt(off) else { valid=false; reason='offset must be a whole number, got: ' + off } }\n\ndef leaves = []\nif (!s.isEmpty()) leaves << [property:'properties.quotaId', filter:[operator:'ICONTAINS', value:s]]\nif (!mid.isEmpty()) leaves << [property:'properties.measureId',  filter:[operator:'EQUAL', value:mid]]\nif (!pid.isEmpty()) leaves << [property:'properties.positionId', filter:[operator:'EQUAL', value:pid]]\nif (!valid) leaves = [[property:'id', filter:[operator:'EQUAL', value:'__invalid_input__']]]\nreturn [valid: valid, reason: reason, filter: [operator:'AND', filters: leaves],\n        pageLimit: pageLimit, pageOffset: pageOffset]\n",
+        "captureStdOutput": false,
+        "parameters": {
+          "search": "{{ n_sTaRt.outputs.search }}",
+          "measureId": "{{ n_sTaRt.outputs.measureId }}",
+          "positionId": "{{ n_sTaRt.outputs.positionId }}",
+          "limit": "{{ n_sTaRt.outputs.limit }}",
+          "offset": "{{ n_sTaRt.outputs.offset }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Apply the defaults and build the filter",
+      "title": "Execute Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Ft",
+      "index": 3,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.filter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Quota",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}"
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.quotaId",
+          "properties.measureId",
+          "properties.positionId",
+          "properties.periodId",
+          "properties.amount"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The page of rules the caller asked for",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Shape",
+      "index": 4,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            "total": {
+              "type": "integer"
+            },
+            "hasMore": {
+              "type": "boolean"
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rows": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            "total": {
+              "type": "integer"
+            },
+            "pageOffset": {
+              "type": "integer"
+            }
+          }
+        },
+        "compile_static": false,
+        "code": "\ndef out = []\nif (rows != null) rows.each { r ->\n    def p = r.properties\n    out << [quotaId: p?.quotaId ?: '', recordId: String.valueOf(r.id),\n            measureId: p?.measureId ?: '', positionId: p?.positionId ?: '',\n            periodId: p?.periodId ?: '', amount: p?.amount]\n}\nint tot = (total == null) ? out.size() : Integer.valueOf(String.valueOf(total))\nreturn [quotas: out, total: tot, hasMore: (pageOffset + out.size()) < tot,\n        message: out.size() + ' quota' + (out.size() == 1 ? '' : 's') + ' on this page']\n",
+        "captureStdOutput": false,
+        "parameters": {
+          "rows": "{{ n_Ft.outputs.objects }}",
+          "total": "{{ n_Ft.outputs.total }}",
+          "pageOffset": "{{ n_Norm.outputs.result.pageOffset }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "One row per rule, with the list sizes a table can show",
+      "title": "Execute Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_IfBad",
+      "index": 5,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Norm.outputs.result.valid }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": false
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Was the request itself unusable?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@y",
+      "id": "n_StBad",
+      "index": 6,
+      "inputs": {
+        "result": {
+          "status": "INVALID_INPUT",
+          "success": false,
+          "message": "{{ n_Norm.outputs.result.reason }}",
+          "total": 0,
+          "quotas": []
+        }
+      },
+      "skip": false,
+      "subTitle": "Caller sent an unusable limit or offset",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_StOk",
+      "index": 7,
+      "inputs": {
+        "result": {
+          "status": "OK",
+          "success": true,
+          "message": "{{ n_Shape.outputs.result.message }}",
+          "total": "{{ n_Shape.outputs.result.total }}",
+          "hasMore": "{{ n_Shape.outputs.result.hasMore }}",
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "quotas": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Shape.outputs.result.quotas }}",
+            "items": "{{ n_Shape.outputs.result.quotas[0] }}"
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "The page of rules",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 435691,
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 1
+}

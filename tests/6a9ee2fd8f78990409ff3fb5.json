@@ -1,0 +1,38 @@
+{
+  "name": "ICM | List Quotas",
+  "note": "The rule editor narrows this picker by the measure already chosen, so measureId filtering is the case that matters - an unfiltered quota list would offer one rep's target against a measure the rule does not read.",
+  "cases": [
+    { "name": "pre-clean KITFIX-Q-1", "entityDelete": { "entityType": "Quota", "filters": { "quotaId": "KITFIX-Q-1" }, "allowZero": true } },
+    { "name": "pre-clean KITFIX-Q-2", "entityDelete": { "entityType": "Quota", "filters": { "quotaId": "KITFIX-Q-2" }, "allowZero": true } },
+    { "name": "seed KITFIX-Q-1", "entityCreate": { "entityType": "Quota", "properties": { "quotaId": "KITFIX-Q-1", "measureId": "KITFIX-AM-A", "amount": 50000000 } } },
+    { "name": "seed KITFIX-Q-2", "entityCreate": { "entityType": "Quota", "properties": { "quotaId": "KITFIX-Q-2", "measureId": "KITFIX-AM-B", "amount": 75000000 } } },
+    { "name": "let the search index catch up with the seeds", "sleepMs": 15000 },
+    {
+      "name": "OK - both seeds when nothing narrows",
+      "payload": { "search": "KITFIX-", "measureId": "", "positionId": "", "limit": "", "offset": "" },
+      "checks": [ { "path": "status", "equals": "OK" }, { "path": "total", "equals": 2 } ]
+    },
+    {
+      "name": "OK - measureId narrows to the measure the rule reads",
+      "payload": { "search": "KITFIX-", "measureId": "KITFIX-AM-B", "positionId": "", "limit": "", "offset": "" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "total", "equals": 1 },
+        { "path": "quotas.0.quotaId", "equals": "KITFIX-Q-2" },
+        { "path": "quotas.0.amount", "equals": 75000000 }
+      ]
+    },
+    {
+      "name": "OK - a measure with no quotas is a result, not an error",
+      "payload": { "search": "KITFIX-", "measureId": "KITFIX-AM-NONE", "positionId": "", "limit": "", "offset": "" },
+      "checks": [ { "path": "status", "equals": "OK" }, { "path": "total", "equals": 0 } ]
+    },
+    {
+      "name": "INVALID_INPUT - limit is not a number",
+      "payload": { "search": "", "measureId": "", "positionId": "", "limit": "lots", "offset": "" },
+      "checks": [ { "path": "status", "equals": "INVALID_INPUT" } ]
+    },
+    { "name": "clean up KITFIX-Q-1", "entityDelete": { "entityType": "Quota", "filters": { "quotaId": "KITFIX-Q-1" } } },
+    { "name": "clean up KITFIX-Q-2", "entityDelete": { "entityType": "Quota", "filters": { "quotaId": "KITFIX-Q-2" } } }
+  ]
+}

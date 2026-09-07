@@ -1,0 +1,48 @@
+{
+  "name": "ICM | List Credit Types",
+  "note": "CreditType holds FIVE REAL records on tool. Every case filters by the KITFIX- prefix so the real registry is never asserted on and never cleaned. activeOnly is the case that matters: a retired type must still resolve for history and must never be offered to a new rule.",
+  "cases": [
+    { "name": "pre-clean KITFIX-CT-1", "entityDelete": { "entityType": "CreditType", "filters": { "creditTypeCode": "KITFIX-CT-1" }, "allowZero": true } },
+    { "name": "pre-clean KITFIX-CT-2", "entityDelete": { "entityType": "CreditType", "filters": { "creditTypeCode": "KITFIX-CT-2" }, "allowZero": true } },
+    { "name": "seed KITFIX-CT-1 (active)", "entityCreate": { "entityType": "CreditType", "properties": { "creditTypeCode": "KITFIX-CT-1", "name": "KITFIX-Live bucket", "description": "in use", "active": true } } },
+    { "name": "seed KITFIX-CT-2 (retired)", "entityCreate": { "entityType": "CreditType", "properties": { "creditTypeCode": "KITFIX-CT-2", "name": "KITFIX-Retired bucket", "description": "retired", "active": false } } },
+    { "name": "let the search index catch up with the seeds", "sleepMs": 15000 },
+    {
+      "name": "OK - both seeds come back when activeOnly is off",
+      "payload": { "search": "KITFIX-", "activeOnly": "", "limit": "", "offset": "" },
+      "checks": [ { "path": "status", "equals": "OK" }, { "path": "total", "equals": 2 } ]
+    },
+    {
+      "name": "OK - activeOnly excludes the retired one",
+      "payload": { "search": "KITFIX-", "activeOnly": "true", "limit": "", "offset": "" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "total", "equals": 1 },
+        { "path": "creditTypes.0.creditTypeCode", "equals": "KITFIX-CT-1" },
+        { "path": "creditTypes.0.active", "equals": true }
+      ]
+    },
+    {
+      "name": "OK - search matches the code as well as the name",
+      "payload": { "search": "KITFIX-CT-2", "activeOnly": "", "limit": "", "offset": "" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "total", "equals": 1 },
+        { "path": "creditTypes.0.name", "equals": "KITFIX-Retired bucket" },
+        { "path": "creditTypes.0.active", "equals": false }
+      ]
+    },
+    {
+      "name": "OK - the real registry is reachable, not hidden behind the fixtures",
+      "payload": { "search": "", "activeOnly": "true", "limit": "200", "offset": "" },
+      "checks": [ { "path": "status", "equals": "OK" }, { "path": "success", "equals": true } ]
+    },
+    {
+      "name": "INVALID_INPUT - limit is not a number",
+      "payload": { "search": "", "activeOnly": "", "limit": "ten", "offset": "" },
+      "checks": [ { "path": "status", "equals": "INVALID_INPUT" } ]
+    },
+    { "name": "clean up KITFIX-CT-1", "entityDelete": { "entityType": "CreditType", "filters": { "creditTypeCode": "KITFIX-CT-1" } } },
+    { "name": "clean up KITFIX-CT-2", "entityDelete": { "entityType": "CreditType", "filters": { "creditTypeCode": "KITFIX-CT-2" } } }
+  ]
+}
