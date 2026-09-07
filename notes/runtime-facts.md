@@ -1260,3 +1260,36 @@ Derive it by walking the edges from START; never hand-write it, and **fail on an
 node the walk does not reach** — an unreachable node is exactly what the builder
 would later drop, so refusing to write it is the check that catches this before a
 human opens the automation.
+
+## `uniqueKeyFields` is DERIVED from per-field `uniqueKey`, and a composite is accepted then ignored (ICM, 2026-09-07)
+
+Three of the nineteen ICM objects were specified with a composite business key.
+`ua-object.mjs` sent exactly that:
+
+```
+uniqueKeyFields=["sourceSystem","sourceId"]     # Transaction
+uniqueKeyFields=["positionId","measureId","periodId"]   # Quota
+uniqueKeyFields=["employeeId","periodId"]       # Statement
+```
+
+Every one came back as the single business key instead — `["transactionId"]`,
+`["quotaId"]`, `["statementId"]` — which is the property carrying
+`uniqueKey: true`. The platform **derives the list from the per-field flags** and
+discards what it was sent.
+
+Posting the whole definition back to `POST /api/entity-type/update` with the
+composite set, on an EMPTY object minutes old, returns **HTTP 200** and leaves
+`uniqueKeyFields` unchanged. No error, no warning, no field in the response
+saying it was refused — the same "wrong but parseable is accepted with 200"
+shape as the filter dialect above.
+
+**So composite uniqueness does not exist on this platform via this path.** Any
+rule of the form "unique on A + B" is an AUTOMATION's job: check before writing,
+the way `ICM | Create Position` checks `positionCode`. Writing it in a spec and
+assuming the database holds the line is how a duplicate import doubles every
+downstream number.
+
+Related, from the same session: `field-types.mjs` gained `select` (needs
+`options`, expands to `oneOf`), `json` (`type: object`, `additionalProperties:
+true`), and `datetime` (`format: "date-time"`, epoch storage like `date`). There
+is no long-text format on this platform — a long text field is a plain `string`.

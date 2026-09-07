@@ -65,7 +65,29 @@ export function expandField(name, spec, die) {
     // Dates are epoch integers on this platform - copied from the live `Period`
     // type, whose startDate/endDate are exactly this shape.
     case "date":    return { prop: { type: "integer", format: "date", dateFormat: "epoch", ...base }, isDate: true };
+    // A moment, not a day. Same epoch storage as `date`; the format is what makes
+    // the builder show a time. Copied from service_hub_case.lastInteractionTime.
+    case "datetime": return { prop: { type: "integer", format: "date-time", dateFormat: "epoch", ...base }, isDate: true };
+    // Free-form nested data. `additionalProperties: true` is the difference
+    // between "an object whose keys we do not police" and one that silently drops
+    // everything it was not told about.
+    case "json":    return { prop: { type: "object", additionalProperties: true, properties: {}, ...base } };
+    // An enum. Without `oneOf` a select is just a text box that happens to be
+    // named like a choice, so options are REQUIRED rather than optional.
+    case "select": {
+      const opts = spec.options;
+      if (!Array.isArray(opts) || opts.length === 0)
+        die(`property "${name}": type "select" needs a non-empty \`options\` array`);
+      return {
+        prop: {
+          type: "string",
+          format: "single-select",
+          oneOf: opts.map((o) => (typeof o === "string" ? { const: o, title: o } : o)),
+          ...base,
+        },
+      };
+    }
     default:
-      die(`property "${name}": unknown type "${t}" (string|number|integer|boolean|date|fk:<Type>|fk:USER)`);
+      die(`property "${name}": unknown type "${t}" (string|number|integer|boolean|date|datetime|json|select|fk:<Type>|fk:USER)`);
   }
 }

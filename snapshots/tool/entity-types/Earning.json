@@ -1,0 +1,570 @@
+{
+  "columnCounts": 20,
+  "createdTime": 1788769610908,
+  "deleted": false,
+  "description": "",
+  "id": "Earning",
+  "input": {
+    "type": "SCHEMA_AND_LAYOUT",
+    "dynamic": false,
+    "layout": {
+      "periodId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:Period",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "creditId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:Credit",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "componentId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:PlanComponent",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "resultId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:MeasureResult",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "ui:order": [
+        "earningId",
+        "runId",
+        "employeeId",
+        "componentId",
+        "componentKey",
+        "periodId",
+        "creditId",
+        "resultId",
+        "earnedToDate",
+        "uncappedEarnedToDate",
+        "capApplied",
+        "previouslyPaid",
+        "amount",
+        "clampedAmount",
+        "clampReason",
+        "rateApplied",
+        "bandHit",
+        "holdStatus",
+        "payablePeriodId",
+        "trace"
+      ],
+      "employeeId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:Payee",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "runId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:CalculationRun",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "payablePeriodId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:Period",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      }
+    },
+    "schema": {
+      "type": "object",
+      "properties": {
+        "earningId": {
+          "type": "string",
+          "title": "Earning Id",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true,
+          "uniqueKey": true,
+          "nameField": true
+        },
+        "runId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Run Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:CalculationRun"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "employeeId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Employee Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Payee"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "componentId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Component Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:PlanComponent"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "componentKey": {
+          "type": "string",
+          "title": "Component Key",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true
+        },
+        "periodId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Period Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Period"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "creditId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Credit Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Credit"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "resultId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Result Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:MeasureResult"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "earnedToDate": {
+          "type": "integer",
+          "title": "Earned To Date (minor units)",
+          "filterable": true,
+          "sortable": true
+        },
+        "uncappedEarnedToDate": {
+          "type": "integer",
+          "title": "Uncapped Earned To Date (minor units)",
+          "filterable": true,
+          "sortable": true
+        },
+        "capApplied": {
+          "type": "integer",
+          "title": "Cap Applied (minor units)",
+          "filterable": true,
+          "sortable": true
+        },
+        "previouslyPaid": {
+          "type": "integer",
+          "title": "Previously Paid (minor units)",
+          "filterable": true,
+          "sortable": true
+        },
+        "amount": {
+          "type": "integer",
+          "title": "Amount (minor units)",
+          "filterable": true,
+          "sortable": true
+        },
+        "clampedAmount": {
+          "type": "integer",
+          "title": "Clamped Amount (minor units)",
+          "filterable": true,
+          "sortable": true
+        },
+        "clampReason": {
+          "type": "string",
+          "title": "Clamp Reason",
+          "filterable": true,
+          "sortable": true
+        },
+        "rateApplied": {
+          "type": "integer",
+          "title": "Rate Applied (bps)",
+          "filterable": true,
+          "sortable": true
+        },
+        "bandHit": {
+          "type": "string",
+          "title": "Band Hit",
+          "filterable": true,
+          "sortable": true
+        },
+        "holdStatus": {
+          "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "Payable",
+              "title": "Payable"
+            },
+            {
+              "const": "Held",
+              "title": "Held"
+            }
+          ],
+          "title": "Hold Status",
+          "filterable": true,
+          "sortable": true
+        },
+        "payablePeriodId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Payable Period Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Period"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "trace": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {},
+          "title": "Trace",
+          "filterable": true,
+          "sortable": true
+        }
+      }
+    }
+  },
+  "lastModifiedBy": 435691,
+  "lastPlatformUpdateBy": 435691,
+  "lastPlatformUpdateOn": 1788769610911,
+  "lcName": "earning",
+  "metadata": {
+    "auditable": true,
+    "autoGeneratedFields": [],
+    "cacheable": false,
+    "captureActivity": true,
+    "captureReferences": false,
+    "captureReporting": true,
+    "dateFields": [],
+    "deployable": false,
+    "encryptedFields": [],
+    "external": false,
+    "filterableFields": [
+      "earningId",
+      "runId",
+      "employeeId",
+      "componentId",
+      "componentKey",
+      "periodId",
+      "creditId",
+      "resultId",
+      "earnedToDate",
+      "uncappedEarnedToDate",
+      "capApplied",
+      "previouslyPaid",
+      "amount",
+      "clampedAmount",
+      "clampReason",
+      "rateApplied",
+      "bandHit",
+      "holdStatus",
+      "payablePeriodId",
+      "trace"
+    ],
+    "graphType": "LEGACY_MDM",
+    "hasTimeSeriesRecords": true,
+    "hashedFields": [],
+    "inaccessibleFromUI": false,
+    "includeInDependency": false,
+    "nameField": "earningId",
+    "partFields": [],
+    "piiFields": [],
+    "primaryKeyField": "",
+    "referenceKeys": [
+      {
+        "key": "properties.runId",
+        "referenceType": "CalculationRun"
+      },
+      {
+        "key": "properties.employeeId",
+        "referenceType": "Payee"
+      },
+      {
+        "key": "properties.componentId",
+        "referenceType": "PlanComponent"
+      },
+      {
+        "key": "properties.periodId",
+        "referenceType": "Period"
+      },
+      {
+        "key": "properties.creditId",
+        "referenceType": "Credit"
+      },
+      {
+        "key": "properties.resultId",
+        "referenceType": "MeasureResult"
+      },
+      {
+        "key": "properties.payablePeriodId",
+        "referenceType": "Period"
+      }
+    ],
+    "scdType2Enabled": false,
+    "schemaValidationEnabled": true,
+    "searchableFields": [
+      "earningId",
+      "earningId",
+      "componentKey"
+    ],
+    "sessionBackedStorageEnabled": false,
+    "skipConfigSyncIfModified": false,
+    "skipDeletedEntityBackup": false,
+    "skipFetchBeforeUpdate": false,
+    "skipIndexLimitValidation": false,
+    "skipPermissionCheckForAggregation": false,
+    "skipPermissionsFilter": false,
+    "skipReportingEventsOrdering": false,
+    "skipRoutineLoad": false,
+    "skipTotalHitsInAggregation": false,
+    "skipVersionIncrementOnUpdate": false,
+    "storeDetails": {
+      "store": "MONGO",
+      "uniqueKeySupported": true
+    },
+    "supportsDistinctValues": false,
+    "supportsWebhook": false,
+    "syncFromSourceCustomer": false,
+    "translationsEnabled": false,
+    "uniqueKeyFields": [
+      "earningId"
+    ],
+    "urlValidationEnabledFields": [],
+    "useCachedEntityStoreForAutomations": false,
+    "userLevelEncryption": false,
+    "vectorFields": [],
+    "versioningEnabled": true
+  },
+  "modifiedTime": 1788769610911,
+  "name": "Earning",
+  "ownerUserId": 435691,
+  "packaged": false,
+  "pluralName": "Earnings",
+  "schema": {
+    "type": "SCHEMA",
+    "dynamic": false,
+    "schema": {
+      "type": "object",
+      "properties": {
+        "earningId": {
+          "type": "string",
+          "title": "Earning Id",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true,
+          "uniqueKey": true,
+          "nameField": true
+        },
+        "runId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Run Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:CalculationRun"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "employeeId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Employee Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Payee"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "componentId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Component Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:PlanComponent"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "componentKey": {
+          "type": "string",
+          "title": "Component Key",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true
+        },
+        "periodId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Period Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Period"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "creditId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Credit Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Credit"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "resultId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Result Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:MeasureResult"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "earnedToDate": {
+          "type": "integer",
+          "title": "Earned To Date (minor units)",
+          "filterable": true,
+          "sortable": true
+        },
+        "uncappedEarnedToDate": {
+          "type": "integer",
+          "title": "Uncapped Earned To Date (minor units)",
+          "filterable": true,
+          "sortable": true
+        },
+        "capApplied": {
+          "type": "integer",
+          "title": "Cap Applied (minor units)",
+          "filterable": true,
+          "sortable": true
+        },
+        "previouslyPaid": {
+          "type": "integer",
+          "title": "Previously Paid (minor units)",
+          "filterable": true,
+          "sortable": true
+        },
+        "amount": {
+          "type": "integer",
+          "title": "Amount (minor units)",
+          "filterable": true,
+          "sortable": true
+        },
+        "clampedAmount": {
+          "type": "integer",
+          "title": "Clamped Amount (minor units)",
+          "filterable": true,
+          "sortable": true
+        },
+        "clampReason": {
+          "type": "string",
+          "title": "Clamp Reason",
+          "filterable": true,
+          "sortable": true
+        },
+        "rateApplied": {
+          "type": "integer",
+          "title": "Rate Applied (bps)",
+          "filterable": true,
+          "sortable": true
+        },
+        "bandHit": {
+          "type": "string",
+          "title": "Band Hit",
+          "filterable": true,
+          "sortable": true
+        },
+        "holdStatus": {
+          "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "Payable",
+              "title": "Payable"
+            },
+            {
+              "const": "Held",
+              "title": "Held"
+            }
+          ],
+          "title": "Hold Status",
+          "filterable": true,
+          "sortable": true
+        },
+        "payablePeriodId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Payable Period Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Period"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "trace": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {},
+          "title": "Trace",
+          "filterable": true,
+          "sortable": true
+        }
+      }
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 0
+}

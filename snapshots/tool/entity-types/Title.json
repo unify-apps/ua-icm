@@ -1,5 +1,5 @@
 {
-  "columnCounts": 2,
+  "columnCounts": 8,
   "createdTime": 1788594605850,
   "deleted": false,
   "description": "A job title a Position can carry. Referenced by PositionAttribute rather than by Position directly, because a seat's title is effective-dated - a seat can be re-levelled mid-year without rewriting history.",
@@ -10,7 +10,13 @@
     "layout": {
       "ui:order": [
         "titleCode",
-        "name"
+        "name",
+        "description",
+        "category",
+        "level",
+        "market",
+        "function",
+        "payPeriod"
       ]
     },
     "schema": {
@@ -31,6 +37,42 @@
           "sortable": true,
           "searchable": true,
           "nameField": true
+        },
+        "description": {
+          "type": "string",
+          "title": "Description",
+          "filterable": true,
+          "sortable": true
+        },
+        "category": {
+          "type": "string",
+          "title": "Category",
+          "filterable": true,
+          "sortable": true
+        },
+        "level": {
+          "type": "string",
+          "title": "Level",
+          "filterable": true,
+          "sortable": true
+        },
+        "market": {
+          "type": "string",
+          "title": "Market",
+          "filterable": true,
+          "sortable": true
+        },
+        "function": {
+          "type": "string",
+          "title": "Function",
+          "filterable": true,
+          "sortable": true
+        },
+        "payPeriod": {
+          "type": "string",
+          "title": "Pay Period",
+          "filterable": true,
+          "sortable": true
         }
       },
       "required": [
@@ -39,9 +81,9 @@
       ]
     }
   },
-  "lastModifiedBy": 372563,
-  "lastPlatformUpdateBy": 372563,
-  "lastPlatformUpdateOn": 1788594605852,
+  "lastModifiedBy": 388282,
+  "lastPlatformUpdateBy": 388282,
+  "lastPlatformUpdateOn": 1788602800913,
   "lcName": "title",
   "metadata": {
     "auditable": true,
@@ -56,11 +98,18 @@
     "external": false,
     "filterableFields": [
       "titleCode",
-      "name"
+      "name",
+      "description",
+      "category",
+      "level",
+      "market",
+      "function",
+      "payPeriod"
     ],
     "graphType": "LEGACY_MDM",
     "hasTimeSeriesRecords": true,
     "hashedFields": [],
+    "inaccessibleFromUI": false,
     "includeInDependency": false,
     "nameField": "name",
     "partFields": [],
@@ -77,6 +126,7 @@
     "sessionBackedStorageEnabled": false,
     "skipConfigSyncIfModified": false,
     "skipDeletedEntityBackup": false,
+    "skipFetchBeforeUpdate": false,
     "skipIndexLimitValidation": false,
     "skipPermissionCheckForAggregation": false,
     "skipPermissionsFilter": false,
@@ -101,7 +151,7 @@
     "vectorFields": [],
     "versioningEnabled": true
   },
-  "modifiedTime": 1788594605852,
+  "modifiedTime": 1788602800913,
   "name": "Title",
   "ownerUserId": 372563,
   "packaged": false,
@@ -127,6 +177,42 @@
           "sortable": true,
           "searchable": true,
           "nameField": true
+        },
+        "description": {
+          "type": "string",
+          "title": "Description",
+          "filterable": true,
+          "sortable": true
+        },
+        "category": {
+          "type": "string",
+          "title": "Category",
+          "filterable": true,
+          "sortable": true
+        },
+        "level": {
+          "type": "string",
+          "title": "Level",
+          "filterable": true,
+          "sortable": true
+        },
+        "market": {
+          "type": "string",
+          "title": "Market",
+          "filterable": true,
+          "sortable": true
+        },
+        "function": {
+          "type": "string",
+          "title": "Function",
+          "filterable": true,
+          "sortable": true
+        },
+        "payPeriod": {
+          "type": "string",
+          "title": "Pay Period",
+          "filterable": true,
+          "sortable": true
         }
       },
       "required": [
@@ -139,5 +225,5 @@
   "tags": [
     "icm"
   ],
-  "version": 0
+  "version": 1
 }

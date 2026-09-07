@@ -1,38 +1,39 @@
 {
-  "columnCounts": 8,
-  "createdTime": 1788594607505,
+  "columnCounts": 9,
+  "createdTime": 1788769608637,
   "deleted": false,
-  "description": "A person who can be paid incentive compensation. The bridge from a platform user to the comp world. A payee holds a Position over a date range (PayeePositionAssignment); credit attaches to the POSITION and resolves to the payee who held it on the transaction's close date. Currency is a LOOKUP to Currency, not a loose three-letter string: a typo cannot silently create a second currency that sums separately.",
-  "id": "Payee",
+  "description": "",
+  "id": "CreditRule",
   "input": {
     "type": "SCHEMA_AND_LAYOUT",
     "dynamic": false,
     "layout": {
       "ui:order": [
-        "employeeId",
+        "ruleId",
+        "planId",
         "name",
-        "email",
-        "userId",
-        "currencyId",
-        "hireDate",
-        "terminationDate",
-        "status"
+        "condition",
+        "creditTypeId",
+        "splitPct",
+        "mode",
+        "rollup",
+        "rollupLevels"
       ],
-      "currencyId": {
+      "planId": {
         "ui:widget": "LookupWidget",
         "ui:options": {
           "ua:payload": {
-            "lookupType": "ENTITY_ID:Currency",
+            "lookupType": "ENTITY_ID:Plan",
             "type": "ByQuery"
           },
           "multiple": false
         }
       },
-      "userId": {
+      "creditTypeId": {
         "ui:widget": "LookupWidget",
         "ui:options": {
           "ua:payload": {
-            "lookupType": "USER",
+            "lookupType": "ENTITY_ID:CreditType",
             "type": "ByQuery"
           },
           "multiple": false
@@ -42,13 +43,23 @@
     "schema": {
       "type": "object",
       "properties": {
-        "employeeId": {
+        "ruleId": {
           "type": "string",
-          "title": "Employee Id",
+          "title": "Rule Id",
           "filterable": true,
           "sortable": true,
           "searchable": true,
           "uniqueKey": true
+        },
+        "planId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Plan Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Plan"
+          },
+          "foreignKeyConstraintEnforced": false
         },
         "name": {
           "type": "string",
@@ -58,68 +69,66 @@
           "searchable": true,
           "nameField": true
         },
-        "email": {
-          "type": "string",
-          "title": "Email",
-          "filterable": true,
-          "sortable": true,
-          "searchable": true
-        },
-        "userId": {
-          "type": "string",
-          "format": "single-select",
-          "title": "Platform User",
-          "filterable": true,
-          "foreignKey": {
-            "reference": "USER"
-          },
-          "foreignKeyConstraintEnforced": false
-        },
-        "currencyId": {
-          "type": "string",
-          "format": "single-select",
-          "title": "Currency",
-          "filterable": true,
-          "foreignKey": {
-            "reference": "ENTITY_ID:Currency"
-          },
-          "foreignKeyConstraintEnforced": false
-        },
-        "hireDate": {
-          "type": "integer",
-          "format": "date",
-          "dateFormat": "epoch",
-          "title": "Hire Date",
+        "condition": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {},
+          "title": "Condition (JsonLogic)",
           "filterable": true,
           "sortable": true
         },
-        "terminationDate": {
+        "creditTypeId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Credit Type Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:CreditType"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "splitPct": {
           "type": "integer",
-          "format": "date",
-          "dateFormat": "epoch",
-          "title": "Termination Date",
+          "title": "Split % (bps)",
           "filterable": true,
           "sortable": true
         },
-        "status": {
+        "mode": {
           "type": "string",
-          "title": "Status",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "Add",
+              "title": "Add"
+            },
+            {
+              "const": "Override",
+              "title": "Override"
+            }
+          ],
+          "title": "Mode",
+          "filterable": true,
+          "sortable": true
+        },
+        "rollup": {
+          "type": "boolean",
+          "title": "Rollup",
+          "filterable": true,
+          "sortable": true
+        },
+        "rollupLevels": {
+          "type": "string",
+          "title": "Rollup Levels",
           "filterable": true,
           "sortable": true
         }
-      },
-      "required": [
-        "employeeId",
-        "name",
-        "currencyId",
-        "status"
-      ]
+      }
     }
   },
-  "lastModifiedBy": 372563,
-  "lastPlatformUpdateBy": 372563,
-  "lastPlatformUpdateOn": 1788594607507,
-  "lcName": "payee",
+  "lastModifiedBy": 435691,
+  "lastPlatformUpdateBy": 435691,
+  "lastPlatformUpdateOn": 1788769608639,
+  "lcName": "creditrule",
   "metadata": {
     "auditable": true,
     "autoGeneratedFields": [],
@@ -127,22 +136,20 @@
     "captureActivity": true,
     "captureReferences": false,
     "captureReporting": true,
-    "dateFields": [
-      "terminationDate",
-      "hireDate"
-    ],
+    "dateFields": [],
     "deployable": false,
     "encryptedFields": [],
     "external": false,
     "filterableFields": [
-      "employeeId",
+      "ruleId",
+      "planId",
       "name",
-      "email",
-      "userId",
-      "currencyId",
-      "hireDate",
-      "terminationDate",
-      "status"
+      "condition",
+      "creditTypeId",
+      "splitPct",
+      "mode",
+      "rollup",
+      "rollupLevels"
     ],
     "graphType": "LEGACY_MDM",
     "hasTimeSeriesRecords": true,
@@ -155,17 +162,20 @@
     "primaryKeyField": "",
     "referenceKeys": [
       {
-        "key": "properties.currencyId",
-        "referenceType": "Currency"
+        "key": "properties.planId",
+        "referenceType": "Plan"
+      },
+      {
+        "key": "properties.creditTypeId",
+        "referenceType": "CreditType"
       }
     ],
     "scdType2Enabled": false,
     "schemaValidationEnabled": true,
     "searchableFields": [
-      "employeeId",
+      "ruleId",
       "name",
-      "name",
-      "email"
+      "name"
     ],
     "sessionBackedStorageEnabled": false,
     "skipConfigSyncIfModified": false,
@@ -187,7 +197,7 @@
     "syncFromSourceCustomer": false,
     "translationsEnabled": false,
     "uniqueKeyFields": [
-      "employeeId"
+      "ruleId"
     ],
     "urlValidationEnabledFields": [],
     "useCachedEntityStoreForAutomations": false,
@@ -195,24 +205,34 @@
     "vectorFields": [],
     "versioningEnabled": true
   },
-  "modifiedTime": 1788594607507,
-  "name": "Payee",
-  "ownerUserId": 372563,
+  "modifiedTime": 1788769608639,
+  "name": "CreditRule",
+  "ownerUserId": 435691,
   "packaged": false,
-  "pluralName": "Payees",
+  "pluralName": "Credit Rules",
   "schema": {
     "type": "SCHEMA",
     "dynamic": false,
     "schema": {
       "type": "object",
       "properties": {
-        "employeeId": {
+        "ruleId": {
           "type": "string",
-          "title": "Employee Id",
+          "title": "Rule Id",
           "filterable": true,
           "sortable": true,
           "searchable": true,
           "uniqueKey": true
+        },
+        "planId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Plan Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Plan"
+          },
+          "foreignKeyConstraintEnforced": false
         },
         "name": {
           "type": "string",
@@ -222,62 +242,60 @@
           "searchable": true,
           "nameField": true
         },
-        "email": {
-          "type": "string",
-          "title": "Email",
-          "filterable": true,
-          "sortable": true,
-          "searchable": true
-        },
-        "userId": {
-          "type": "string",
-          "format": "single-select",
-          "title": "Platform User",
-          "filterable": true,
-          "foreignKey": {
-            "reference": "USER"
-          },
-          "foreignKeyConstraintEnforced": false
-        },
-        "currencyId": {
-          "type": "string",
-          "format": "single-select",
-          "title": "Currency",
-          "filterable": true,
-          "foreignKey": {
-            "reference": "ENTITY_ID:Currency"
-          },
-          "foreignKeyConstraintEnforced": false
-        },
-        "hireDate": {
-          "type": "integer",
-          "format": "date",
-          "dateFormat": "epoch",
-          "title": "Hire Date",
+        "condition": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {},
+          "title": "Condition (JsonLogic)",
           "filterable": true,
           "sortable": true
         },
-        "terminationDate": {
+        "creditTypeId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Credit Type Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:CreditType"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "splitPct": {
           "type": "integer",
-          "format": "date",
-          "dateFormat": "epoch",
-          "title": "Termination Date",
+          "title": "Split % (bps)",
           "filterable": true,
           "sortable": true
         },
-        "status": {
+        "mode": {
           "type": "string",
-          "title": "Status",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "Add",
+              "title": "Add"
+            },
+            {
+              "const": "Override",
+              "title": "Override"
+            }
+          ],
+          "title": "Mode",
+          "filterable": true,
+          "sortable": true
+        },
+        "rollup": {
+          "type": "boolean",
+          "title": "Rollup",
+          "filterable": true,
+          "sortable": true
+        },
+        "rollupLevels": {
+          "type": "string",
+          "title": "Rollup Levels",
           "filterable": true,
           "sortable": true
         }
-      },
-      "required": [
-        "employeeId",
-        "name",
-        "currencyId",
-        "status"
-      ]
+      }
     }
   },
   "standard": false,
