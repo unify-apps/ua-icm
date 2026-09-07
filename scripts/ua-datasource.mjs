@@ -24,6 +24,13 @@
 // the platform which of the two types exists and uses that one, and says which
 // it used. A kit that hardcodes the same literal would inherit the same bug.
 //
+// CREATING A ROW IS NOT ENOUGH. The row it writes is a DRAFT. A deployed app runs as
+// an application user, and that path resolves the DEPLOYED data source, so the app sees
+// `forbidden datasource: not found` until the APPLICATION is deployed. A call from this
+// script takes the draft path and succeeds, which makes it easy to believe the binding
+// works when it does not. `ua-datasource.mjs deployed <id>` is the question that
+// actually answers it.
+//
 // Runs against orbit by default. Production requires BOTH UA_DEFAULT_ENV="tool"
 // and UA_ALLOW_PROD_WRITES="true" in .env.local.
 
@@ -40,18 +47,23 @@ for (const line of fs.readFileSync(path.join(ROOT, ".env.local"), "utf8").split(
   const m = line.match(/^\s*([A-Z_]+)\s*=\s*"?([^"]*)"?\s*$/);
   if (m && !line.trim().startsWith("#")) vars[m[1]] = m[2];
 }
+const [cmd, file] = process.argv.slice(2);
+if (!cmd || !file) die("usage: ua-datasource.mjs plan|create <spec.json> | deployed <dataSourceId>");
+
 const env = vars.UA_DEFAULT_ENV || "orbit";
 if (env !== "orbit" && env !== "tool") die(`unknown env "${env}", use orbit or tool`);
 // Production writes are a STANDING, separate opt-in. Switching UA_DEFAULT_ENV to
 // "tool" so the read scripts can see prod must never be enough to write it too, so
 // the env flip and the write permission are two different keys on purpose.
-if (env === "tool" && vars.UA_ALLOW_PROD_WRITES !== "true") {
+// `plan` and `deployed` do not write, so they do not need the write opt-in.
+if (env === "tool" && cmd === "create" && vars.UA_ALLOW_PROD_WRITES !== "true") {
   die('refusing to create data sources on tool (production): set UA_ALLOW_PROD_WRITES="true" in .env.local to allow it');
 }
 const baseUrl = env === "tool" ? vars.UA_TOOL_URL : vars.UA_ORBIT_URL;
 const cookie = env === "tool" ? vars.UA_TOOL_COOKIE : vars.UA_ORBIT_COOKIE;
 if (!baseUrl || !cookie) die(`missing url or cookie for env "${env}"`);
-if (env === "tool") console.error("! tool (PRODUCTION) - this changes the data model for everyone");
+if (env === "tool" && cmd === "create")
+  console.error("! tool (PRODUCTION) - this changes the data model for everyone");
 const H = { cookie: `_at=${cookie}`, "content-type": "application/json" };
 
 /** Ask the platform which data-source entity type it actually has. */
@@ -97,11 +109,27 @@ function build(spec, entityType) {
   };
 }
 
-const [cmd, file] = process.argv.slice(2);
-if (!cmd || !file) die("usage: ua-datasource.mjs plan|create <spec.json>");
-const spec = JSON.parse(fs.readFileSync(path.resolve(file), "utf8"));
-
 const { type: entityType } = await resolveEntityType();
+
+// `deployed` is a READ, and it answers the only question that matters after a create:
+// can the running app actually call this thing? It is handled before the spec file is
+// touched because it takes an id, not a spec.
+if (cmd === "deployed") {
+  // An UNDEPLOYED entity answers 200 with an EMPTY BODY rather than 404, so `res.ok`
+  // is the wrong question here — the same trap as the entity-type probe above.
+  const r = await fetch(`${baseUrl}/api/entity/deployed/${entityType}/${file}`, { headers: H });
+  const body = (await r.text()).trim();
+  const live = r.ok && body.length > 0 && body.includes(`"id"`);
+  console.log(
+    live
+      ? `${file}: DEPLOYED — the app can call it`
+      : `${file}: NOT DEPLOYED — the app gets \`forbidden datasource: not found\`.\n` +
+        `  Deploy the APPLICATION; that is what pulls its data sources in.`,
+  );
+  process.exit(live ? 0 : 1);
+}
+
+const spec = JSON.parse(fs.readFileSync(path.resolve(file), "utf8"));
 const entity = build(spec, entityType);
 
 if (cmd === "plan") {
@@ -124,3 +152,18 @@ console.log(`  entityType  ${obj.entityType}   (resolved by probe, not hardcoded
 console.log(`  page        ${obj.properties?.interfacePageId}`);
 console.log(`  calls       automation ${obj.properties?.inputs?.automationId}`);
 console.log(`next: bind blocks to {{ ${obj.id}['data'] }} and re-read with get_data_sources`);
+
+// The row exists, and that is NOT the same as the app being able to call it.
+//
+// A running app is an "application user", and that branch of
+// WorkflowNodeExecutionClientImpl.validateRequest resolves the DEPLOYED data source.
+// This script (and the builder) resolve the DRAFT, so a call from here succeeds while
+// the browser gets `forbidden datasource: not found`. Reporting "created" and stopping
+// is how that gap gets mistaken for a working binding — so say it out loud, every time.
+console.log("");
+console.log("NOT USABLE BY THE APP YET.");
+console.log("  This created the DRAFT row. A deployed app resolves the DEPLOYED copy,");
+console.log("  which does not exist until the APPLICATION is deployed - that deploy is");
+console.log("  what pulls its data sources in. Until then the browser answers");
+console.log("  `forbidden datasource: not found`, even though a call from a script works.");
+console.log(`  check: node scripts/ua-datasource.mjs deployed ${obj.id}`);

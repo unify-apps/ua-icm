@@ -1367,3 +1367,50 @@ seeds through a CALLABLE needs more, and should poll rather than sleep.
 **Do not "simplify" this back into one number.** The 332ms figure is real and the
 10685ms figure is real; they are different paths, and the app uses the slow one.
 
+
+## A created data source is INVISIBLE to the running app until the APP is deployed (ICM, 2026-09-07)
+
+`scripts/ua-datasource.mjs create` writes the draft row and nothing else. The row
+is real, `GET /api/entity/e_data_source/<id>` returns it, and a call to
+`/api/workflow/execute/node` **succeeds from a script**. The browser gets:
+
+```json
+{"rootCauseMessage":"forbidden datasource: not found","errorCode":-1}
+```
+
+**Why the script passes and the browser fails.** In
+`WorkflowNodeExecutionClientImpl.validateRequest`, the branch taken depends on the
+CALLER, not the payload:
+
+- a caller with an application context that is not an application user (a script,
+  the builder) resolves the DRAFT entity and passes;
+- an application user — the deployed app in a browser — resolves the DEPLOYED
+  entity, gets null, and throws `forbidden datasource: not found`.
+
+So **a green script test is not evidence the page will work.** Same id, same
+context, same inputs, same cookie, opposite outcome. This is the second time on
+this platform that verifying through the wrong path produced false confidence.
+
+**How to tell, without guessing.** The draft and the deployed copy are different
+reads:
+
+```
+GET /api/entity/e_data_source/<id>            -> the draft, always there
+GET /api/entity/deployed/e_data_source/<id>   -> the deployed copy
+```
+
+An undeployed row answers the second with **HTTP 200 and an EMPTY BODY**, not 404
+— the same trap as `e_data_source_deployed`, so `res.ok` is the wrong question.
+Equivalently, the draft row carries `deploymentState` once deployed:
+
+```
+ds_list_positions      DEPLOYED v10      works in the browser
+ds_create_credit_rule  ** NOT DEPLOYED **  "forbidden datasource: not found"
+```
+
+**How it gets deployed.** There is no per-datasource deploy endpoint.
+`ApplicationInterfaceAssetDetailsProvider` pulls dependent `DATA_SOURCE` entities
+into the APPLICATION's deploy, which is why every working data source on this app
+sits at exactly the interface's own version (v10). Deploying the app is what
+stamps them — a human action on production, not something to do on a hunch.
+
