@@ -1293,3 +1293,36 @@ Related, from the same session: `field-types.mjs` gained `select` (needs
 `options`, expands to `oneOf`), `json` (`type: object`, `additionalProperties:
 true`), and `datetime` (`format: "date-time"`, epoch storage like `date`). There
 is no long-text format on this platform — a long text field is a plain `string`.
+
+## A bare ARRAY in a `json` property is silently dropped (ICM, 2026-09-07)
+
+The kit's `json` field type expands to `{ type: "object", additionalProperties: true }`,
+which is what the platform offers. Writing an array straight into one:
+
+```json
+"conditions": [ { "connector": "If", "subject": "Transaction", "value": "x" } ]
+```
+
+returns **HTTP 200 with a record id**, and reads back as:
+
+```json
+"conditions": {}
+```
+
+Not an error. Not a warning. The array is simply gone. Wrapping it survives:
+
+```json
+"conditions": { "items": [ { … } ] }     ->  reads back intact
+```
+
+So **every ordered list stored in a `json` field is `{ items: [...] }`**, never a
+bare array. `Rule.conditions` and `Rule.results` both use it, and any automation
+reading them must go through `.items`.
+
+This one is worth more than its size: a rule whose conditions vanished still
+saves, still lists, and still looks right on screen — it just matches every deal
+instead of the ones it was written for. The failure is invisible until someone
+is paid wrongly.
+
+Same family as the two above: on this platform, wrong-but-parseable is accepted
+with a 200 rather than refused. Assert the READ, never the write's status code.
