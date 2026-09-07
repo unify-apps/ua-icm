@@ -1326,3 +1326,39 @@ is paid wrongly.
 
 Same family as the two above: on this platform, wrong-but-parseable is accepted
 with a 200 rather than refused. Assert the READ, never the write's status code.
+
+## Entity SEARCH is eventually consistent — a row written now is not findable now (ICM, 2026-09-07)
+
+The List Credit Rules suite seeds four `Rule` records through
+`/api/entity/create-update-or-delete/hierarchical`, then queries them. Every
+create returned 200 with a record id. The queries that followed:
+
+```
+seed CR-1, CR-2, CR-3, PR-1
+search "KITFIX-"      -> 0      nothing indexed yet
+search "KITFIX-Alpha" -> 1      CR-1 now findable
+name   "KITFIX-Beta"  -> 0      CR-2 still not
+search "KITFIX-"      -> 3      all caught up
+```
+
+The SAME query string returned 0 and then 3 inside one run, and documents became
+findable **in the order they were written**. So this is not a filter that
+sometimes fails; it is an index that has not caught up. A 6-second settle was
+measurably NOT enough — the first query after it still saw 1 of 3. **15 seconds
+was.** Treat 6s as known-insufficient and anything under ~15s as a coin toss.
+
+Two consequences.
+
+**In a suite**: a case that seeds and then asserts needs
+`{"name": "...", "sleepMs": 15000}` between them. `regress.mjs` has had that case
+type since the Projects work; this is the second time it has earned its keep.
+
+**In an app**: a create followed by an immediate refetch may legitimately not
+show the new row. The Positions page does exactly that and gets away with it
+because a human takes longer to look than the index takes to catch up — that is
+luck, not design. A list that must show what was just written should insert the
+returned record optimistically rather than trust a refetch.
+
+A record fetched BY ID does not have this problem; it is search that lags. That
+is also why the create callables check for a duplicate with a fetch and can still
+race in principle — the check reads the index too.

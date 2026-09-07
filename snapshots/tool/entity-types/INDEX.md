@@ -30,6 +30,7 @@ Rebuilt automatically by `scripts/ua.mjs snap-types`. One JSON per object type.
 | Quota | Quota | icm | 6 |
 | RateTable | RateTable | icm | 4 |
 | RateTableBand | RateTableBand | icm | 5 |
+| Rule | Rule | icm | 12 |
 | Statement | Statement | icm | 7 |
 | Territory | Territory | icm | 3 |
 | Title | Title | icm | 8 |

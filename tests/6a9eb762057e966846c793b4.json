@@ -1,0 +1,424 @@
+{
+  "name": "ICM | List Credit Rules",
+  "note": "Seeds four rules - three of this stage, one of the other - so 'the other stage never leaks in' is actually testable. The 15s sleep after seeding is NOT padding, and 6s was measurably not enough: entity search is eventually consistent, and querying immediately after a write returns rows that are not indexed yet. No platform id is hardcoded; rules are found and cleaned by their KITFIX- ruleId.",
+  "cases": [
+    {
+      "name": "pre-clean KITFIX-CR-1",
+      "entityDelete": {
+        "entityType": "Rule",
+        "filters": {
+          "ruleId": "KITFIX-CR-1"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-clean KITFIX-CR-2",
+      "entityDelete": {
+        "entityType": "Rule",
+        "filters": {
+          "ruleId": "KITFIX-CR-2"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-clean KITFIX-CR-3",
+      "entityDelete": {
+        "entityType": "Rule",
+        "filters": {
+          "ruleId": "KITFIX-CR-3"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-clean KITFIX-PR-X",
+      "entityDelete": {
+        "entityType": "Rule",
+        "filters": {
+          "ruleId": "KITFIX-PR-X"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "seed KITFIX-CR-1",
+      "entityCreate": {
+        "entityType": "Rule",
+        "properties": {
+          "ruleId": "KITFIX-CR-1",
+          "stage": "credit",
+          "name": "KITFIX-Alpha credit",
+          "ruleType": "Direct Credit",
+          "tags": "kitfix",
+          "conditions": {
+            "items": [
+              {
+                "connector": "If",
+                "subject": "Transaction",
+                "value": "x"
+              }
+            ]
+          },
+          "results": {
+            "items": [
+              {
+                "name": "R1"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "seed KITFIX-CR-2",
+      "entityCreate": {
+        "entityType": "Rule",
+        "properties": {
+          "ruleId": "KITFIX-CR-2",
+          "stage": "credit",
+          "name": "KITFIX-Beta credit",
+          "ruleType": "Direct Credit",
+          "tags": "kitfix",
+          "conditions": {
+            "items": [
+              {
+                "connector": "If",
+                "subject": "Transaction",
+                "value": "x"
+              }
+            ]
+          },
+          "results": {
+            "items": [
+              {
+                "name": "R1"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "seed KITFIX-CR-3",
+      "entityCreate": {
+        "entityType": "Rule",
+        "properties": {
+          "ruleId": "KITFIX-CR-3",
+          "stage": "credit",
+          "name": "KITFIX-Gamma credit",
+          "ruleType": "Direct Credit",
+          "tags": "kitfix",
+          "conditions": {
+            "items": [
+              {
+                "connector": "If",
+                "subject": "Transaction",
+                "value": "x"
+              }
+            ]
+          },
+          "results": {
+            "items": [
+              {
+                "name": "R1"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "seed KITFIX-PR-X",
+      "entityCreate": {
+        "entityType": "Rule",
+        "properties": {
+          "ruleId": "KITFIX-PR-X",
+          "stage": "payout",
+          "name": "KITFIX-Alpha payout",
+          "ruleType": "Commission",
+          "tags": "kitfix",
+          "conditions": {
+            "items": [
+              {
+                "connector": "If",
+                "subject": "Transaction",
+                "value": "x"
+              }
+            ]
+          },
+          "results": {
+            "items": [
+              {
+                "name": "R1"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "let the search index catch up with the seeds",
+      "sleepMs": 15000
+    },
+    {
+      "name": "OK - every input blank returns this stage only, never the other",
+      "payload": {
+        "search": "KITFIX-",
+        "name": "",
+        "ruleType": "",
+        "limit": "",
+        "offset": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 3
+        },
+        {
+          "path": "rules.0.stage",
+          "equals": "credit"
+        },
+        {
+          "path": "limit",
+          "equals": 50
+        }
+      ]
+    },
+    {
+      "name": "OK - a payout rule never surfaces here, whatever the caller searches",
+      "payload": {
+        "search": "KITFIX-Alpha",
+        "name": "",
+        "ruleType": "",
+        "limit": "",
+        "offset": ""
+      },
+      "checks": [
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "rules.0.name",
+          "equals": "KITFIX-Alpha credit"
+        }
+      ]
+    },
+    {
+      "name": "OK - name filter narrows SERVER-side and total reflects it",
+      "payload": {
+        "search": "",
+        "name": "KITFIX-Beta",
+        "ruleType": "",
+        "limit": "",
+        "offset": ""
+      },
+      "checks": [
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "rules.0.ruleId",
+          "equals": "KITFIX-CR-2"
+        }
+      ]
+    },
+    {
+      "name": "OK - ruleType filter",
+      "payload": {
+        "search": "KITFIX-",
+        "name": "",
+        "ruleType": "Direct Credit",
+        "limit": "",
+        "offset": ""
+      },
+      "checks": [
+        {
+          "path": "total",
+          "equals": 3
+        }
+      ]
+    },
+    {
+      "name": "OK - a ruleType matching nothing is a result, not an error",
+      "payload": {
+        "search": "KITFIX-",
+        "name": "",
+        "ruleType": "Nonesuch",
+        "limit": "",
+        "offset": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 0
+        },
+        {
+          "path": "rules",
+          "type": "array",
+          "maxLen": 0
+        }
+      ]
+    },
+    {
+      "name": "OK - first page of two, hasMore true",
+      "payload": {
+        "search": "KITFIX-",
+        "name": "",
+        "ruleType": "",
+        "limit": "2",
+        "offset": "0"
+      },
+      "checks": [
+        {
+          "path": "rules",
+          "type": "array",
+          "maxLen": 2
+        },
+        {
+          "path": "hasMore",
+          "equals": true
+        },
+        {
+          "path": "limit",
+          "equals": 2
+        }
+      ]
+    },
+    {
+      "name": "OK - the last page reports hasMore false",
+      "payload": {
+        "search": "KITFIX-",
+        "name": "",
+        "ruleType": "",
+        "limit": "2",
+        "offset": "2"
+      },
+      "checks": [
+        {
+          "path": "hasMore",
+          "equals": false
+        },
+        {
+          "path": "offset",
+          "equals": 2
+        }
+      ]
+    },
+    {
+      "name": "OK - the stored lists are counted back through .items",
+      "payload": {
+        "search": "KITFIX-Beta",
+        "name": "",
+        "ruleType": "",
+        "limit": "",
+        "offset": ""
+      },
+      "checks": [
+        {
+          "path": "rules.0.conditionCount",
+          "equals": 1
+        },
+        {
+          "path": "rules.0.resultCount",
+          "equals": 1
+        }
+      ]
+    },
+    {
+      "name": "OK - limit is clamped to the 200 ceiling rather than trusted",
+      "payload": {
+        "search": "",
+        "name": "",
+        "ruleType": "",
+        "limit": "5000",
+        "offset": ""
+      },
+      "checks": [
+        {
+          "path": "limit",
+          "equals": 200
+        }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - limit is not a number",
+      "payload": {
+        "search": "",
+        "name": "",
+        "ruleType": "",
+        "limit": "abc",
+        "offset": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - offset is not a number",
+      "payload": {
+        "search": "",
+        "name": "",
+        "ruleType": "",
+        "limit": "",
+        "offset": "-2"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        }
+      ]
+    },
+    {
+      "name": "clean up KITFIX-CR-1",
+      "entityDelete": {
+        "entityType": "Rule",
+        "filters": {
+          "ruleId": "KITFIX-CR-1"
+        }
+      }
+    },
+    {
+      "name": "clean up KITFIX-CR-2",
+      "entityDelete": {
+        "entityType": "Rule",
+        "filters": {
+          "ruleId": "KITFIX-CR-2"
+        }
+      }
+    },
+    {
+      "name": "clean up KITFIX-CR-3",
+      "entityDelete": {
+        "entityType": "Rule",
+        "filters": {
+          "ruleId": "KITFIX-CR-3"
+        }
+      }
+    },
+    {
+      "name": "clean up KITFIX-PR-X",
+      "entityDelete": {
+        "entityType": "Rule",
+        "filters": {
+          "ruleId": "KITFIX-PR-X"
+        }
+      }
+    }
+  ]
+}

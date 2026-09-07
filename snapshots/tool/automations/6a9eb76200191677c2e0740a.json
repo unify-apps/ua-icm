@@ -1,0 +1,545 @@
+{
+  "appsUsed": [],
+  "createdTime": 1788786530626,
+  "deleted": false,
+  "description": "A paged, searchable list of positions, optionally with who occupies each one as of a date - resolved in BULK so a page never makes one call per row. Spec: docs/automations/list-positions.md",
+  "edges": [
+    {
+      "fromNodeId": "n_sTaRt",
+      "id": "next@n_sTaRt@n_Norm",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Norm",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Norm",
+      "id": "next@n_Norm@n_IfBad",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfBad",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "if@n_IfBad@n_StBad",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StBad",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "next@n_IfBad@n_FtDup",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtDup",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtDup",
+      "id": "next@n_FtDup@n_IfDup",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfDup",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfDup",
+      "id": "if@n_IfDup@n_StDup",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StDup",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfDup",
+      "id": "next@n_IfDup@n_Cr",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Cr",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Cr",
+      "id": "next@n_Cr@n_StOk",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StOk",
+      "type": "next"
+    }
+  ],
+  "id": "6a9eb76200191677c2e0740a",
+  "lastModifiedBy": 435691,
+  "lastPlatformUpdateBy": 435691,
+  "lastPlatformUpdateOn": 1788786696716,
+  "lcName": "icm | create payout rule",
+  "modifiedTime": 1788786696716,
+  "name": "ICM | Create Payout Rule",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_sTaRt",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "success",
+            "message"
+          ],
+          "properties": {
+            "status": {
+              "type": "string"
+            },
+            "success": {
+              "type": "boolean"
+            },
+            "message": {
+              "type": "string"
+            },
+            "ruleId": {
+              "type": "string"
+            },
+            "recordId": {
+              "type": "string"
+            },
+            "conditionCount": {
+              "type": "integer"
+            },
+            "resultCount": {
+              "type": "integer"
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "title": "Name"
+            },
+            "ruleType": {
+              "type": "string",
+              "title": "Rule Type"
+            },
+            "description": {
+              "type": "string",
+              "title": "Description"
+            },
+            "activeStart": {
+              "type": "string",
+              "title": "Active Start"
+            },
+            "activeEnd": {
+              "type": "string",
+              "title": "Active End"
+            },
+            "tags": {
+              "type": "string",
+              "title": "Tags"
+            },
+            "multiplier": {
+              "type": "string",
+              "title": "Multiplier"
+            },
+            "conditionsJson": {
+              "type": "string",
+              "title": "Conditions JSON"
+            },
+            "resultsJson": {
+              "type": "string",
+              "title": "Results JSON"
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Norm",
+      "index": 2,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "valid": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "ruleId": {
+              "type": "string"
+            },
+            "nm": {
+              "type": "string"
+            },
+            "rt": {
+              "type": "string"
+            },
+            "desc": {
+              "type": "string"
+            },
+            "tg": {
+              "type": "string"
+            },
+            "extra": {
+              "type": "string"
+            },
+            "activeStart": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "activeEnd": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "conditions": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "results": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "conditionCount": {
+              "type": "integer"
+            },
+            "resultCount": {
+              "type": "integer"
+            },
+            "dupFilter": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "ruleType": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "activeStart": {
+              "type": "string"
+            },
+            "activeEnd": {
+              "type": "string"
+            },
+            "tags": {
+              "type": "string"
+            },
+            "conditionsJson": {
+              "type": "string"
+            },
+            "resultsJson": {
+              "type": "string"
+            },
+            "multiplier": {
+              "type": "string"
+            }
+          }
+        },
+        "compile_static": false,
+        "code": "\nimport groovy.json.JsonSlurper\n// \"\" is what real callers send for anything they left blank.\ndef opt = { String k -> if (!binding.hasVariable(k)) return ''\n                        def v = binding.getVariable(k); return (v == null) ? '' : v.toString().trim() }\ndef nm = opt('name'); def rt = opt('ruleType')\ndef desc = opt('description'); def tg = opt('tags')\ndef condRaw = opt('conditionsJson'); def resRaw = opt('resultsJson')\ndef extra = opt('multiplier')\n\nboolean valid = true; String reason = ''\nif (nm.isEmpty()) { valid = false; reason = 'name is required' }\nelse if (rt.isEmpty()) { valid = false; reason = 'ruleType is required' }\n\ndef parse = { String raw, String what ->\n    if (raw.isEmpty()) return []\n    try { def p = new JsonSlurper().parseText(raw); return (p instanceof List) ? p : [] }\n    catch (Exception e) { valid = false; reason = what + ' is not valid JSON'; return [] }\n}\ndef conds = parse(condRaw, 'conditionsJson')\ndef results = parse(resRaw, 'resultsJson')\n\n// A rule that produces nothing would match deals and change no numbers, which is\n// a rule nobody can see the effect of. Refuse it rather than store it.\nif (valid && results.isEmpty()) { valid = false; reason = 'a rule needs at least one result' }\nif (valid) results.eachWithIndex { r, i ->\n    if (valid && (r?.name == null || r.name.toString().trim().isEmpty()))\n        { valid = false; reason = 'result ' + (i + 1) + ' has no name' }\n}\n\n// Dates: same rule as every other ICM callable - '' means unset, not today,\n// because a rule with no window is in force for all time.\ndef toEpoch = { String raw, String what ->\n    if (raw.isEmpty()) return null\n    if (raw ==~ /^\\d{4}-\\d{2}-\\d{2}$/) {\n        try { return java.time.LocalDate.parse(raw).atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli() }\n        catch (Exception e) { valid = false; reason = what + ' is not a real calendar date: ' + raw; return null }\n    }\n    if (raw ==~ /^\\d{9,}$/) return Long.parseLong(raw)\n    valid = false; reason = what + ' must be YYYY-MM-DD or epoch milliseconds, got: ' + raw; return null\n}\ndef sEp = toEpoch(opt('activeStart'), 'activeStart')\ndef eEp = toEpoch(opt('activeEnd'), 'activeEnd')\nif (valid && sEp != null && eEp != null && eEp < sEp) { valid = false; reason = 'activeEnd is before activeStart' }\n\n// The id is MINTED here, not asked for: the form has no field for it and a\n// human-picked key on a rule buys nothing, unlike a position code.\ndef rid = 'PR-' + System.currentTimeMillis() + '-' + new Random().nextInt(9000).plus(1000)\n\n// A BARE ARRAY in a json property is silently dropped by this platform - it\n// saves with a 200 and reads back {}. Everything ordered goes in under 'items'.\nreturn [valid: valid, reason: reason, ruleId: rid, nm: nm, rt: rt, desc: desc, tg: tg, extra: extra,\n        activeStart: sEp, activeEnd: eEp,\n        conditions: [items: conds], results: [items: results],\n        conditionCount: conds.size(), resultCount: results.size(),\n        dupFilter: [operator:'AND', filters:[[property:'properties.ruleId', filter:[operator:'EQUAL', value: rid]]]]]",
+        "captureStdOutput": false,
+        "parameters": {
+          "name": "{{ n_sTaRt.outputs.name }}",
+          "ruleType": "{{ n_sTaRt.outputs.ruleType }}",
+          "description": "{{ n_sTaRt.outputs.description }}",
+          "activeStart": "{{ n_sTaRt.outputs.activeStart }}",
+          "activeEnd": "{{ n_sTaRt.outputs.activeEnd }}",
+          "tags": "{{ n_sTaRt.outputs.tags }}",
+          "conditionsJson": "{{ n_sTaRt.outputs.conditionsJson }}",
+          "resultsJson": "{{ n_sTaRt.outputs.resultsJson }}",
+          "multiplier": "{{ n_sTaRt.outputs.multiplier }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Validate the request, parse the lists and mint the id",
+      "title": "Execute Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_IfBad",
+      "index": 3,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Norm.outputs.result.valid }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": false
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Was the request itself unusable?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@y",
+      "id": "n_StBad",
+      "index": 4,
+      "inputs": {
+        "result": {
+          "status": "INVALID_INPUT",
+          "success": false,
+          "message": "{{ n_Norm.outputs.result.reason }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Refused before writing anything",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_FtDup",
+      "index": 5,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.dupFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Rule",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 1,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.ruleId"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Could the minted id already exist?",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_IfDup",
+      "index": 6,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_FtDup.outputs.total }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": 1
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "An id collision, however unlikely",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfDup@n_IfBad@root_id-1@n@y",
+      "id": "n_StDup",
+      "index": 7,
+      "inputs": {
+        "result": {
+          "status": "DUPLICATE_RULE_ID",
+          "success": false,
+          "message": "A rule with that id already exists; retry."
+        }
+      },
+      "skip": false,
+      "subTitle": "The minted id collided - the caller should simply retry",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceVersion": 864,
+        "resourceName": "storage_by_unifyapps_create_record",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfDup@n_IfBad@root_id-1@n@n",
+      "id": "n_Cr",
+      "index": 8,
+      "inputs": {
+        "writeThroughSessionVariables": false,
+        "object_type": "Rule",
+        "record": {
+          "ruleId": "{{ n_Norm.outputs.result.ruleId }}",
+          "stage": "payout",
+          "name": "{{ n_Norm.outputs.result.nm }}",
+          "ruleType": "{{ n_Norm.outputs.result.rt }}",
+          "description": "{{ n_Norm.outputs.result.desc }}",
+          "tags": "{{ n_Norm.outputs.result.tg }}",
+          "activeStart": "{{ n_Norm.outputs.result.activeStart }}",
+          "activeEnd": "{{ n_Norm.outputs.result.activeEnd }}",
+          "multiplier": "{{ n_Norm.outputs.result.extra }}",
+          "conditions": "{{ n_Norm.outputs.result.conditions }}",
+          "results": "{{ n_Norm.outputs.result.results }}"
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The payout rule, conditions and results included",
+      "title": "Create record",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfDup@n_IfBad@root_id-1@n@n",
+      "id": "n_StOk",
+      "index": 9,
+      "inputs": {
+        "result": {
+          "status": "OK",
+          "success": true,
+          "message": "Payout rule created",
+          "ruleId": "{{ n_Norm.outputs.result.ruleId }}",
+          "recordId": "{{ n_Cr.outputs.id }}",
+          "conditionCount": "{{ n_Norm.outputs.result.conditionCount }}",
+          "resultCount": "{{ n_Norm.outputs.result.resultCount }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Created",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 435691,
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 1
+}
