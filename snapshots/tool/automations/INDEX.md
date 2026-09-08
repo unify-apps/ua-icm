@@ -19,3 +19,4 @@ Rebuilt automatically by `scripts/ua.mjs snap`. One JSON file per automation, na
 | 6a9ee2fc00191677c2ead441 | ICM | List Credit Types | 7 | 2026-09-07 |
 | 6a9ee2fd3aa7845ea194eaa3 | ICM | List Attainment Measures | 7 | 2026-09-07 |
 | 6a9ee2fd8f78990409ff3fb5 | ICM | List Quotas | 7 | 2026-09-07 |
+| 6aa023713aa7845ea1ef4310 | ICM | Get Rule | 7 | 2026-09-08 |

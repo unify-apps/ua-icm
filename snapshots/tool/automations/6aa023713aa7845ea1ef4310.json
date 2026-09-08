@@ -1,0 +1,425 @@
+{
+  "appsUsed": [],
+  "createdTime": 1788879729214,
+  "deleted": false,
+  "deployedVersion": 1,
+  "deploymentState": {
+    "deployedAt": 1788879883131,
+    "deployedBy": 435691,
+    "deployedDefinitionId": "6aa0240b3aa7845ea1ef8891",
+    "deploymentNotes": "Get Rule - serves the rule detail drawer",
+    "status": "DEPLOYED",
+    "version": 1,
+    "workflowVersion": 2
+  },
+  "description": "One rule in full, by ruleId - every scalar field plus the conditions list and the result object. The list callables return counts so a page of rules stays small; this is what the detail view reads.",
+  "edges": [
+    {
+      "fromNodeId": "n_sTaRt",
+      "id": "next@n_sTaRt@n_Norm",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Norm",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Norm",
+      "id": "next@n_Norm@n_Ft",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Ft",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Ft",
+      "id": "next@n_Ft@n_Shape",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Shape",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Shape",
+      "id": "next@n_Shape@n_IfBad",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfBad",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "if@n_IfBad@n_StBad",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StBad",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "next@n_IfBad@n_StOk",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StOk",
+      "type": "next"
+    }
+  ],
+  "id": "6aa023713aa7845ea1ef4310",
+  "lastModifiedBy": 435691,
+  "lastPlatformUpdateBy": 435691,
+  "lastPlatformUpdateOn": 1788879883132,
+  "lcName": "icm | get rule",
+  "modifiedTime": 1788879883132,
+  "name": "ICM | Get Rule",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_sTaRt",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "success",
+            "message"
+          ],
+          "properties": {
+            "status": {
+              "type": "string"
+            },
+            "success": {
+              "type": "boolean"
+            },
+            "message": {
+              "type": "string"
+            },
+            "rule": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ruleId"
+          ],
+          "properties": {
+            "ruleId": {
+              "type": "string",
+              "title": "Rule Id"
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Norm",
+      "index": 2,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "valid": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "filter": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "pageLimit": {
+              "type": "integer"
+            },
+            "pageOffset": {
+              "type": "integer"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "search": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "ruleType": {
+              "type": "string"
+            },
+            "limit": {
+              "type": "string"
+            },
+            "offset": {
+              "type": "string"
+            }
+          }
+        },
+        "compile_static": false,
+        "code": "\ndef opt = { String k -> if (!binding.hasVariable(k)) return ''\n                        def v = binding.getVariable(k); return (v == null) ? '' : v.toString().trim() }\ndef rid = opt('ruleId')\n\nboolean valid = !rid.isEmpty()\nString reason = valid ? '' : 'ruleId is required'\n// A blank id must not fall through to an unfiltered fetch that returns whatever\n// happens to be first - that would show one rule while claiming to be another.\ndef leaves = valid ? [[property:'properties.ruleId', filter:[operator:'EQUAL', value: rid]]]\n                   : [[property:'id', filter:[operator:'EQUAL', value:'__invalid_input__']]]\nreturn [valid: valid, reason: reason, ruleId: rid,\n        filter: [operator:'AND', filters: leaves], pageLimit: 1, pageOffset: 0]\n",
+        "captureStdOutput": false,
+        "parameters": {
+          "ruleId": "{{ n_sTaRt.outputs.ruleId }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Apply the defaults and build the filter",
+      "title": "Execute Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Ft",
+      "index": 3,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.filter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Rule",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}"
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.ruleId",
+          "properties.name",
+          "properties.ruleType",
+          "properties.description",
+          "properties.stage",
+          "properties.activeStart",
+          "properties.activeEnd",
+          "properties.tags",
+          "properties.rollableOnReporting",
+          "properties.multiplier",
+          "properties.conditions",
+          "properties.result"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The page of rules the caller asked for",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Shape",
+      "index": 4,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            "total": {
+              "type": "integer"
+            },
+            "hasMore": {
+              "type": "boolean"
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rows": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            "total": {
+              "type": "integer"
+            },
+            "pageOffset": {
+              "type": "integer"
+            }
+          }
+        },
+        "compile_static": false,
+        "code": "\n// A missing ruleId and a ruleId that matches nothing are DIFFERENT answers. Both\n// return no rows, so the status has to be decided here where validity is known -\n// otherwise a caller that forgot the id is told the rule does not exist.\nboolean ok = (wasValid == null) ? true : Boolean.valueOf(String.valueOf(wasValid))\ndef r = (rows == null || rows.isEmpty()) ? null : rows[0]\nif (!ok) return [status: 'INVALID_INPUT', found: false, rule: null, message: String.valueOf(reason)]\nif (r == null) return [status: 'NOT_FOUND', found: false, rule: null, message: 'no rule with that id']\ndef p = r.properties\n// conditions is a list under items; result is a single object stored as itself.\ndef cs = (p?.conditions instanceof Map) ? (p.conditions.get('items') ?: []) : []\ndef res = (p?.result instanceof Map) ? p.result : null\ndef rule = [ruleId: p?.ruleId ?: '', recordId: String.valueOf(r.id),\n            name: p?.name ?: '', ruleType: p?.ruleType ?: '',\n            description: p?.description ?: '', stage: p?.stage ?: '',\n            activeStart: p?.activeStart, activeEnd: p?.activeEnd,\n            tags: p?.tags ?: '', conditions: cs, result: res,\n            conditionCount: cs.size()]\nreturn [status: 'OK', found: true, rule: rule, message: 'rule ' + rule.ruleId]\n",
+        "captureStdOutput": false,
+        "parameters": {
+          "rows": "{{ n_Ft.outputs.objects }}",
+          "total": "{{ n_Ft.outputs.total }}",
+          "pageOffset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "wasValid": "{{ n_Norm.outputs.result.valid }}",
+          "reason": "{{ n_Norm.outputs.result.reason }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "One row per rule, with the list sizes a table can show",
+      "title": "Execute Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_IfBad",
+      "index": 5,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Shape.outputs.result.found }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": false
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Was the request itself unusable?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@y",
+      "id": "n_StBad",
+      "index": 6,
+      "inputs": {
+        "result": {
+          "status": "{{ n_Shape.outputs.result.status }}",
+          "success": false,
+          "message": "{{ n_Shape.outputs.result.message }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Caller sent an unusable limit or offset",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_StOk",
+      "index": 7,
+      "inputs": {
+        "result": {
+          "status": "OK",
+          "success": true,
+          "message": "{{ n_Shape.outputs.result.message }}",
+          "rule": "{{ n_Shape.outputs.result.rule }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "The page of rules",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 435691,
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 2
+}

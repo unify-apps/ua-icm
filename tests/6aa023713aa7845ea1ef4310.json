@@ -1,0 +1,73 @@
+{
+  "name": "ICM | Get Rule",
+  "note": "The detail view's read. It asserts the two things the list callables cannot carry - the conditions themselves and the result's values - and it separates a missing ruleId (INVALID_INPUT) from one that matches nothing (NOT_FOUND), because both return zero rows and collapsing them tells a caller who forgot the id that their rule does not exist.",
+  "cases": [
+    { "name": "pre-clean KITFIX-GR-1", "entityDelete": { "entityType": "Rule", "filters": { "ruleId": "KITFIX-GR-1" }, "allowZero": true } },
+    {
+      "name": "seed KITFIX-GR-1",
+      "entityCreate": {
+        "entityType": "Rule",
+        "properties": {
+          "ruleId": "KITFIX-GR-1",
+          "stage": "credit",
+          "name": "KITFIX-Full detail",
+          "ruleType": "Direct Credit",
+          "description": "every field populated",
+          "tags": "kitfix",
+          "conditions": { "items": [
+            { "connector": "If", "field": "txn.amount", "operator": ">", "value": "1000" },
+            { "connector": "And", "field": "txn.product", "operator": "==", "value": "Platform" }
+          ] },
+          "result": { "name": "KITFIX-Full detail", "rollable": true,
+            "values": { "creditType": "NEW_BOOKING", "splitBps": "6000", "payWhen": "On close", "rollupLevels": "2" } }
+        }
+      }
+    },
+    { "name": "let the search index catch up with the seed", "sleepMs": 15000 },
+    {
+      "name": "OK - the conditions come back in full, not as a count",
+      "payload": { "ruleId": "KITFIX-GR-1" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "rule.ruleId", "equals": "KITFIX-GR-1" },
+        { "path": "rule.name", "equals": "KITFIX-Full detail" },
+        { "path": "rule.stage", "equals": "credit" },
+        { "path": "rule.conditionCount", "equals": 2 },
+        { "path": "rule.conditions.0.field", "equals": "txn.amount" },
+        { "path": "rule.conditions.0.operator", "equals": ">" },
+        { "path": "rule.conditions.0.value", "equals": "1000" },
+        { "path": "rule.conditions.1.connector", "equals": "And" },
+        { "path": "rule.conditions.1.field", "equals": "txn.product" }
+      ]
+    },
+    {
+      "name": "OK - the result object comes back with its values intact",
+      "payload": { "ruleId": "KITFIX-GR-1" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "rule.result.name", "equals": "KITFIX-Full detail" },
+        { "path": "rule.result.rollable", "equals": true },
+        { "path": "rule.result.values.creditType", "equals": "NEW_BOOKING" },
+        { "path": "rule.result.values.splitBps", "equals": "6000" },
+        { "path": "rule.result.values.rollupLevels", "equals": "2" }
+      ]
+    },
+    {
+      "name": "NOT_FOUND - a ruleId that matches nothing",
+      "payload": { "ruleId": "KITFIX-GR-NOPE" },
+      "checks": [
+        { "path": "status", "equals": "NOT_FOUND" },
+        { "path": "success", "equals": false }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - a blank ruleId is not a missing rule",
+      "payload": { "ruleId": "" },
+      "checks": [
+        { "path": "status", "equals": "INVALID_INPUT" },
+        { "path": "success", "equals": false }
+      ]
+    },
+    { "name": "clean up KITFIX-GR-1", "entityDelete": { "entityType": "Rule", "filters": { "ruleId": "KITFIX-GR-1" } } }
+  ]
+}

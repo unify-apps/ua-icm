@@ -104,3 +104,28 @@ object, so it needs no wrapper.
 
 **The `results` column still exists on `Rule`** and is no longer written. Removing
 it is a deliberate contract step, separate from this expand.
+
+## Get Rule — the detail read (2026-09-08)
+
+`ICM | Get Rule` = `6aa023713aa7845ea1ef4310`, data source `ds_get_rule` =
+`e_6aa0240b561c60372d5e8b88`. Deployed v2, suite 8/8.
+
+One input, `ruleId`. Returns `rule` with every scalar field **plus the conditions
+list and the result object with its values** — the two things the list callables
+deliberately omit so that a page of 200 rules does not carry 200 condition arrays
+to render a table showing neither.
+
+| status | meaning |
+|---|---|
+| `OK` | found; `rule` is populated |
+| `NOT_FOUND` | the id matched nothing |
+| `INVALID_INPUT` | no `ruleId` given |
+
+**The last two are separate on purpose.** Both produce zero rows, and collapsing
+them tells a caller who forgot the id that their rule does not exist. A blank id is
+also refused rather than falling through to an unfiltered fetch, which would return
+whatever happened to be first — one rule shown while claiming to be another.
+
+**Conditions written before the closed namespace stored the field under `subject`;
+newer ones use `field`.** Both are returned as stored, and the drawer reads
+whichever is present. Nothing rewrites old rows.
