@@ -1,5 +1,5 @@
 {
-  "columnCounts": 13,
+  "columnCounts": 12,
   "createdTime": 1788786478263,
   "deleted": false,
   "description": "",
@@ -20,7 +20,6 @@
         "multiplier",
         "tags",
         "conditions",
-        "results",
         "result"
       ]
     },
@@ -114,14 +113,6 @@
           "filterable": true,
           "sortable": true
         },
-        "results": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {},
-          "title": "Results (ordered list)",
-          "filterable": true,
-          "sortable": true
-        },
         "result": {
           "type": "object",
           "additionalProperties": true,
@@ -130,12 +121,13 @@
           "filterable": true,
           "sortable": true
         }
-      }
+      },
+      "required": []
     }
   },
   "lastModifiedBy": 435691,
   "lastPlatformUpdateBy": 435691,
-  "lastPlatformUpdateOn": 1788867386016,
+  "lastPlatformUpdateOn": 1788869864099,
   "lcName": "rule",
   "metadata": {
     "auditable": true,
@@ -163,7 +155,6 @@
       "multiplier",
       "tags",
       "conditions",
-      "results",
       "result"
     ],
     "graphType": "LEGACY_MDM",
@@ -211,7 +202,7 @@
     "vectorFields": [],
     "versioningEnabled": true
   },
-  "modifiedTime": 1788867386016,
+  "modifiedTime": 1788869864099,
   "name": "Rule",
   "ownerUserId": 435691,
   "packaged": false,
@@ -309,14 +300,6 @@
           "filterable": true,
           "sortable": true
         },
-        "results": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {},
-          "title": "Results (ordered list)",
-          "filterable": true,
-          "sortable": true
-        },
         "result": {
           "type": "object",
           "additionalProperties": true,
@@ -325,12 +308,13 @@
           "filterable": true,
           "sortable": true
         }
-      }
+      },
+      "required": []
     }
   },
   "standard": false,
   "tags": [
     "icm"
   ],
-  "version": 1
+  "version": 2
 }

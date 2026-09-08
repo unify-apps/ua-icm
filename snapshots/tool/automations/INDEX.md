@@ -14,7 +14,8 @@ Rebuilt automatically by `scripts/ua.mjs snap`. One JSON file per automation, na
 | 6a9eb762057e966846c793b4 | ICM | List Credit Rules | 7 | 2026-09-08 |
 | 6a9eb7623aa7845ea189ac2d | ICM | Create Credit Rule | 9 | 2026-09-08 |
 | 6a9eb762b614217b0da02797 | ICM | List Payout Rules | 7 | 2026-09-08 |
-| 6a9ed01e3aa7845ea1903d9b | ICM | List Rate Tables | 7 | 2026-09-07 |
+| 6a9ed5bf057e966846cf2073 | ICM | Manage Rate Table | 24 | 2026-09-08 |
+| 6a9ed65f00191677c2e84755 | ICM | Query Rate Tables | 10 | 2026-09-08 |
 | 6a9ee2fc00191677c2ead441 | ICM | List Credit Types | 7 | 2026-09-07 |
 | 6a9ee2fd3aa7845ea194eaa3 | ICM | List Attainment Measures | 7 | 2026-09-07 |
 | 6a9ee2fd8f78990409ff3fb5 | ICM | List Quotas | 7 | 2026-09-07 |

@@ -1,0 +1,1960 @@
+{
+  "appsUsed": [],
+  "createdTime": 1788794303959,
+  "deleted": false,
+  "deployedVersion": 2,
+  "deploymentState": {
+    "deployedAt": 1788856416237,
+    "deployedBy": 475503,
+    "deployedDefinitionId": "6a9fc85fcab06d30ba5a1c31",
+    "deploymentNotes": "v3: bounded surplus-band delete (was capped at 20), string PARTIAL_WRITE compare, value range-check, + description/tags/unitType/label/version fields. Suite 40/40. Approved by avinash.baraiya",
+    "status": "DEPLOYED",
+    "version": 2,
+    "workflowVersion": 3
+  },
+  "description": "GET, CREATE or UPDATE one rate table with its bands (basis points; last band may be open-ended). Refuses before writing: INVALID_INPUT, RATE_TABLE_INVALID (first band at 0, contiguous, non-overlapping), DUPLICATE_NAME, NOT_FOUND. Writes parent and bands with deterministic ids so a retry is idempotent; a half-landed write answers PARTIAL_WRITE naming the rateTableId to retry with. Stores description, tags, unit type, per-band labels and version info (version 1, effective from creation, End of Time). Serves the Reference Tables create/edit screens.",
+  "edges": [
+    {
+      "fromNodeId": "n_sTaRt",
+      "id": "next@n_sTaRt@n_Norm",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Norm",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Norm",
+      "id": "next@n_Norm@n_FtById",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtById",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtById",
+      "id": "next@n_FtById@n_FtByName",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtByName",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtByName",
+      "id": "next@n_FtByName@n_Guard",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Guard",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Guard",
+      "id": "next@n_Guard@n_FtBands",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtBands",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtBands",
+      "id": "next@n_FtBands@n_Plan",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Plan",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Plan",
+      "id": "next@n_Plan@n_IfBad",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfBad",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "if@n_IfBad@n_StBad",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StBad",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "next@n_IfBad@n_IfGet",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfGet",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfGet",
+      "id": "if@n_IfGet@n_StGet",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StGet",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfGet",
+      "id": "next@n_IfGet@n_IfNF",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfNF",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfNF",
+      "id": "if@n_IfNF@n_StNF",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StNF",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfNF",
+      "id": "next@n_IfNF@n_IfDup",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfDup",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfDup",
+      "id": "if@n_IfDup@n_StDup",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StDup",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfDup",
+      "id": "next@n_IfDup@n_IfInv",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfInv",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfInv",
+      "id": "if@n_IfInv@n_StInv",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StInv",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfInv",
+      "id": "next@n_IfInv@n_UpsT",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_UpsT",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_UpsT",
+      "id": "next@n_UpsT@n_UpsB",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_UpsB",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_UpsB",
+      "id": "next@n_UpsB@n_Del",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Del",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Del",
+      "id": "next@n_Del@n_Chk",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Chk",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Chk",
+      "id": "next@n_Chk@n_IfPart",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfPart",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfPart",
+      "id": "if@n_IfPart@n_StPart",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StPart",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfPart",
+      "id": "next@n_IfPart@n_StDone",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StDone",
+      "type": "next"
+    }
+  ],
+  "id": "6a9ed5bf057e966846cf2073",
+  "lastModifiedBy": 475503,
+  "lastPlatformUpdateBy": 475503,
+  "lastPlatformUpdateOn": 1788856416239,
+  "lcName": "icm | manage rate table",
+  "modifiedTime": 1788856416239,
+  "name": "ICM | Manage Rate Table",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_sTaRt",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "success",
+            "message"
+          ],
+          "properties": {
+            "status": {
+              "type": "string",
+              "title": "Status"
+            },
+            "success": {
+              "type": "boolean",
+              "title": "Success"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            },
+            "rateTableId": {
+              "type": "string",
+              "title": "Rate Table Id"
+            },
+            "recordId": {
+              "type": "string",
+              "title": "Record Id"
+            },
+            "name": {
+              "type": "string",
+              "title": "Name"
+            },
+            "mode": {
+              "type": "string",
+              "title": "Mode"
+            },
+            "tiering": {
+              "type": "string",
+              "title": "Tiering"
+            },
+            "unitType": {
+              "type": "string",
+              "title": "Attainment Unit Type"
+            },
+            "description": {
+              "type": "string",
+              "title": "Description"
+            },
+            "tags": {
+              "type": "array",
+              "title": "Tags",
+              "items": {
+                "type": "string",
+                "title": "Tag"
+              }
+            },
+            "version": {
+              "type": "integer",
+              "title": "Version"
+            },
+            "effectiveStart": {
+              "type": "integer",
+              "title": "Effective Start (epoch ms)"
+            },
+            "effectiveEnd": {
+              "type": "integer",
+              "title": "Effective End (epoch ms, 0 = End of Time)"
+            },
+            "bandCount": {
+              "type": "integer",
+              "title": "Band Count"
+            },
+            "bands": {
+              "type": "array",
+              "title": "Bands",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "title": "Id"
+                  },
+                  "bandId": {
+                    "type": "string",
+                    "title": "Band Id"
+                  },
+                  "label": {
+                    "type": "string",
+                    "title": "Tier Name"
+                  },
+                  "fromPct": {
+                    "type": "integer",
+                    "title": "From Pct (bps)"
+                  },
+                  "toPct": {
+                    "type": "integer",
+                    "title": "To Pct (bps)"
+                  },
+                  "value": {
+                    "type": "integer",
+                    "title": "Value (bps)"
+                  },
+                  "openEnded": {
+                    "type": "boolean",
+                    "title": "Open Ended"
+                  }
+                }
+              }
+            },
+            "written": {
+              "type": "integer",
+              "title": "Written"
+            },
+            "deleted": {
+              "type": "integer",
+              "title": "Deleted"
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "action": {
+              "type": "string",
+              "title": "Action"
+            },
+            "rateTableId": {
+              "type": "string",
+              "title": "Rate Table Id"
+            },
+            "name": {
+              "type": "string",
+              "title": "Name"
+            },
+            "mode": {
+              "type": "string",
+              "title": "Mode"
+            },
+            "tiering": {
+              "type": "string",
+              "title": "Tiering"
+            },
+            "unitType": {
+              "type": "string",
+              "title": "Attainment Unit Type"
+            },
+            "description": {
+              "type": "string",
+              "title": "Description"
+            },
+            "tags": {
+              "type": "array",
+              "title": "Tags",
+              "items": {
+                "type": "string",
+                "title": "Tag"
+              }
+            },
+            "bands": {
+              "type": "array",
+              "title": "Bands",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fromPct": {
+                    "type": "integer",
+                    "title": "From Pct (bps)"
+                  },
+                  "toPct": {
+                    "type": "integer",
+                    "title": "To Pct (bps)"
+                  },
+                  "value": {
+                    "type": "integer",
+                    "title": "Value (bps)"
+                  },
+                  "label": {
+                    "type": "string",
+                    "title": "Tier Name"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Norm",
+      "index": 2,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "valid": {
+              "type": "boolean",
+              "title": "Valid"
+            },
+            "reason": {
+              "type": "string",
+              "title": "Reason"
+            },
+            "bandsValid": {
+              "type": "boolean",
+              "title": "Bands Valid"
+            },
+            "bandsReason": {
+              "type": "string",
+              "title": "Bands Reason"
+            },
+            "action": {
+              "type": "string",
+              "title": "Action"
+            },
+            "isGet": {
+              "type": "boolean",
+              "title": "Is Get"
+            },
+            "targetId": {
+              "type": "string",
+              "title": "Target Id"
+            },
+            "name": {
+              "type": "string",
+              "title": "Name"
+            },
+            "mode": {
+              "type": "string",
+              "title": "Mode"
+            },
+            "tiering": {
+              "type": "string",
+              "title": "Tiering"
+            },
+            "unitType": {
+              "type": "string",
+              "title": "Unit Type"
+            },
+            "description": {
+              "type": "string",
+              "title": "Description"
+            },
+            "tags": {
+              "type": "array",
+              "title": "Tags",
+              "items": {
+                "type": "string",
+                "title": "Tag"
+              }
+            },
+            "bands": {
+              "type": "array",
+              "title": "Bands",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fromPct": {
+                    "type": "integer",
+                    "title": "From Pct (bps)"
+                  },
+                  "toPct": {
+                    "type": "integer",
+                    "title": "To Pct (bps)"
+                  },
+                  "value": {
+                    "type": "integer",
+                    "title": "Value (bps)"
+                  },
+                  "label": {
+                    "type": "string",
+                    "title": "Tier Name"
+                  }
+                }
+              }
+            },
+            "bandCount": {
+              "type": "integer",
+              "title": "Band Count"
+            },
+            "targetFilter": {
+              "type": "object",
+              "title": "Target Filter"
+            },
+            "nameFilter": {
+              "type": "object",
+              "title": "Name Filter"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "action": {
+              "type": "string",
+              "title": "action"
+            },
+            "rateTableId": {
+              "type": "string",
+              "title": "rateTableId"
+            },
+            "name": {
+              "type": "string",
+              "title": "name"
+            },
+            "mode": {
+              "type": "string",
+              "title": "mode"
+            },
+            "tiering": {
+              "type": "string",
+              "title": "tiering"
+            },
+            "unitType": {
+              "type": "string",
+              "title": "unitType"
+            },
+            "description": {
+              "type": "string",
+              "title": "description"
+            },
+            "tags": {
+              "type": "array",
+              "title": "Tags",
+              "items": {
+                "type": "string",
+                "title": "Tag"
+              }
+            },
+            "bands": {
+              "type": "array",
+              "title": "Bands",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fromPct": {
+                    "type": "integer",
+                    "title": "From Pct (bps)"
+                  },
+                  "toPct": {
+                    "type": "integer",
+                    "title": "To Pct (bps)"
+                  },
+                  "value": {
+                    "type": "integer",
+                    "title": "Value (bps)"
+                  },
+                  "label": {
+                    "type": "string",
+                    "title": "Tier Name"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "code": "def has = { String n -> binding.hasVariable(n) && binding.getVariable(n) != null }\ndef get = { String n -> has(n) ? binding.getVariable(n) : null }\ndef text = { String n -> def v = get(n); (v == null) ? '' : v.toString().trim() }\ndef action = text('action').toUpperCase()\ndef idIn = text('rateTableId')\ndef nm = text('name')\ndef modeIn = text('mode')\ndef tierIn = text('tiering')\ndef unitIn = text('unitType')\ndef desc = text('description')\ndef rawTags = get('tags')\ndef rawBands = get('bands')\n\ndef problems = []      // the request is malformed            -> INVALID_INPUT\ndef bandProblems = []  // the request is well-formed but wrong -> RATE_TABLE_INVALID\ndef ACTIONS = ['GET', 'CREATE', 'UPDATE'] as Set\nif (!ACTIONS.contains(action)) problems << ('action must be GET, CREATE or UPDATE, got \"' + text('action') + '\"')\nboolean isWrite = (action == 'CREATE' || action == 'UPDATE')\nif ((action == 'GET' || action == 'UPDATE') && idIn.isEmpty()) problems << ('rateTableId is required for ' + action)\n\nString mode = 'Rate'\nString tiering = 'Marginal'\nString unitType = 'Percent'\ndef tags = []\nif (isWrite) {\n    if (nm.isEmpty()) problems << 'name is required'\n    else if (nm.length() > 120) problems << 'name must be 120 characters or fewer'\n    if (!modeIn.isEmpty()) { def m = ['Rate', 'PctOfTarget'].find { it.equalsIgnoreCase(modeIn) }; if (m == null) problems << ('mode must be Rate or PctOfTarget, got \"' + modeIn + '\"'); else mode = m }\n    if (!tierIn.isEmpty()) { def t = ['Marginal', 'Cliff'].find { it.equalsIgnoreCase(tierIn) }; if (t == null) problems << ('tiering must be Marginal or Cliff, got \"' + tierIn + '\"'); else tiering = t }\n    if (!unitIn.isEmpty()) { def u = ['Percent', 'Amount', 'Quantity'].find { it.equalsIgnoreCase(unitIn) }; if (u == null) problems << ('unitType must be Percent, Amount or Quantity, got \"' + unitIn + '\"'); else unitType = u }\n    if (desc.length() > 2000) problems << 'description must be 2000 characters or fewer'\n    // Tags arrive as a list (the app), a JSON list or a comma-separated string (API callers).\n    def tagsIn = rawTags\n    if (tagsIn instanceof String) {\n        def t = tagsIn.trim()\n        if (t.isEmpty()) tagsIn = []\n        else if (t.startsWith('[')) { try { tagsIn = new groovy.json.JsonSlurper().parseText(t) } catch (Exception e) { problems << ('tags is not valid JSON: ' + e.getMessage()); tagsIn = [] } }\n        else tagsIn = t.split(',') as List\n    }\n    if (tagsIn == null) tagsIn = []\n    if (!(tagsIn instanceof List)) { problems << 'tags must be a list of strings'; tagsIn = [] }\n    def seen = [] as HashSet\n    tagsIn.each { v ->\n        def s = (v == null) ? '' : v.toString().trim()\n        if (s.isEmpty()) return\n        if (s.length() > 40) { problems << ('tag \"' + s.take(40) + '...\" is longer than 40 characters'); return }\n        if (seen.add(s.toLowerCase())) tags << s\n    }\n    if (tags.size() > 20) problems << 'a rate table may have at most 20 tags'\n}\n\nlong OPEN = 2147483647L\ndef bandsIn = rawBands\nif (bandsIn instanceof String) {\n    def t = bandsIn.trim()\n    if (t.isEmpty()) bandsIn = null\n    else { try { bandsIn = new groovy.json.JsonSlurper().parseText(t) } catch (Exception e) { problems << ('bands is not valid JSON: ' + e.getMessage()); bandsIn = null } }\n}\nif (bandsIn instanceof Map) bandsIn = [bandsIn]\ndef bands = []\nif (isWrite) {\n    if (!(bandsIn instanceof List) || bandsIn.isEmpty()) bandProblems << 'a rate table needs at least one band'\n    else if (bandsIn.size() > 50) bandProblems << 'a rate table may have at most 50 bands'\n    else {\n        def toBps = { v, String where ->\n            if (v == null) return null\n            if (v instanceof Number) { double d = ((Number) v).doubleValue(); if (d != Math.rint(d)) { bandProblems << (where + ' must be a whole number of basis points'); return null }; return ((Number) v).longValue() }\n            def t = v.toString().trim()\n            if (t.isEmpty()) return null\n            if (t ==~ /^-?\\d{1,10}$/) return Long.parseLong(t)\n            bandProblems << (where + ' must be a whole number of basis points, got \"' + t + '\"'); return null\n        }\n        int n = bandsIn.size()\n        bandsIn.eachWithIndex { b, i ->\n            def where = 'band ' + (i + 1)\n            if (!(b instanceof Map)) { bandProblems << (where + ' must be an object'); return }\n            Long from = toBps(b.fromPct, where + '.fromPct')\n            Long to = toBps(b.toPct, where + '.toPct')\n            Long val = toBps(b.value, where + '.value')\n            String label = (b.label == null) ? '' : b.label.toString().trim()\n            boolean last = (i == n - 1)\n            if (from == null) bandProblems << (where + '.fromPct is required')\n            if (to == null) { if (last) to = OPEN; else bandProblems << (where + '.toPct is required on every band but the last') }\n            if (val == null) bandProblems << (where + '.value is required')\n            if (from != null && from < 0L) bandProblems << (where + '.fromPct cannot be negative')\n            if (val != null && val < 0L) bandProblems << (where + '.value cannot be negative')\n            if (val != null && val > OPEN) bandProblems << (where + '.value is out of range')\n            if (to != null && to > OPEN) bandProblems << (where + '.toPct is out of range')\n            if (from != null && to != null && to != OPEN && to <= from) bandProblems << (where + ': toPct must be greater than fromPct')\n            if (label.length() > 60) bandProblems << (where + '.label must be 60 characters or fewer')\n            bands << [fromPct: from, toPct: to, value: val, label: label]\n        }\n        if (bandProblems.isEmpty()) {\n            bands = bands.sort { a, b -> Long.compare(a.fromPct, b.fromPct) }\n            if (bands[0].fromPct != 0L) bandProblems << 'the first band must start at 0 (0%), so every attainment lands on a band'\n            for (int i = 1; i < bands.size(); i++) {\n                def prev = bands[i - 1]; def cur = bands[i]\n                if (prev.toPct == OPEN) bandProblems << ('band ' + i + ' is open-ended, so no band can follow it')\n                else if (cur.fromPct < prev.toPct) bandProblems << ('band ' + (i + 1) + ' overlaps band ' + i + ' (starts at ' + cur.fromPct + ', before ' + prev.toPct + ')')\n                else if (cur.fromPct > prev.toPct) bandProblems << ('gap between band ' + i + ' and band ' + (i + 1) + ' (' + prev.toPct + ' to ' + cur.fromPct + '): attainment there would earn nothing')\n            }\n        }\n    }\n}\n\n// CREATE mints the business id; a collision is checked downstream rather than assumed away.\nString newId = 'RT-' + UUID.randomUUID().toString().replace('-', '').substring(0, 8).toUpperCase()\nString targetId = (action == 'CREATE') ? newId : idIn\ndef targetFilter = [operator: 'AND', filters: [[property: 'properties.rateTableId', filter: [operator: 'EQUAL', value: targetId.isEmpty() ? '__none__' : targetId]]]]\n// The name check reads EVERY table and compares in n_Guard. A CONTAINS/ICONTAINS\n// filter is routed to the analytics index on this object, which lags the store by\n// seconds - long enough for a just-created table to be missed. An unfiltered read hits\n// the primary store; the set is small reference data and the read is bounded.\ndef nameFilter = isWrite && !nm.isEmpty()\n    ? [:]\n    : [operator: 'AND', filters: [[property: 'id', filter: [operator: 'EQUAL', value: '__none__']]]]\n\nreturn [valid: problems.isEmpty(), reason: problems.join('; '),\n        bandsValid: bandProblems.isEmpty(), bandsReason: bandProblems.join('; '),\n        action: action, isGet: (action == 'GET'), targetId: targetId, name: nm, mode: mode, tiering: tiering,\n        unitType: unitType, description: desc, tags: tags,\n        bands: bands, bandCount: bands.size(), targetFilter: targetFilter, nameFilter: nameFilter]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "action": "{{ n_sTaRt.outputs.action }}",
+          "rateTableId": "{{ n_sTaRt.outputs.rateTableId }}",
+          "name": "{{ n_sTaRt.outputs.name }}",
+          "mode": "{{ n_sTaRt.outputs.mode }}",
+          "tiering": "{{ n_sTaRt.outputs.tiering }}",
+          "unitType": "{{ n_sTaRt.outputs.unitType }}",
+          "description": "{{ n_sTaRt.outputs.description }}",
+          "tags": "{{ n_sTaRt.outputs.tags }}",
+          "bands": "{{ n_sTaRt.outputs.bands }}"
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Validate the request and the band rules, mint the id on CREATE",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtById",
+      "index": 3,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.targetFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "RateTable",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 2,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.rateTableId",
+          "properties.name",
+          "properties.mode",
+          "properties.tiering",
+          "properties.unitType",
+          "properties.description",
+          "properties.tags",
+          "properties.version",
+          "properties.effectiveStart",
+          "properties.effectiveEnd"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The table this request names, or the minted id's collision",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtByName",
+      "index": 4,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.nameFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "RateTable",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 2000,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.rateTableId",
+          "properties.name"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Every table's name, for the uniqueness check",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Guard",
+      "index": 5,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "notFound": {
+              "type": "boolean",
+              "title": "Not Found"
+            },
+            "collision": {
+              "type": "boolean",
+              "title": "Collision"
+            },
+            "recordId": {
+              "type": "string",
+              "title": "Record Id"
+            },
+            "isDup": {
+              "type": "boolean",
+              "title": "Is Dup"
+            },
+            "dupId": {
+              "type": "string",
+              "title": "Dup Id"
+            },
+            "nameCheckTruncated": {
+              "type": "boolean",
+              "title": "Name Check Truncated"
+            },
+            "bandFilter": {
+              "type": "object",
+              "title": "Band Filter"
+            },
+            "existingName": {
+              "type": "string",
+              "title": "Existing Name"
+            },
+            "existingMode": {
+              "type": "string",
+              "title": "Existing Mode"
+            },
+            "existingTiering": {
+              "type": "string",
+              "title": "Existing Tiering"
+            },
+            "existingDescription": {
+              "type": "string",
+              "title": "Existing Description"
+            },
+            "existingTags": {
+              "type": "array",
+              "title": "Tags",
+              "items": {
+                "type": "string",
+                "title": "Tag"
+              }
+            },
+            "existingUnitType": {
+              "type": "string",
+              "title": "Existing Unit Type"
+            },
+            "existingVersion": {
+              "type": "integer",
+              "title": "Existing Version"
+            },
+            "existingEffectiveStart": {
+              "type": "integer",
+              "title": "Existing Effective Start"
+            },
+            "existingEffectiveEnd": {
+              "type": "integer",
+              "title": "Existing Effective End"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "byIdRows": {
+              "type": "array",
+              "title": "By Id Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "byNameRows": {
+              "type": "array",
+              "title": "By Name Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "byNameTotal": {
+              "type": "integer",
+              "title": "By Name Total"
+            },
+            "action": {
+              "type": "string",
+              "title": "action"
+            },
+            "name": {
+              "type": "string",
+              "title": "name"
+            }
+          }
+        },
+        "code": "def existing = (byIdRows != null && !byIdRows.isEmpty()) ? byIdRows[0] : null\nboolean notFound = (String.valueOf(action) != 'CREATE') && existing == null\nboolean collision = (String.valueOf(action) == 'CREATE') && existing != null\nString recordId = (existing == null) ? '' : String.valueOf(existing.id)\nboolean dup = false\nString dupId = ''\nif (String.valueOf(action) == 'CREATE' || String.valueOf(action) == 'UPDATE') {\n    (byNameRows ?: []).each { r ->\n        def n = String.valueOf(r.properties?.name ?: '')\n        // Equality here is case-insensitive and exact, and a table may of course keep its\n        // own name on UPDATE.\n        if (n.equalsIgnoreCase(String.valueOf(name)) && String.valueOf(r.id) != recordId) { dup = true; dupId = String.valueOf(r.properties?.rateTableId ?: '') }\n    }\n}\nint nameGot = (byNameRows == null) ? 0 : byNameRows.size()\nint nameTotal = (byNameTotal == null || String.valueOf(byNameTotal).trim().isEmpty()) ? nameGot : Integer.valueOf(String.valueOf(byNameTotal))\nboolean nameCheckTruncated = nameGot < nameTotal\ndef bandFilter = [operator: 'AND', filters: [[property: 'properties.rateTableId', filter: [operator: 'IN', value: [recordId.isEmpty() ? '__none__' : recordId]]]]]\ndef ex = (existing == null) ? [:] : (existing.properties ?: [:])\n// Numbers a table may not have yet (created before v3) come out as 0, never null:\n// a null is dropped from the output and reaches the next node unbound.\ndef asLong0 = { v -> (v == null || String.valueOf(v).trim().isEmpty()) ? 0L : Long.valueOf(String.valueOf(v)) }\nreturn [notFound: notFound, collision: collision, recordId: recordId, isDup: dup, dupId: dupId, nameCheckTruncated: nameCheckTruncated, bandFilter: bandFilter,\n        existingName: String.valueOf(ex.name ?: ''), existingMode: String.valueOf(ex.mode ?: ''), existingTiering: String.valueOf(ex.tiering ?: ''),\n        existingDescription: String.valueOf(ex.description ?: ''), existingTags: (ex.tags instanceof List) ? ex.tags : [], existingUnitType: String.valueOf(ex.unitType ?: ''),\n        existingVersion: asLong0(ex.version), existingEffectiveStart: asLong0(ex.effectiveStart), existingEffectiveEnd: asLong0(ex.effectiveEnd)]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "byIdRows": "{{ n_FtById.outputs.objects }}",
+          "byNameRows": "{{ n_FtByName.outputs.objects }}",
+          "byNameTotal": "{{ n_FtByName.outputs.total }}",
+          "action": "{{ n_Norm.outputs.result.action }}",
+          "name": "{{ n_Norm.outputs.result.name }}"
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Settle not-found, the id collision and the duplicate name",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtBands",
+      "index": 6,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Guard.outputs.result.bandFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "RateTableBand",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 500,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.bandId",
+          "properties.rateTableId",
+          "properties.label",
+          "properties.fromPct",
+          "properties.toPct",
+          "properties.value"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The bands the table has today",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Plan",
+      "index": 7,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "outcome": {
+              "type": "string",
+              "title": "Outcome"
+            },
+            "refusal": {
+              "type": "string",
+              "title": "Refusal"
+            },
+            "parentId": {
+              "type": "string",
+              "title": "Parent Id"
+            },
+            "parentUpdates": {
+              "type": "array",
+              "title": "Parent Updates",
+              "items": {
+                "type": "object"
+              }
+            },
+            "bandUpdates": {
+              "type": "array",
+              "title": "Band Updates",
+              "items": {
+                "type": "object"
+              }
+            },
+            "bandWriteCount": {
+              "type": "integer",
+              "title": "Band Write Count"
+            },
+            "deleteIds": {
+              "type": "array",
+              "title": "Delete Ids",
+              "items": {
+                "type": "string"
+              }
+            },
+            "deleteCount": {
+              "type": "integer",
+              "title": "Delete Count"
+            },
+            "deleteFilter": {
+              "type": "object",
+              "title": "Delete Filter"
+            },
+            "bands": {
+              "type": "array",
+              "title": "Bands",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "title": "Id"
+                  },
+                  "bandId": {
+                    "type": "string",
+                    "title": "Band Id"
+                  },
+                  "label": {
+                    "type": "string",
+                    "title": "Tier Name"
+                  },
+                  "fromPct": {
+                    "type": "integer",
+                    "title": "From Pct (bps)"
+                  },
+                  "toPct": {
+                    "type": "integer",
+                    "title": "To Pct (bps)"
+                  },
+                  "value": {
+                    "type": "integer",
+                    "title": "Value (bps)"
+                  },
+                  "openEnded": {
+                    "type": "boolean",
+                    "title": "Open Ended"
+                  }
+                }
+              }
+            },
+            "bandCount": {
+              "type": "integer",
+              "title": "Band Count"
+            },
+            "outName": {
+              "type": "string",
+              "title": "Out Name"
+            },
+            "outMode": {
+              "type": "string",
+              "title": "Out Mode"
+            },
+            "outTiering": {
+              "type": "string",
+              "title": "Out Tiering"
+            },
+            "outUnitType": {
+              "type": "string",
+              "title": "Out Unit Type"
+            },
+            "outDescription": {
+              "type": "string",
+              "title": "Out Description"
+            },
+            "outTags": {
+              "type": "array",
+              "title": "Tags",
+              "items": {
+                "type": "string",
+                "title": "Tag"
+              }
+            },
+            "outVersion": {
+              "type": "integer",
+              "title": "Out Version"
+            },
+            "outEffectiveStart": {
+              "type": "integer",
+              "title": "Out Effective Start"
+            },
+            "outEffectiveEnd": {
+              "type": "integer",
+              "title": "Out Effective End"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "valid": {
+              "type": "boolean",
+              "title": "Valid"
+            },
+            "reason": {
+              "type": "string",
+              "title": "reason"
+            },
+            "bandsValid": {
+              "type": "boolean",
+              "title": "Bands Valid"
+            },
+            "bandsReason": {
+              "type": "string",
+              "title": "bandsReason"
+            },
+            "action": {
+              "type": "string",
+              "title": "action"
+            },
+            "targetId": {
+              "type": "string",
+              "title": "targetId"
+            },
+            "name": {
+              "type": "string",
+              "title": "name"
+            },
+            "mode": {
+              "type": "string",
+              "title": "mode"
+            },
+            "tiering": {
+              "type": "string",
+              "title": "tiering"
+            },
+            "unitType": {
+              "type": "string",
+              "title": "unitType"
+            },
+            "description": {
+              "type": "string",
+              "title": "description"
+            },
+            "tags": {
+              "type": "array",
+              "title": "Tags",
+              "items": {
+                "type": "string",
+                "title": "Tag"
+              }
+            },
+            "bands": {
+              "type": "array",
+              "title": "Bands",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fromPct": {
+                    "type": "integer",
+                    "title": "From Pct (bps)"
+                  },
+                  "toPct": {
+                    "type": "integer",
+                    "title": "To Pct (bps)"
+                  },
+                  "value": {
+                    "type": "integer",
+                    "title": "Value (bps)"
+                  },
+                  "label": {
+                    "type": "string",
+                    "title": "Tier Name"
+                  }
+                }
+              }
+            },
+            "recordId": {
+              "type": "string",
+              "title": "recordId"
+            },
+            "notFound": {
+              "type": "boolean",
+              "title": "Not Found"
+            },
+            "collision": {
+              "type": "boolean",
+              "title": "Collision"
+            },
+            "isDup": {
+              "type": "boolean",
+              "title": "Is Dup"
+            },
+            "dupId": {
+              "type": "string",
+              "title": "dupId"
+            },
+            "nameCheckTruncated": {
+              "type": "boolean",
+              "title": "Name Check Truncated"
+            },
+            "existingName": {
+              "type": "string",
+              "title": "existingName"
+            },
+            "existingMode": {
+              "type": "string",
+              "title": "existingMode"
+            },
+            "existingTiering": {
+              "type": "string",
+              "title": "existingTiering"
+            },
+            "existingDescription": {
+              "type": "string",
+              "title": "existingDescription"
+            },
+            "existingTags": {
+              "type": "array",
+              "title": "Tags",
+              "items": {
+                "type": "string",
+                "title": "Tag"
+              }
+            },
+            "existingUnitType": {
+              "type": "string",
+              "title": "existingUnitType"
+            },
+            "existingVersion": {
+              "type": "integer",
+              "title": "Existing Version"
+            },
+            "existingEffectiveStart": {
+              "type": "integer",
+              "title": "Existing Effective Start"
+            },
+            "existingEffectiveEnd": {
+              "type": "integer",
+              "title": "Existing Effective End"
+            },
+            "existingBands": {
+              "type": "array",
+              "title": "Existing Bands",
+              "items": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "code": "long OPEN = 2147483647L\ndef asLong = { v -> (v == null || String.valueOf(v).trim().isEmpty()) ? null : Long.valueOf(String.valueOf(v)) }\n// Record ids are minted from the business id, so CREATE and UPDATE write the same rows\n// and a retry after a half-landed write lands on the same records instead of beside them.\ndef md5hex = { String s -> java.security.MessageDigest.getInstance('MD5').digest(s.getBytes('UTF-8')).encodeHex().toString() }\ndef mint = { String seed -> 'e_' + md5hex(seed).substring(0, 24) }\n\nString act = String.valueOf(action)\nboolean isGet = (act == 'GET')\nboolean ok = (valid as boolean)\nString outcome\nString refusal = ''\nif (!ok) { outcome = 'INVALID_INPUT'; refusal = String.valueOf(reason) }\nelse if (collision as boolean) { outcome = 'INVALID_INPUT'; refusal = 'The minted rateTableId collided with an existing table; retry the request.' }\nelse if (notFound as boolean) { outcome = 'NOT_FOUND'; refusal = 'No rate table has rateTableId \"' + String.valueOf(targetId) + '\"' }\nelse if (isGet) { outcome = 'OK' }\nelse if (nameCheckTruncated as boolean) { outcome = 'INVALID_INPUT'; refusal = 'Could not verify the name is unique: more rate tables exist than one read returns. Narrow the set before creating more.' }\nelse if (isDup as boolean) { outcome = 'DUPLICATE_NAME'; refusal = 'A rate table named \"' + String.valueOf(name) + '\" already exists (' + String.valueOf(dupId) + ')' }\nelse if (!(bandsValid as boolean)) { outcome = 'RATE_TABLE_INVALID'; refusal = String.valueOf(bandsReason) }\nelse { outcome = 'WRITE' }\n\nString parentId = (act == 'CREATE') ? mint('RateTable#' + String.valueOf(targetId)) : String.valueOf(recordId)\ndef sortedExisting = (existingBands ?: []).collect { r -> [id: String.valueOf(r.id), bandId: String.valueOf(r.properties?.bandId ?: ''), label: String.valueOf(r.properties?.label ?: ''),\n        fromPct: asLong(r.properties?.fromPct), toPct: asLong(r.properties?.toPct), value: asLong(r.properties?.value)] }\n    .sort { a, b -> Long.compare(a.fromPct == null ? 0L : a.fromPct, b.fromPct == null ? 0L : b.fromPct) }\n\n// Version info. P0 has one version per table: 1, effective from the day it was created,\n// open-ended (effectiveEnd 0 = End of Time). UPDATE keeps what is there and backfills a\n// table written before these fields existed.\nlong today = java.time.LocalDate.now(java.time.ZoneOffset.UTC).atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli()\nlong exVersion = asLong(existingVersion) ?: 0L\nlong exStart = asLong(existingEffectiveStart) ?: 0L\nlong exEnd = asLong(existingEffectiveEnd) ?: 0L\nlong outVersion = (act == 'CREATE') ? 1L : (exVersion > 0L ? exVersion : 1L)\nlong outStart = (act == 'CREATE') ? today : (exStart > 0L ? exStart : (isGet ? 0L : today))\nlong outEnd = exEnd\nString exUnit = String.valueOf(existingUnitType ?: '')\ndef exTags = (existingTags instanceof List) ? existingTags : []\ndef newTags = (tags instanceof List) ? tags : []\n\ndef outBands = []\ndef updates = []\ndef deleteIds = []\nif (outcome == 'OK') {\n    sortedExisting.each { b -> outBands << [id: b.id, bandId: b.bandId, label: b.label, fromPct: b.fromPct ?: 0L, toPct: b.toPct ?: 0L, value: b.value ?: 0L, openEnded: (b.toPct == OPEN)] }\n} else if (outcome == 'WRITE') {\n    def set = { String f, v -> [fieldName: 'properties.' + f, actionType: 'SET', setValue: v] }\n    def parentFields = [set('rateTableId', String.valueOf(targetId)), set('name', String.valueOf(name)), set('mode', String.valueOf(mode)), set('tiering', String.valueOf(tiering)),\n                        set('unitType', String.valueOf(unitType)), set('description', String.valueOf(description)), set('tags', newTags)]\n    if (act == 'CREATE' || exVersion <= 0L) parentFields << set('version', outVersion)\n    if (act == 'CREATE' || exStart <= 0L) parentFields << set('effectiveStart', outStart)\n    updates << [id: parentId, updateFields: parentFields]\n    def keep = [] as HashSet\n    (bands ?: []).eachWithIndex { b, i ->\n        int n = i + 1\n        String bandId = String.valueOf(targetId) + '-B' + n\n        String bid = mint('RateTableBand#' + String.valueOf(targetId) + '#' + n)\n        keep << bid\n        long from = asLong(b.fromPct); long to = asLong(b.toPct); long val = asLong(b.value)\n        outBands << [id: bid, bandId: bandId, label: String.valueOf(b.label ?: ''), fromPct: from, toPct: to, value: val, openEnded: (to == OPEN)]\n    }\n    // The parent row goes first so its FK target exists before any band names it.\n    outBands.each { b -> updates << [id: b.id, updateFields: [set('bandId', b.bandId), set('rateTableId', parentId), set('label', b.label), set('fromPct', b.fromPct), set('toPct', b.toPct), set('value', b.value)]] }\n    sortedExisting.each { b -> if (!keep.contains(b.id)) deleteIds << b.id }\n}\ndef deleteFilter = [operator: 'AND', filters: [[property: 'id', filter: [operator: 'IN', value: deleteIds.isEmpty() ? ['__none__'] : deleteIds]]]]\ndef parentUpdates = updates.isEmpty() ? [] : [updates[0]]\ndef bandUpdates = updates.size() > 1 ? new ArrayList(updates.subList(1, updates.size())) : []\n\nreturn [outcome: outcome, refusal: refusal, parentId: parentId,\n        parentUpdates: parentUpdates, bandUpdates: bandUpdates, bandWriteCount: bandUpdates.size(),\n        deleteIds: deleteIds, deleteCount: deleteIds.size(), deleteFilter: deleteFilter,\n        bands: outBands, bandCount: outBands.size(),\n        outName: isGet ? String.valueOf(existingName) : String.valueOf(name),\n        outMode: isGet ? String.valueOf(existingMode) : String.valueOf(mode),\n        outTiering: isGet ? String.valueOf(existingTiering) : String.valueOf(tiering),\n        outUnitType: isGet ? (exUnit.isEmpty() ? 'Percent' : exUnit) : String.valueOf(unitType),\n        outDescription: isGet ? String.valueOf(existingDescription) : String.valueOf(description),\n        outTags: isGet ? exTags : newTags,\n        outVersion: isGet ? (exVersion > 0L ? exVersion : 1L) : outVersion,\n        outEffectiveStart: outStart, outEffectiveEnd: outEnd,\n        message: (outcome == 'OK') ? ('Rate table ' + String.valueOf(targetId) + ' with ' + outBands.size() + ' band(s)') : refusal]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "valid": "{{ n_Norm.outputs.result.valid }}",
+          "reason": "{{ n_Norm.outputs.result.reason }}",
+          "bandsValid": "{{ n_Norm.outputs.result.bandsValid }}",
+          "bandsReason": "{{ n_Norm.outputs.result.bandsReason }}",
+          "action": "{{ n_Norm.outputs.result.action }}",
+          "targetId": "{{ n_Norm.outputs.result.targetId }}",
+          "name": "{{ n_Norm.outputs.result.name }}",
+          "mode": "{{ n_Norm.outputs.result.mode }}",
+          "tiering": "{{ n_Norm.outputs.result.tiering }}",
+          "unitType": "{{ n_Norm.outputs.result.unitType }}",
+          "description": "{{ n_Norm.outputs.result.description }}",
+          "tags": "{{ n_Norm.outputs.result.tags }}",
+          "bands": "{{ n_Norm.outputs.result.bands }}",
+          "recordId": "{{ n_Guard.outputs.result.recordId }}",
+          "notFound": "{{ n_Guard.outputs.result.notFound }}",
+          "collision": "{{ n_Guard.outputs.result.collision }}",
+          "isDup": "{{ n_Guard.outputs.result.isDup }}",
+          "dupId": "{{ n_Guard.outputs.result.dupId }}",
+          "nameCheckTruncated": "{{ n_Guard.outputs.result.nameCheckTruncated }}",
+          "existingName": "{{ n_Guard.outputs.result.existingName }}",
+          "existingMode": "{{ n_Guard.outputs.result.existingMode }}",
+          "existingTiering": "{{ n_Guard.outputs.result.existingTiering }}",
+          "existingDescription": "{{ n_Guard.outputs.result.existingDescription }}",
+          "existingTags": "{{ n_Guard.outputs.result.existingTags }}",
+          "existingUnitType": "{{ n_Guard.outputs.result.existingUnitType }}",
+          "existingVersion": "{{ n_Guard.outputs.result.existingVersion }}",
+          "existingEffectiveStart": "{{ n_Guard.outputs.result.existingEffectiveStart }}",
+          "existingEffectiveEnd": "{{ n_Guard.outputs.result.existingEffectiveEnd }}",
+          "existingBands": "{{ n_FtBands.outputs.objects }}"
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Decide the outcome and lay out every row to write or remove",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_IfBad",
+      "index": 8,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Plan.outputs.result.outcome }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": "INVALID_INPUT"
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Was the request itself unusable?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@y",
+      "id": "n_StBad",
+      "index": 9,
+      "inputs": {
+        "result": {
+          "status": "INVALID_INPUT",
+          "success": false,
+          "message": "{{ n_Plan.outputs.result.refusal }}",
+          "rateTableId": "{{ n_Norm.outputs.result.targetId }}",
+          "recordId": "{{ n_Plan.outputs.result.parentId }}",
+          "name": "{{ n_Plan.outputs.result.outName }}",
+          "mode": "{{ n_Plan.outputs.result.outMode }}",
+          "tiering": "{{ n_Plan.outputs.result.outTiering }}",
+          "unitType": "{{ n_Plan.outputs.result.outUnitType }}",
+          "description": "{{ n_Plan.outputs.result.outDescription }}",
+          "tags": [],
+          "version": "{{ n_Plan.outputs.result.outVersion }}",
+          "effectiveStart": "{{ n_Plan.outputs.result.outEffectiveStart }}",
+          "effectiveEnd": "{{ n_Plan.outputs.result.outEffectiveEnd }}",
+          "bandCount": "{{ n_Plan.outputs.result.bandCount }}",
+          "bands": [],
+          "written": 0,
+          "deleted": 0
+        }
+      },
+      "skip": false,
+      "subTitle": "Refused before anything was read or written",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_IfGet",
+      "index": 10,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Plan.outputs.result.outcome }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": "OK"
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Is this a read?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfGet@n_IfBad@root_id-1@n@y",
+      "id": "n_StGet",
+      "index": 11,
+      "inputs": {
+        "result": {
+          "status": "OK",
+          "success": true,
+          "message": "{{ n_Plan.outputs.result.message }}",
+          "rateTableId": "{{ n_Norm.outputs.result.targetId }}",
+          "recordId": "{{ n_Plan.outputs.result.parentId }}",
+          "name": "{{ n_Plan.outputs.result.outName }}",
+          "mode": "{{ n_Plan.outputs.result.outMode }}",
+          "tiering": "{{ n_Plan.outputs.result.outTiering }}",
+          "unitType": "{{ n_Plan.outputs.result.outUnitType }}",
+          "description": "{{ n_Plan.outputs.result.outDescription }}",
+          "tags": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Plan.outputs.result.outTags }}",
+            "items": "{{ n_Plan.outputs.result.outTags[0] }}"
+          },
+          "version": "{{ n_Plan.outputs.result.outVersion }}",
+          "effectiveStart": "{{ n_Plan.outputs.result.outEffectiveStart }}",
+          "effectiveEnd": "{{ n_Plan.outputs.result.outEffectiveEnd }}",
+          "bandCount": "{{ n_Plan.outputs.result.bandCount }}",
+          "bands": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Plan.outputs.result.bands }}",
+            "items": "{{ n_Plan.outputs.result.bands[0] }}"
+          },
+          "written": 0,
+          "deleted": 0
+        }
+      },
+      "skip": false,
+      "subTitle": "The table and its bands, sorted",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfGet@n_IfBad@root_id-1@n@n",
+      "id": "n_IfNF",
+      "index": 12,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Plan.outputs.result.outcome }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": "NOT_FOUND"
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Does the table exist?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfNF@n_IfGet@n_IfBad@root_id-1@n@n@y",
+      "id": "n_StNF",
+      "index": 13,
+      "inputs": {
+        "result": {
+          "status": "NOT_FOUND",
+          "success": false,
+          "message": "{{ n_Plan.outputs.result.refusal }}",
+          "rateTableId": "{{ n_Norm.outputs.result.targetId }}",
+          "recordId": "{{ n_Plan.outputs.result.parentId }}",
+          "name": "{{ n_Plan.outputs.result.outName }}",
+          "mode": "{{ n_Plan.outputs.result.outMode }}",
+          "tiering": "{{ n_Plan.outputs.result.outTiering }}",
+          "unitType": "{{ n_Plan.outputs.result.outUnitType }}",
+          "description": "{{ n_Plan.outputs.result.outDescription }}",
+          "tags": [],
+          "version": "{{ n_Plan.outputs.result.outVersion }}",
+          "effectiveStart": "{{ n_Plan.outputs.result.outEffectiveStart }}",
+          "effectiveEnd": "{{ n_Plan.outputs.result.outEffectiveEnd }}",
+          "bandCount": "{{ n_Plan.outputs.result.bandCount }}",
+          "bands": [],
+          "written": 0,
+          "deleted": 0
+        }
+      },
+      "skip": false,
+      "subTitle": "No table has that rateTableId",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfNF@n_IfGet@n_IfBad@root_id-1@n@n@n",
+      "id": "n_IfDup",
+      "index": 14,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Plan.outputs.result.outcome }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": "DUPLICATE_NAME"
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Is the name already taken?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfDup@n_IfNF@n_IfGet@n_IfBad@root_id-1@n@n@n@y",
+      "id": "n_StDup",
+      "index": 15,
+      "inputs": {
+        "result": {
+          "status": "DUPLICATE_NAME",
+          "success": false,
+          "message": "{{ n_Plan.outputs.result.refusal }}",
+          "rateTableId": "{{ n_Norm.outputs.result.targetId }}",
+          "recordId": "{{ n_Plan.outputs.result.parentId }}",
+          "name": "{{ n_Plan.outputs.result.outName }}",
+          "mode": "{{ n_Plan.outputs.result.outMode }}",
+          "tiering": "{{ n_Plan.outputs.result.outTiering }}",
+          "unitType": "{{ n_Plan.outputs.result.outUnitType }}",
+          "description": "{{ n_Plan.outputs.result.outDescription }}",
+          "tags": [],
+          "version": "{{ n_Plan.outputs.result.outVersion }}",
+          "effectiveStart": "{{ n_Plan.outputs.result.outEffectiveStart }}",
+          "effectiveEnd": "{{ n_Plan.outputs.result.outEffectiveEnd }}",
+          "bandCount": "{{ n_Plan.outputs.result.bandCount }}",
+          "bands": [],
+          "written": 0,
+          "deleted": 0
+        }
+      },
+      "skip": false,
+      "subTitle": "Another table already carries that name",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfDup@n_IfNF@n_IfGet@n_IfBad@root_id-1@n@n@n@n",
+      "id": "n_IfInv",
+      "index": 16,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Plan.outputs.result.outcome }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": "RATE_TABLE_INVALID"
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Do the bands break the table rules?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfInv@n_IfDup@n_IfNF@n_IfGet@n_IfBad@root_id-1@n@n@n@n@y",
+      "id": "n_StInv",
+      "index": 17,
+      "inputs": {
+        "result": {
+          "status": "RATE_TABLE_INVALID",
+          "success": false,
+          "message": "{{ n_Plan.outputs.result.refusal }}",
+          "rateTableId": "{{ n_Norm.outputs.result.targetId }}",
+          "recordId": "{{ n_Plan.outputs.result.parentId }}",
+          "name": "{{ n_Plan.outputs.result.outName }}",
+          "mode": "{{ n_Plan.outputs.result.outMode }}",
+          "tiering": "{{ n_Plan.outputs.result.outTiering }}",
+          "unitType": "{{ n_Plan.outputs.result.outUnitType }}",
+          "description": "{{ n_Plan.outputs.result.outDescription }}",
+          "tags": [],
+          "version": "{{ n_Plan.outputs.result.outVersion }}",
+          "effectiveStart": "{{ n_Plan.outputs.result.outEffectiveStart }}",
+          "effectiveEnd": "{{ n_Plan.outputs.result.outEffectiveEnd }}",
+          "bandCount": "{{ n_Plan.outputs.result.bandCount }}",
+          "bands": [],
+          "written": 0,
+          "deleted": 0
+        }
+      },
+      "skip": false,
+      "subTitle": "Bands with a gap, an overlap or a bad range",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_bulk_upsert_records_by_id",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfInv@n_IfDup@n_IfNF@n_IfGet@n_IfBad@root_id-1@n@n@n@n@n",
+      "id": "n_UpsT",
+      "index": 18,
+      "inputs": {
+        "object_type": "RateTable",
+        "skipIfBlank": false,
+        "skipSchemaValidation": true,
+        "updates": "{{ n_Plan.outputs.result.parentUpdates }}",
+        "unsetIfNull": false
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The rate table row, by its minted id",
+      "title": "Bulk upsert records by id",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_bulk_upsert_records_by_id",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfInv@n_IfDup@n_IfNF@n_IfGet@n_IfBad@root_id-1@n@n@n@n@n",
+      "id": "n_UpsB",
+      "index": 19,
+      "inputs": {
+        "object_type": "RateTableBand",
+        "skipIfBlank": false,
+        "skipSchemaValidation": true,
+        "updates": "{{ n_Plan.outputs.result.bandUpdates }}",
+        "unsetIfNull": false
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Every band, by ids minted from the table id",
+      "title": "Bulk upsert records by id",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_delete_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfInv@n_IfDup@n_IfNF@n_IfGet@n_IfBad@root_id-1@n@n@n@n@n",
+      "id": "n_Del",
+      "index": 20,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Plan.outputs.result.deleteFilter }}",
+        "writeThroughSessionVariables": false,
+        "object_type": "RateTableBand",
+        "numberOfRecordsToDelete": "MULTIPLE",
+        "page": {
+          "limit": 500,
+          "offset": 0
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Bands the new set no longer has",
+      "title": "Delete records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfInv@n_IfDup@n_IfNF@n_IfGet@n_IfBad@root_id-1@n@n@n@n@n",
+      "id": "n_Chk",
+      "index": 21,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "partial": {
+              "type": "boolean",
+              "title": "Partial"
+            },
+            "status": {
+              "type": "string",
+              "title": "Status"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            },
+            "written": {
+              "type": "integer",
+              "title": "Written"
+            },
+            "deleted": {
+              "type": "integer",
+              "title": "Deleted"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "okT": {
+              "type": "integer",
+              "title": "Ok T"
+            },
+            "badT": {
+              "type": "integer",
+              "title": "Bad T"
+            },
+            "errT": {
+              "type": "object",
+              "title": "Err T"
+            },
+            "okB": {
+              "type": "integer",
+              "title": "Ok B"
+            },
+            "badB": {
+              "type": "integer",
+              "title": "Bad B"
+            },
+            "errB": {
+              "type": "object",
+              "title": "Err B"
+            },
+            "deleted": {
+              "type": "integer",
+              "title": "Deleted"
+            },
+            "bandWriteCount": {
+              "type": "integer",
+              "title": "Band Write Count"
+            },
+            "deleteCount": {
+              "type": "integer",
+              "title": "Delete Count"
+            },
+            "action": {
+              "type": "string",
+              "title": "action"
+            }
+          }
+        },
+        "code": "def has = { String n -> binding.hasVariable(n) && binding.getVariable(n) != null }\ndef get = { String n -> has(n) ? binding.getVariable(n) : null }\ndef text = { String n -> def v = get(n); (v == null) ? '' : v.toString().trim() }\ndef num = { String n -> def v = get(n); (v == null || v.toString().trim().isEmpty()) ? -1L : Long.valueOf(String.valueOf(v)) }\nlong okT = num('okT'), badT = num('badT'), okB = num('okB'), badB = num('badB')\nlong wantB = num('bandWriteCount'), wantDel = num('deleteCount'), gotDel = num('deleted')\nif (okT < 0L) okT = 0L\nif (badT < 0L) badT = 0L\nif (okB < 0L) okB = 0L\nif (badB < 0L) badB = 0L\ndef problems = []\nif (okT != 1L || badT > 0L) problems << ('the rate table row: ' + okT + ' written, ' + badT + ' failed' + (has('errT') && get('errT') != null ? (' - ' + get('errT').toString().take(240)) : ''))\nif (okB != wantB || badB > 0L) problems << ('the bands: ' + okB + ' of ' + wantB + ' written, ' + badB + ' failed' + (has('errB') && get('errB') != null ? (' - ' + get('errB').toString().take(240)) : ''))\n// An unverifiable delete is reported, never assumed: a surplus band left behind would\n// silently widen the table.\nif (wantDel > 0L && gotDel != wantDel) problems << ('surplus bands: ' + (gotDel < 0L ? 'could not verify the delete count' : (gotDel + ' of ' + wantDel + ' removed')))\nboolean partial = !problems.isEmpty()\nString act = text('action')\nString status = partial ? 'PARTIAL_WRITE' : (act == 'CREATE' ? 'CREATED' : 'UPDATED')\nString message = partial\n    ? ('The write did not fully land - ' + problems.join('; ') + '. Retry with action UPDATE and the same rateTableId: the write is idempotent.')\n    : (act == 'CREATE' ? 'Rate table created' : 'Rate table updated')\nreturn [partial: partial, status: status, message: message, written: okT + okB, deleted: (gotDel < 0L ? 0L : gotDel)]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "okT": "{{ n_UpsT.outputs.successCount }}",
+          "badT": "{{ n_UpsT.outputs.failedCount }}",
+          "errT": "{{ n_UpsT.outputs.errors }}",
+          "okB": "{{ n_UpsB.outputs.successCount }}",
+          "badB": "{{ n_UpsB.outputs.failedCount }}",
+          "errB": "{{ n_UpsB.outputs.errors }}",
+          "deleted": "{{ n_Del.outputs.count }}",
+          "bandWriteCount": "{{ n_Plan.outputs.result.bandWriteCount }}",
+          "deleteCount": "{{ n_Plan.outputs.result.deleteCount }}",
+          "action": "{{ n_Norm.outputs.result.action }}"
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Did every row land? Report a half-landed write rather than hide it",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfInv@n_IfDup@n_IfNF@n_IfGet@n_IfBad@root_id-1@n@n@n@n@n",
+      "id": "n_IfPart",
+      "index": 22,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Chk.outputs.result.status }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": "PARTIAL_WRITE"
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Did the write only half land?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfPart@n_IfInv@n_IfDup@n_IfNF@n_IfGet@n_IfBad@root_id-1@n@n@n@n@n@y",
+      "id": "n_StPart",
+      "index": 23,
+      "inputs": {
+        "result": {
+          "status": "PARTIAL_WRITE",
+          "success": false,
+          "message": "{{ n_Chk.outputs.result.message }}",
+          "rateTableId": "{{ n_Norm.outputs.result.targetId }}",
+          "recordId": "{{ n_Plan.outputs.result.parentId }}",
+          "name": "{{ n_Plan.outputs.result.outName }}",
+          "mode": "{{ n_Plan.outputs.result.outMode }}",
+          "tiering": "{{ n_Plan.outputs.result.outTiering }}",
+          "unitType": "{{ n_Plan.outputs.result.outUnitType }}",
+          "description": "{{ n_Plan.outputs.result.outDescription }}",
+          "tags": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Plan.outputs.result.outTags }}",
+            "items": "{{ n_Plan.outputs.result.outTags[0] }}"
+          },
+          "version": "{{ n_Plan.outputs.result.outVersion }}",
+          "effectiveStart": "{{ n_Plan.outputs.result.outEffectiveStart }}",
+          "effectiveEnd": "{{ n_Plan.outputs.result.outEffectiveEnd }}",
+          "bandCount": "{{ n_Plan.outputs.result.bandCount }}",
+          "bands": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Plan.outputs.result.bands }}",
+            "items": "{{ n_Plan.outputs.result.bands[0] }}"
+          },
+          "written": "{{ n_Chk.outputs.result.written }}",
+          "deleted": "{{ n_Chk.outputs.result.deleted }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Half-landed: names what is missing and how to retry",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfPart@n_IfInv@n_IfDup@n_IfNF@n_IfGet@n_IfBad@root_id-1@n@n@n@n@n@n",
+      "id": "n_StDone",
+      "index": 24,
+      "inputs": {
+        "result": {
+          "status": "{{ n_Chk.outputs.result.status }}",
+          "success": true,
+          "message": "{{ n_Chk.outputs.result.message }}",
+          "rateTableId": "{{ n_Norm.outputs.result.targetId }}",
+          "recordId": "{{ n_Plan.outputs.result.parentId }}",
+          "name": "{{ n_Plan.outputs.result.outName }}",
+          "mode": "{{ n_Plan.outputs.result.outMode }}",
+          "tiering": "{{ n_Plan.outputs.result.outTiering }}",
+          "unitType": "{{ n_Plan.outputs.result.outUnitType }}",
+          "description": "{{ n_Plan.outputs.result.outDescription }}",
+          "tags": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Plan.outputs.result.outTags }}",
+            "items": "{{ n_Plan.outputs.result.outTags[0] }}"
+          },
+          "version": "{{ n_Plan.outputs.result.outVersion }}",
+          "effectiveStart": "{{ n_Plan.outputs.result.outEffectiveStart }}",
+          "effectiveEnd": "{{ n_Plan.outputs.result.outEffectiveEnd }}",
+          "bandCount": "{{ n_Plan.outputs.result.bandCount }}",
+          "bands": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Plan.outputs.result.bands }}",
+            "items": "{{ n_Plan.outputs.result.bands[0] }}"
+          },
+          "written": "{{ n_Chk.outputs.result.written }}",
+          "deleted": "{{ n_Chk.outputs.result.deleted }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Created or updated, bands included",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 475503,
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 3
+}

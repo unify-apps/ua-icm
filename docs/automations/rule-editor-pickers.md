@@ -9,9 +9,16 @@ points at a record must offer real records rather than a typed name.
 | `ICM \| List Attainment Measures` | `6a9ee2fd3aa7845ea194eaa3` | `e_6a9ee47f561c60372d559079` | 11/11 |
 | `ICM \| List Quotas` | `6a9ee2fd8f78990409ff3fb5` | `e_6a9ee47f561c60372d55907b` | 11/11 |
 
-All three clone `ICM | List Rate Tables`, so they share its shape: `search`,
-object-specific filters, `limit` (default 50, clamped 1..200), `offset`, and a
-`status`/`total`/`hasMore` envelope. Every filter narrows server-side.
+All three share one shape: `search`, object-specific filters, `limit` (default 50,
+clamped 1..200), `offset`, and a `status`/`total`/`hasMore` envelope. Every filter
+narrows server-side.
+
+**Rate tables are NOT in this family.** The rule editor's Rate Table picker reads
+`ICM | Query Rate Tables` — the same callable the Reference Tables page uses, so the
+picker offers exactly the tables authored there. Its inputs are `search`, `mode`,
+`filter`, `sort`, `limit`, `offset`; there is **no `tiering` input**, though rows do
+carry `tiering`. Narrowing by tiering goes through the `filter` argument, not a
+dedicated parameter.
 
 ## Credit Types
 

@@ -1,0 +1,900 @@
+{
+  "appsUsed": [],
+  "createdTime": 1788794463339,
+  "deleted": false,
+  "deployedVersion": 2,
+  "deploymentState": {
+    "deployedAt": 1788856540145,
+    "deployedBy": 475503,
+    "deployedDefinitionId": "6a9fc8db3c7f7b6b91430e4e",
+    "deploymentNotes": "v3: unitType + version info on every row; unitType and version added as filter/sort fields. Suite 31/31. Approved by avinash.baraiya",
+    "status": "DEPLOYED",
+    "version": 2,
+    "workflowVersion": 2
+  },
+  "description": "The rate tables (mode Rate = tiered commission rates, PctOfTarget = pay curves) with each one's unit type, version info, band count and how many plan components use it. Takes the platform's filter object, a search string, a sort list and numeric paging; evaluated in memory over the whole set, which is bounded and flagged when truncated. Serves the Reference Tables page.",
+  "edges": [
+    {
+      "fromNodeId": "n_sTaRt",
+      "id": "next@n_sTaRt@n_Norm",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Norm",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Norm",
+      "id": "next@n_Norm@n_FtRT",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtRT",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtRT",
+      "id": "next@n_FtRT@n_Ids",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Ids",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Ids",
+      "id": "next@n_Ids@n_FtBands",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtBands",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtBands",
+      "id": "next@n_FtBands@n_FtComp",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtComp",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtComp",
+      "id": "next@n_FtComp@n_Fold",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Fold",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Fold",
+      "id": "next@n_Fold@n_IfBad",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfBad",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "if@n_IfBad@n_StBad",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StBad",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "next@n_IfBad@n_StOk",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StOk",
+      "type": "next"
+    }
+  ],
+  "id": "6a9ed65f00191677c2e84755",
+  "lastModifiedBy": 475503,
+  "lastPlatformUpdateBy": 475503,
+  "lastPlatformUpdateOn": 1788856540146,
+  "lcName": "icm | query rate tables",
+  "modifiedTime": 1788856540146,
+  "name": "ICM | Query Rate Tables",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_sTaRt",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "success",
+            "message",
+            "total",
+            "rows"
+          ],
+          "properties": {
+            "status": {
+              "type": "string",
+              "title": "Status"
+            },
+            "success": {
+              "type": "boolean",
+              "title": "Success"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            },
+            "total": {
+              "type": "integer",
+              "title": "Total"
+            },
+            "hasMore": {
+              "type": "boolean",
+              "title": "Has More"
+            },
+            "offset": {
+              "type": "integer",
+              "title": "Offset"
+            },
+            "limit": {
+              "type": "integer",
+              "title": "Limit"
+            },
+            "truncated": {
+              "type": "boolean",
+              "title": "Truncated"
+            },
+            "rows": {
+              "type": "array",
+              "title": "Rows",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "title": "Id"
+                  },
+                  "rateTableId": {
+                    "type": "string",
+                    "title": "Rate Table Id"
+                  },
+                  "name": {
+                    "type": "string",
+                    "title": "Name"
+                  },
+                  "mode": {
+                    "type": "string",
+                    "title": "Mode"
+                  },
+                  "tiering": {
+                    "type": "string",
+                    "title": "Tiering"
+                  },
+                  "unitType": {
+                    "type": "string",
+                    "title": "Attainment Unit Type"
+                  },
+                  "version": {
+                    "type": "integer",
+                    "title": "Version"
+                  },
+                  "effectiveStart": {
+                    "type": "integer",
+                    "title": "Effective Start (epoch ms)"
+                  },
+                  "effectiveEnd": {
+                    "type": "integer",
+                    "title": "Effective End (epoch ms, 0 = End of Time)"
+                  },
+                  "bandCount": {
+                    "type": "integer",
+                    "title": "Band Count"
+                  },
+                  "fromPct": {
+                    "type": "integer",
+                    "title": "From Pct (bps)"
+                  },
+                  "toPct": {
+                    "type": "integer",
+                    "title": "To Pct (bps)"
+                  },
+                  "openEnded": {
+                    "type": "boolean",
+                    "title": "Open Ended"
+                  },
+                  "usedBy": {
+                    "type": "integer",
+                    "title": "Used By"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "search": {
+              "type": "string",
+              "title": "Search"
+            },
+            "mode": {
+              "type": "string",
+              "title": "Mode"
+            },
+            "filter": {
+              "type": "object",
+              "title": "Filter"
+            },
+            "sort": {
+              "type": "array",
+              "title": "Sort",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "type": "string",
+                    "title": "Field"
+                  },
+                  "order": {
+                    "type": "string",
+                    "title": "Order"
+                  }
+                }
+              }
+            },
+            "limit": {
+              "type": "integer",
+              "title": "Limit"
+            },
+            "offset": {
+              "type": "integer",
+              "title": "Offset"
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Norm",
+      "index": 2,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "valid": {
+              "type": "boolean",
+              "title": "Valid"
+            },
+            "reason": {
+              "type": "string",
+              "title": "Reason"
+            },
+            "search": {
+              "type": "string",
+              "title": "Search"
+            },
+            "modeSel": {
+              "type": "string",
+              "title": "Mode Selected"
+            },
+            "filter": {
+              "type": "object",
+              "title": "Filter"
+            },
+            "filterCount": {
+              "type": "integer",
+              "title": "Filter Count"
+            },
+            "sorts": {
+              "type": "array",
+              "title": "Sorts",
+              "items": {
+                "type": "object"
+              }
+            },
+            "pageLimit": {
+              "type": "integer",
+              "title": "Page Limit"
+            },
+            "pageOffset": {
+              "type": "integer",
+              "title": "Page Offset"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "search": {
+              "type": "string",
+              "title": "search"
+            },
+            "mode": {
+              "type": "string",
+              "title": "mode"
+            },
+            "filter": {
+              "type": "object",
+              "title": "Filter"
+            },
+            "sort": {
+              "type": "array",
+              "title": "Sort",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "type": "string",
+                    "title": "Field"
+                  },
+                  "order": {
+                    "type": "string",
+                    "title": "Order"
+                  }
+                }
+              }
+            },
+            "limit": {
+              "type": "integer",
+              "title": "Limit"
+            },
+            "offset": {
+              "type": "integer",
+              "title": "Offset"
+            }
+          }
+        },
+        "code": "def has = { String n -> binding.hasVariable(n) && binding.getVariable(n) != null }\ndef get = { String n -> has(n) ? binding.getVariable(n) : null }\ndef text = { String n -> def v = get(n); (v == null) ? '' : v.toString().trim() }\ndef s = text('search')\ndef modeIn = text('mode')\ndef rawFilter = get('filter')\ndef rawSort = get('sort')\ndef rawLimit = get('limit')\ndef rawOffset = get('offset')\n\n// Every problem is collected and the request refused with all of them named.\ndef problems = []\ndef MODES = ['Rate', 'PctOfTarget']\nString modeSel = ''\nif (!modeIn.isEmpty()) {\n    def hit = MODES.find { it.equalsIgnoreCase(modeIn) }\n    if (hit == null) problems << ('mode must be Rate or PctOfTarget, got \"' + modeIn + '\"')\n    else modeSel = hit\n}\n\n// The fields a caller may filter or sort by, and their kinds. bandCount and usedBy are\n// computed, which is the other reason the contract is evaluated in memory.\ndef FIELDS = [name: 'TEXT', rateTableId: 'TEXT', mode: 'TEXT', tiering: 'TEXT', unitType: 'TEXT', bandCount: 'NUMBER', usedBy: 'NUMBER', version: 'NUMBER']\ndef TEXT_OPS = ['EQUAL','NOT_EQUAL','ICONTAINS','NOT_ICONTAINS','CONTAINS','NOT_CONTAINS','STARTS_WITH','NOT_STARTS_WITH','ENDS_WITH','NOT_ENDS_WITH','EXISTS','MISSING','REGEX','NOT_REGEX','IN','NOT_IN'] as Set\ndef NUM_OPS = ['EQUAL','NOT_EQUAL','LT','LTE','GT','GTE','BETWEEN','EXISTS','MISSING','IN','NOT_IN'] as Set\ndef NO_VALUE = ['EXISTS','MISSING'] as Set\ndef GROUP_OPS = ['AND','OR'] as Set\ndef toNum = { String v, String where ->\n    if (v ==~ /^-?\\d{1,12}(\\.\\d{1,6})?$/) return new BigDecimal(v)\n    problems << (where + ': needs a number, got \"' + v + '\"'); return null\n}\n\nint leafCount = 0\ndef norm\nnorm = { node, String path ->\n    if (!(node instanceof Map)) { problems << (path + ': a filter node must be an object'); return null }\n    def op = (node.op == null) ? '' : String.valueOf(node.op).trim().toUpperCase()\n    def field = (node.field == null) ? '' : String.valueOf(node.field).trim()\n    if (field.isEmpty()) {\n        if (!GROUP_OPS.contains(op)) { problems << (path + ': a group needs op AND or OR, got \"' + op + '\"'); return null }\n        def vals = node.values\n        if (vals != null && !(vals instanceof List)) { problems << (path + ': values of a group must be a list'); return null }\n        def kids = []\n        (vals ?: []).eachWithIndex { child, i -> def c = norm(child, path + '.values[' + i + ']'); if (c != null) kids << c }\n        if (kids.isEmpty()) return null\n        return [group: op, kids: kids]\n    }\n    def kind = FIELDS[field]\n    if (kind == null) { problems << (path + ': unknown field \"' + field + '\"'); return null }\n    if (!(kind == 'NUMBER' ? NUM_OPS : TEXT_OPS).contains(op)) { problems << (path + ': operator \"' + op + '\" is not valid for ' + field); return null }\n    def list = []\n    def vals = node.values\n    if (vals instanceof List) { vals.each { v -> if (v instanceof List) { v.each { if (it != null) list << it } } else if (v != null) list << v } }\n    else if (vals != null) list << vals\n    def strs = list.collect { String.valueOf(it).trim() }\n    if (NO_VALUE.contains(op)) strs = []\n    else if (op == 'BETWEEN') { if (strs.size() != 2) { problems << (path + ': BETWEEN needs exactly two values'); return null } }\n    else if (op == 'IN' || op == 'NOT_IN') { strs = strs.findAll { !it.isEmpty() }; if (strs.isEmpty()) { problems << (path + ': ' + op + ' needs at least one value'); return null } }\n    else if (strs.size() != 1 || strs[0].isEmpty()) { problems << (path + ': ' + op + ' needs one value'); return null }\n    def nums = []\n    if (kind == 'NUMBER') {\n        strs.each { v -> def n = toNum(v, path); if (n != null) nums << n }\n        if (nums.size() != strs.size()) return null\n    }\n    if (op == 'REGEX' || op == 'NOT_REGEX') {\n        try { java.util.regex.Pattern.compile(strs[0]) } catch (Exception e) { problems << (path + ': not a valid regular expression: ' + strs[0]); return null }\n    }\n    leafCount++\n    return [field: field, op: op, kind: kind, text: strs, nums: nums]\n}\n\ndef filterIn = rawFilter\nif (filterIn instanceof String) {\n    def t = filterIn.trim()\n    if (t.isEmpty()) filterIn = null\n    else { try { filterIn = new groovy.json.JsonSlurper().parseText(t) } catch (Exception e) { problems << ('filter is not valid JSON: ' + e.getMessage()); filterIn = null } }\n}\nif (filterIn instanceof Map && filterIn.isEmpty()) filterIn = null\ndef tree = (filterIn == null) ? null : norm(filterIn, 'filter')\nif (tree == null) tree = [group: 'AND', kids: []]\n\ndef sortIn = rawSort\nif (sortIn instanceof String) {\n    def t = sortIn.trim()\n    if (t.isEmpty()) sortIn = null\n    else { try { sortIn = new groovy.json.JsonSlurper().parseText(t) } catch (Exception e) { problems << ('sort is not valid JSON: ' + e.getMessage()); sortIn = null } }\n}\nif (sortIn instanceof Map) sortIn = [sortIn]\nif (sortIn != null && !(sortIn instanceof List)) { problems << 'sort must be a list of {field, order}'; sortIn = null }\ndef sorts = []\nif (sortIn != null) sortIn.eachWithIndex { sv, i ->\n    if (!(sv instanceof Map)) { problems << ('sort[' + i + '] must be an object'); return }\n    def f = (sv.field == null) ? '' : String.valueOf(sv.field).trim()\n    def o = (sv.order == null) ? 'ASC' : String.valueOf(sv.order).trim().toUpperCase()\n    if (FIELDS[f] == null) { problems << ('sort[' + i + ']: unknown field \"' + f + '\"'); return }\n    if (o != 'ASC' && o != 'DESC') { problems << ('sort[' + i + ']: order must be ASC or DESC, got \"' + o + '\"'); return }\n    sorts << [field: f, order: o, kind: FIELDS[f]]\n}\n\ndef toInt = { v, String name, int dflt ->\n    if (v == null) return dflt\n    if (v instanceof Number) return ((Number) v).intValue()\n    def t = v.toString().trim()\n    if (t.isEmpty()) return dflt\n    if (t ==~ /^\\d{1,9}$/) return Integer.parseInt(t)\n    problems << (name + ' must be a whole number, got: ' + t)\n    return dflt\n}\nint pl = toInt(rawLimit, 'limit', 50)\nif (pl < 1) pl = 1\nif (pl > 500) pl = 500\nint po = toInt(rawOffset, 'offset', 0)\nif (po < 0) po = 0\n\nreturn [valid: problems.isEmpty(), reason: problems.join('; '), search: s, modeSel: modeSel,\n        filter: tree, filterCount: leafCount, sorts: sorts, pageLimit: pl, pageOffset: po]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "search": "{{ n_sTaRt.outputs.search }}",
+          "mode": "{{ n_sTaRt.outputs.mode }}",
+          "filter": "{{ n_sTaRt.outputs.filter }}",
+          "sort": "{{ n_sTaRt.outputs.sort }}",
+          "limit": "{{ n_sTaRt.outputs.limit }}",
+          "offset": "{{ n_sTaRt.outputs.offset }}"
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Apply the defaults, validate the filter, sort and paging",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtRT",
+      "index": 3,
+      "inputs": {
+        "triggerInputCondition": {},
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "RateTable",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 2000,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.rateTableId",
+          "properties.name",
+          "properties.mode",
+          "properties.tiering",
+          "properties.unitType",
+          "properties.version",
+          "properties.effectiveStart",
+          "properties.effectiveEnd"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Every rate table",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Ids",
+      "index": 4,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "count": {
+              "type": "integer",
+              "title": "Count"
+            },
+            "childFilter": {
+              "type": "object",
+              "title": "Child Filter"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rows": {
+              "type": "array",
+              "title": "Rows",
+              "items": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "code": "def ids = []\nif (rows != null) rows.each { r -> ids << String.valueOf(r.id) }\n// '__none__' keeps an empty result a clean no-op instead of an unfiltered scan.\ndef useIds = ids.isEmpty() ? ['__none__'] : ids\nreturn [count: ids.size(),\n        childFilter: [operator: 'AND', filters: [[property: 'properties.rateTableId', filter: [operator: 'IN', value: useIds]]]]]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "rows": "{{ n_FtRT.outputs.objects }}"
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Collect the ids for one bulk read of bands and usage",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtBands",
+      "index": 5,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Ids.outputs.result.childFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "RateTableBand",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 2000,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.rateTableId",
+          "properties.fromPct",
+          "properties.toPct",
+          "properties.value"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Every band of those tables, in one call",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtComp",
+      "index": 6,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Ids.outputs.result.childFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "PlanComponent",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 2000,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.rateTableId"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Which plan components use them, in one call",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Fold",
+      "index": 7,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rows": {
+              "type": "array",
+              "title": "Rows",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "title": "Id"
+                  },
+                  "rateTableId": {
+                    "type": "string",
+                    "title": "Rate Table Id"
+                  },
+                  "name": {
+                    "type": "string",
+                    "title": "Name"
+                  },
+                  "mode": {
+                    "type": "string",
+                    "title": "Mode"
+                  },
+                  "tiering": {
+                    "type": "string",
+                    "title": "Tiering"
+                  },
+                  "unitType": {
+                    "type": "string",
+                    "title": "Attainment Unit Type"
+                  },
+                  "version": {
+                    "type": "integer",
+                    "title": "Version"
+                  },
+                  "effectiveStart": {
+                    "type": "integer",
+                    "title": "Effective Start (epoch ms)"
+                  },
+                  "effectiveEnd": {
+                    "type": "integer",
+                    "title": "Effective End (epoch ms, 0 = End of Time)"
+                  },
+                  "bandCount": {
+                    "type": "integer",
+                    "title": "Band Count"
+                  },
+                  "fromPct": {
+                    "type": "integer",
+                    "title": "From Pct (bps)"
+                  },
+                  "toPct": {
+                    "type": "integer",
+                    "title": "To Pct (bps)"
+                  },
+                  "openEnded": {
+                    "type": "boolean",
+                    "title": "Open Ended"
+                  },
+                  "usedBy": {
+                    "type": "integer",
+                    "title": "Used By"
+                  }
+                }
+              }
+            },
+            "total": {
+              "type": "integer",
+              "title": "Total"
+            },
+            "hasMore": {
+              "type": "boolean",
+              "title": "Has More"
+            },
+            "truncated": {
+              "type": "boolean",
+              "title": "Truncated"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rows": {
+              "type": "array",
+              "title": "Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "rowsTotal": {
+              "type": "integer",
+              "title": "Rows Total"
+            },
+            "bandRows": {
+              "type": "array",
+              "title": "Band Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "bandsTotal": {
+              "type": "integer",
+              "title": "Bands Total"
+            },
+            "compRows": {
+              "type": "array",
+              "title": "Comp Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "compsTotal": {
+              "type": "integer",
+              "title": "Comps Total"
+            },
+            "search": {
+              "type": "string",
+              "title": "search"
+            },
+            "modeSel": {
+              "type": "string",
+              "title": "modeSel"
+            },
+            "filter": {
+              "type": "object",
+              "title": "Filter"
+            },
+            "sorts": {
+              "type": "array",
+              "title": "Sorts",
+              "items": {
+                "type": "object"
+              }
+            },
+            "pageLimit": {
+              "type": "integer",
+              "title": "Page Limit"
+            },
+            "pageOffset": {
+              "type": "integer",
+              "title": "Page Offset"
+            }
+          }
+        },
+        "code": "def OPEN = 2147483647L\ndef asLong = { v -> (v == null) ? null : Long.valueOf(String.valueOf(v)) }\n\n// Bands and component usage, grouped by the parent record id - one pass each.\ndef bandsOf = [:]\nif (bandRows != null) bandRows.each { b ->\n    def k = String.valueOf(b.properties?.rateTableId)\n    if (!bandsOf.containsKey(k)) bandsOf[k] = []\n    bandsOf[k] << b.properties\n}\ndef usedOf = [:]\nif (compRows != null) compRows.each { c ->\n    def k = String.valueOf(c.properties?.rateTableId)\n    usedOf[k] = (usedOf[k] ?: 0) + 1\n}\n\ndef tables = []\nif (rows != null) rows.each { r ->\n    def p = r.properties ?: [:]\n    def id = String.valueOf(r.id)\n    def bands = bandsOf[id] ?: []\n    Long lo = null; Long hi = null\n    bands.each { b -> def f = asLong(b.fromPct); def t = asLong(b.toPct)\n        if (f != null && (lo == null || f < lo)) lo = f\n        if (t != null && (hi == null || t > hi)) hi = t }\n    // Tables written before v3 have no unit type or version info: they are Percent,\n    // version 1, with no effective dates (0 = not set / End of Time).\n    tables << [id: id, rateTableId: String.valueOf(p.rateTableId ?: ''), name: String.valueOf(p.name ?: ''),\n               mode: String.valueOf(p.mode ?: ''), tiering: String.valueOf(p.tiering ?: ''), unitType: String.valueOf(p.unitType ?: 'Percent'),\n               version: (asLong(p.version) ?: 1L), effectiveStart: (asLong(p.effectiveStart) ?: 0L), effectiveEnd: (asLong(p.effectiveEnd) ?: 0L),\n               bandCount: bands.size(), fromPct: (lo == null) ? 0L : lo, toPct: (hi == null) ? 0L : hi,\n               openEnded: (hi != null && hi == OPEN), usedBy: (usedOf[id] ?: 0)]\n}\n\n// The tree n_Norm normalised: a group {group, kids} or a leaf {field, op, kind, text, nums}.\ndef tree = (binding.hasVariable('filter') && filter != null) ? filter : [group: 'AND', kids: []]\ndef sortList = (binding.hasVariable('sorts') && sorts != null) ? sorts : []\ndef q = (search == null) ? '' : search.toString().trim().toLowerCase()\ndef modeWanted = (modeSel == null) ? '' : modeSel.toString()\nboolean hasFilter = !(tree.group != null && (tree.kids == null || tree.kids.isEmpty()))\n\n// Every operator is spelled out; there is deliberately no default branch, because an\n// operator nobody recognised must never evaluate to true. n_Norm already refused the rest.\ndef evalLeaf = { r, f ->\n    if (f.kind == 'NUMBER') {\n        def v = r[f.field]\n        if (v == null) return f.op == 'MISSING'\n        BigDecimal x = new BigDecimal(String.valueOf(v))\n        def nums = f.nums.collect { new BigDecimal(String.valueOf(it)) }\n        if (f.op == 'EXISTS') return true\n        if (f.op == 'MISSING') return false\n        if (f.op == 'EQUAL') return x.compareTo(nums[0]) == 0\n        if (f.op == 'NOT_EQUAL') return x.compareTo(nums[0]) != 0\n        if (f.op == 'LT') return x.compareTo(nums[0]) < 0\n        if (f.op == 'LTE') return x.compareTo(nums[0]) <= 0\n        if (f.op == 'GT') return x.compareTo(nums[0]) > 0\n        if (f.op == 'GTE') return x.compareTo(nums[0]) >= 0\n        if (f.op == 'BETWEEN') { def lo = nums[0].min(nums[1]); def hi = nums[0].max(nums[1]); return x.compareTo(lo) >= 0 && x.compareTo(hi) <= 0 }\n        if (f.op == 'IN') return nums.any { it.compareTo(x) == 0 }\n        if (f.op == 'NOT_IN') return !nums.any { it.compareTo(x) == 0 }\n        return false\n    }\n    def raw = String.valueOf(r[f.field] == null ? '' : r[f.field])\n    def needle = f.text.isEmpty() ? '' : String.valueOf(f.text[0])\n    if (f.op == 'EXISTS') return !raw.isEmpty()\n    if (f.op == 'MISSING') return raw.isEmpty()\n    if (f.op == 'EQUAL') return raw == needle\n    if (f.op == 'NOT_EQUAL') return raw != needle\n    if (f.op == 'ICONTAINS') return raw.toLowerCase().contains(needle.toLowerCase())\n    if (f.op == 'NOT_ICONTAINS') return !raw.toLowerCase().contains(needle.toLowerCase())\n    if (f.op == 'CONTAINS') return raw.contains(needle)\n    if (f.op == 'NOT_CONTAINS') return !raw.contains(needle)\n    if (f.op == 'STARTS_WITH') return raw.startsWith(needle)\n    if (f.op == 'NOT_STARTS_WITH') return !raw.startsWith(needle)\n    if (f.op == 'ENDS_WITH') return raw.endsWith(needle)\n    if (f.op == 'NOT_ENDS_WITH') return !raw.endsWith(needle)\n    if (f.op == 'REGEX') return java.util.regex.Pattern.compile(needle).matcher(raw).find()\n    if (f.op == 'NOT_REGEX') return !java.util.regex.Pattern.compile(needle).matcher(raw).find()\n    if (f.op == 'IN') return f.text.any { String.valueOf(it) == raw }\n    if (f.op == 'NOT_IN') return !f.text.any { String.valueOf(it) == raw }\n    return false\n}\ndef evalNode\nevalNode = { r, n ->\n    if (n.group != null) {\n        if (n.kids == null || n.kids.isEmpty()) return true\n        if (n.group == 'OR') return n.kids.any { k -> evalNode(r, k) }\n        return n.kids.every { k -> evalNode(r, k) }\n    }\n    return evalLeaf(r, n)\n}\n// Search means what it means on the platform: case-insensitive contains, OR across the\n// searchable fields, ANDed with the filter and the mode shortcut.\ndef SEARCH_FIELDS = ['name', 'rateTableId']\ndef matches = { r ->\n    if (!modeWanted.isEmpty() && String.valueOf(r.mode) != modeWanted) return false\n    if (!q.isEmpty() && !SEARCH_FIELDS.any { fld -> String.valueOf(r[fld] == null ? '' : r[fld]).toLowerCase().contains(q) }) return false\n    return evalNode(r, tree)\n}\nboolean filtering = !q.isEmpty() || hasFilter || !modeWanted.isEmpty()\ndef visible = filtering ? tables.findAll { r -> matches(r) } : tables\n\n// Default order is by name, so two calls with no sort agree; an explicit sort replaces it.\nif (sortList.isEmpty()) {\n    visible = visible.sort { a, b -> String.valueOf(a.name).compareToIgnoreCase(String.valueOf(b.name)) }\n} else {\n    visible = visible.sort { a, b ->\n        for (s in sortList) {\n            int c = 0\n            if (s.kind == 'NUMBER') c = new BigDecimal(String.valueOf(a[s.field] ?: 0)).compareTo(new BigDecimal(String.valueOf(b[s.field] ?: 0)))\n            else c = String.valueOf(a[s.field] == null ? '' : a[s.field]).compareToIgnoreCase(String.valueOf(b[s.field] == null ? '' : b[s.field]))\n            if (c != 0) return (s.order == 'DESC') ? -c : c\n        }\n        return 0\n    }\n}\n\nint total = visible.size()\nint from = (pageOffset > total) ? total : pageOffset\nint to = ((from + pageLimit) > total) ? total : (from + pageLimit)\ndef page = (total == 0) ? [] : new ArrayList(visible.subList(from, to))\n\n// A bulk fetch that hit its limit lies by omission - say so.\nint gotT = (rows == null) ? 0 : rows.size(); int totT = (rowsTotal == null) ? gotT : Integer.valueOf(String.valueOf(rowsTotal))\nint gotB = (bandRows == null) ? 0 : bandRows.size(); int totB = (bandsTotal == null) ? gotB : Integer.valueOf(String.valueOf(bandsTotal))\nint gotC = (compRows == null) ? 0 : compRows.size(); int totC = (compsTotal == null) ? gotC : Integer.valueOf(String.valueOf(compsTotal))\nboolean truncated = gotT < totT || gotB < totB || gotC < totC\n\nreturn [rows: page, total: total, hasMore: to < total, truncated: truncated,\n        message: page.size() + ' rate table(s)' + (filtering ? (' of ' + total + ' matching') : '') + (truncated ? ' (set truncated - narrow the query)' : '')]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "rows": "{{ n_FtRT.outputs.objects }}",
+          "rowsTotal": "{{ n_FtRT.outputs.total }}",
+          "bandRows": "{{ n_FtBands.outputs.objects }}",
+          "bandsTotal": "{{ n_FtBands.outputs.total }}",
+          "compRows": "{{ n_FtComp.outputs.objects }}",
+          "compsTotal": "{{ n_FtComp.outputs.total }}",
+          "search": "{{ n_Norm.outputs.result.search }}",
+          "modeSel": "{{ n_Norm.outputs.result.modeSel }}",
+          "filter": "{{ n_Norm.outputs.result.filter }}",
+          "sorts": "{{ n_Norm.outputs.result.sorts }}",
+          "pageLimit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "pageOffset": "{{ n_Norm.outputs.result.pageOffset }}"
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Build the rows, apply search, filter, sort and the page",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_IfBad",
+      "index": 8,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Norm.outputs.result.valid }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": false
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Was the request itself unusable?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@y",
+      "id": "n_StBad",
+      "index": 9,
+      "inputs": {
+        "result": {
+          "status": "INVALID_INPUT",
+          "success": false,
+          "message": "{{ n_Norm.outputs.result.reason }}",
+          "total": 0,
+          "hasMore": false,
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "truncated": false,
+          "rows": []
+        }
+      },
+      "skip": false,
+      "subTitle": "Caller sent an unusable filter, sort, mode, limit or offset",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_StOk",
+      "index": 10,
+      "inputs": {
+        "result": {
+          "status": "OK",
+          "success": true,
+          "message": "{{ n_Fold.outputs.result.message }}",
+          "total": "{{ n_Fold.outputs.result.total }}",
+          "hasMore": "{{ n_Fold.outputs.result.hasMore }}",
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "truncated": "{{ n_Fold.outputs.result.truncated }}",
+          "rows": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Fold.outputs.result.rows }}",
+            "items": "{{ n_Fold.outputs.result.rows[0] }}"
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "The page of rate tables the caller asked for",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 475503,
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 2
+}
