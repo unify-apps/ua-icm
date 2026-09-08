@@ -1484,3 +1484,42 @@ directly with `binding.getVariable(k)` and use them as the Map or List they are.
 
 Storage is the part that still cares: a bare ARRAY written into a `json` property is
 dropped, so a list still needs its `{items:[...]}` wrapper. A single OBJECT does not.
+
+## A filter probe is only as good as its BASELINE (ICM, 2026-09-08)
+
+This entry replaces one that said "the storage fetch honours only positive
+operators and fails silently on the rest". **That was wrong.** Negation works.
+
+The storage dialect — `{operator, filters:[{property, filter:{operator, value}}]}`
+— handles `EQUAL`, `NOT_EQUAL`, `ICONTAINS`, `NOT_ICONTAINS`, `CONTAINS`,
+`STARTS_WITH`, `ENDS_WITH`, `IN` and, for numbers, `GT`, `GTE`, `LT`, `LTE`.
+
+**How the wrong conclusion happened, because the shape of the mistake matters more
+than the fact.** Seeding 4 fixtures, I assumed the matching set was 4 and read
+`NOT_EQUAL -> 4` as "the filter was ignored". There were actually 5 rules —
+leftovers from earlier probe runs and records made through the UI — so 4 was the
+CORRECT complement of `EQUAL -> 1`. Every negative operator looked broken for the
+same reason. I then built refusals into two automations and a false entry here.
+
+`GT` is what exposed it: probed at rising thresholds it returned 5, 4, 3, 2. An
+ignored filter cannot vary with its own argument.
+
+**Probe filters with a self-checking assertion, never an assumed row count:**
+
+```
+A: no filter          -> baseline
+B: EQUAL x            -> n
+C: NOT_EQUAL x        -> baseline - n     <-- B + C must equal A
+```
+
+That holds whatever leftovers are in the object, which is the whole point — fixture
+families are shared state and a suite never has the table to itself.
+
+**Two things that also produce false readings here.** Testing an operator your own
+whitelist rejects measures the whitelist, not the platform: the refusal path filters
+on `id EQUAL '__invalid_input__'` and returns 0, which reads like "matches nothing".
+And `execute-node` runs the DEPLOYED workflow while `regress` runs the DRAFT, so a
+probe through a data source cannot see a draft-only change and reports every
+operator as ignored. Print `status` alongside `total` so a refusal cannot pass for a
+result.
+
