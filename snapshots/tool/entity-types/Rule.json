@@ -1,5 +1,5 @@
 {
-  "columnCounts": 12,
+  "columnCounts": 13,
   "createdTime": 1788786478263,
   "deleted": false,
   "description": "",
@@ -20,7 +20,8 @@
         "multiplier",
         "tags",
         "conditions",
-        "results"
+        "results",
+        "result"
       ]
     },
     "schema": {
@@ -120,13 +121,21 @@
           "title": "Results (ordered list)",
           "filterable": true,
           "sortable": true
+        },
+        "result": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {},
+          "title": "Result",
+          "filterable": true,
+          "sortable": true
         }
       }
     }
   },
   "lastModifiedBy": 435691,
   "lastPlatformUpdateBy": 435691,
-  "lastPlatformUpdateOn": 1788786478267,
+  "lastPlatformUpdateOn": 1788867386016,
   "lcName": "rule",
   "metadata": {
     "auditable": true,
@@ -154,7 +163,8 @@
       "multiplier",
       "tags",
       "conditions",
-      "results"
+      "results",
+      "result"
     ],
     "graphType": "LEGACY_MDM",
     "hasTimeSeriesRecords": true,
@@ -201,7 +211,7 @@
     "vectorFields": [],
     "versioningEnabled": true
   },
-  "modifiedTime": 1788786478267,
+  "modifiedTime": 1788867386016,
   "name": "Rule",
   "ownerUserId": 435691,
   "packaged": false,
@@ -306,6 +316,14 @@
           "title": "Results (ordered list)",
           "filterable": true,
           "sortable": true
+        },
+        "result": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {},
+          "title": "Result",
+          "filterable": true,
+          "sortable": true
         }
       }
     }
@@ -314,5 +332,5 @@
   "tags": [
     "icm"
   ],
-  "version": 0
+  "version": 1
 }

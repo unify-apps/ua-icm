@@ -10,7 +10,8 @@
           "ruleId": "KITFIX-CR-1"
         },
         "allowZero": true
-      }
+      },
+      "checks": []
     },
     {
       "name": "pre-clean KITFIX-CR-2",
@@ -20,7 +21,8 @@
           "ruleId": "KITFIX-CR-2"
         },
         "allowZero": true
-      }
+      },
+      "checks": []
     },
     {
       "name": "pre-clean KITFIX-CR-3",
@@ -30,7 +32,8 @@
           "ruleId": "KITFIX-CR-3"
         },
         "allowZero": true
-      }
+      },
+      "checks": []
     },
     {
       "name": "pre-clean KITFIX-PR-X",
@@ -40,7 +43,8 @@
           "ruleId": "KITFIX-PR-X"
         },
         "allowZero": true
-      }
+      },
+      "checks": []
     },
     {
       "name": "seed KITFIX-CR-1",
@@ -61,15 +65,12 @@
               }
             ]
           },
-          "results": {
-            "items": [
-              {
-                "name": "R1"
-              }
-            ]
+          "result": {
+            "name": "R1"
           }
         }
-      }
+      },
+      "checks": []
     },
     {
       "name": "seed KITFIX-CR-2",
@@ -90,15 +91,12 @@
               }
             ]
           },
-          "results": {
-            "items": [
-              {
-                "name": "R1"
-              }
-            ]
+          "result": {
+            "name": "R1"
           }
         }
-      }
+      },
+      "checks": []
     },
     {
       "name": "seed KITFIX-CR-3",
@@ -119,15 +117,12 @@
               }
             ]
           },
-          "results": {
-            "items": [
-              {
-                "name": "R1"
-              }
-            ]
+          "result": {
+            "name": "R1"
           }
         }
-      }
+      },
+      "checks": []
     },
     {
       "name": "seed KITFIX-PR-X",
@@ -148,19 +143,17 @@
               }
             ]
           },
-          "results": {
-            "items": [
-              {
-                "name": "R1"
-              }
-            ]
+          "result": {
+            "name": "R1"
           }
         }
-      }
+      },
+      "checks": []
     },
     {
       "name": "let the search index catch up with the seeds",
-      "sleepMs": 15000
+      "sleepMs": 15000,
+      "checks": []
     },
     {
       "name": "OK - every input blank returns this stage only, never the other",
@@ -329,10 +322,6 @@
         {
           "path": "rules.0.conditionCount",
           "equals": 1
-        },
-        {
-          "path": "rules.0.resultCount",
-          "equals": 1
         }
       ]
     },
@@ -391,7 +380,8 @@
         "filters": {
           "ruleId": "KITFIX-CR-1"
         }
-      }
+      },
+      "checks": []
     },
     {
       "name": "clean up KITFIX-CR-2",
@@ -400,7 +390,8 @@
         "filters": {
           "ruleId": "KITFIX-CR-2"
         }
-      }
+      },
+      "checks": []
     },
     {
       "name": "clean up KITFIX-CR-3",
@@ -409,7 +400,8 @@
         "filters": {
           "ruleId": "KITFIX-CR-3"
         }
-      }
+      },
+      "checks": []
     },
     {
       "name": "clean up KITFIX-PR-X",
@@ -418,7 +410,8 @@
         "filters": {
           "ruleId": "KITFIX-PR-X"
         }
-      }
+      },
+      "checks": []
     }
   ]
 }

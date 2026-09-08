@@ -2,6 +2,16 @@
   "appsUsed": [],
   "createdTime": 1788786530626,
   "deleted": false,
+  "deployedVersion": 2,
+  "deploymentState": {
+    "deployedAt": 1788868732857,
+    "deployedBy": 435691,
+    "deployedDefinitionId": "6a9ff87c3aa7845ea1e2a474",
+    "deploymentNotes": "One result per rule, passed natively",
+    "status": "DEPLOYED",
+    "version": 2,
+    "workflowVersion": 2
+  },
   "description": "A paged, searchable list of positions, optionally with who occupies each one as of a date - resolved in BULK so a page never makes one call per row. Spec: docs/automations/list-positions.md",
   "edges": [
     {
@@ -76,9 +86,9 @@
   "id": "6a9eb76200191677c2e0740a",
   "lastModifiedBy": 435691,
   "lastPlatformUpdateBy": 435691,
-  "lastPlatformUpdateOn": 1788786696716,
+  "lastPlatformUpdateOn": 1788868732860,
   "lcName": "icm | create payout rule",
-  "modifiedTime": 1788786696716,
+  "modifiedTime": 1788868732860,
   "name": "ICM | Create Payout Rule",
   "nodes": [
     {
@@ -119,9 +129,6 @@
             },
             "conditionCount": {
               "type": "integer"
-            },
-            "resultCount": {
-              "type": "integer"
             }
           }
         },
@@ -160,13 +167,20 @@
               "type": "string",
               "title": "Multiplier"
             },
-            "conditionsJson": {
-              "type": "string",
-              "title": "Conditions JSON"
+            "conditions": {
+              "type": "array",
+              "title": "Conditions",
+              "items": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {}
+              }
             },
-            "resultsJson": {
-              "type": "string",
-              "title": "Results JSON"
+            "result": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {},
+              "title": "Result"
             }
           }
         }
@@ -291,7 +305,7 @@
           }
         },
         "compile_static": false,
-        "code": "\nimport groovy.json.JsonSlurper\n// \"\" is what real callers send for anything they left blank.\ndef opt = { String k -> if (!binding.hasVariable(k)) return ''\n                        def v = binding.getVariable(k); return (v == null) ? '' : v.toString().trim() }\ndef nm = opt('name'); def rt = opt('ruleType')\ndef desc = opt('description'); def tg = opt('tags')\ndef condRaw = opt('conditionsJson'); def resRaw = opt('resultsJson')\ndef extra = opt('multiplier')\n\nboolean valid = true; String reason = ''\nif (nm.isEmpty()) { valid = false; reason = 'name is required' }\nelse if (rt.isEmpty()) { valid = false; reason = 'ruleType is required' }\n\ndef parse = { String raw, String what ->\n    if (raw.isEmpty()) return []\n    try { def p = new JsonSlurper().parseText(raw); return (p instanceof List) ? p : [] }\n    catch (Exception e) { valid = false; reason = what + ' is not valid JSON'; return [] }\n}\ndef conds = parse(condRaw, 'conditionsJson')\ndef results = parse(resRaw, 'resultsJson')\n\n// A rule that produces nothing would match deals and change no numbers, which is\n// a rule nobody can see the effect of. Refuse it rather than store it.\nif (valid && results.isEmpty()) { valid = false; reason = 'a rule needs at least one result' }\nif (valid) results.eachWithIndex { r, i ->\n    if (valid && (r?.name == null || r.name.toString().trim().isEmpty()))\n        { valid = false; reason = 'result ' + (i + 1) + ' has no name' }\n}\n\n// Dates: same rule as every other ICM callable - '' means unset, not today,\n// because a rule with no window is in force for all time.\ndef toEpoch = { String raw, String what ->\n    if (raw.isEmpty()) return null\n    if (raw ==~ /^\\d{4}-\\d{2}-\\d{2}$/) {\n        try { return java.time.LocalDate.parse(raw).atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli() }\n        catch (Exception e) { valid = false; reason = what + ' is not a real calendar date: ' + raw; return null }\n    }\n    if (raw ==~ /^\\d{9,}$/) return Long.parseLong(raw)\n    valid = false; reason = what + ' must be YYYY-MM-DD or epoch milliseconds, got: ' + raw; return null\n}\ndef sEp = toEpoch(opt('activeStart'), 'activeStart')\ndef eEp = toEpoch(opt('activeEnd'), 'activeEnd')\nif (valid && sEp != null && eEp != null && eEp < sEp) { valid = false; reason = 'activeEnd is before activeStart' }\n\n// The id is MINTED here, not asked for: the form has no field for it and a\n// human-picked key on a rule buys nothing, unlike a position code.\ndef rid = 'PR-' + System.currentTimeMillis() + '-' + new Random().nextInt(9000).plus(1000)\n\n// A BARE ARRAY in a json property is silently dropped by this platform - it\n// saves with a 200 and reads back {}. Everything ordered goes in under 'items'.\nreturn [valid: valid, reason: reason, ruleId: rid, nm: nm, rt: rt, desc: desc, tg: tg, extra: extra,\n        activeStart: sEp, activeEnd: eEp,\n        conditions: [items: conds], results: [items: results],\n        conditionCount: conds.size(), resultCount: results.size(),\n        dupFilter: [operator:'AND', filters:[[property:'properties.ruleId', filter:[operator:'EQUAL', value: rid]]]]]",
+        "code": "\ndef opt = { String k -> if (!binding.hasVariable(k)) return ''\n                        def v = binding.getVariable(k); return (v == null) ? '' : v.toString().trim() }\n// conditions and result arrive as a real List and a real Map. Reading them with\n// opt() would stringify them, and a Java map's toString is not JSON - that is\n// exactly what made the old resultsJson round trip necessary.\ndef raw = { String k -> binding.hasVariable(k) ? binding.getVariable(k) : null }\n\ndef nm = opt('name'); def rt = opt('ruleType')\ndef desc = opt('description'); def tg = opt('tags')\ndef extra = opt('multiplier')\ndef condIn = raw('conditions'); def resIn = raw('result')\n\nboolean valid = true; String reason = ''\nif (nm.isEmpty()) { valid = false; reason = 'name is required' }\nelse if (rt.isEmpty()) { valid = false; reason = 'ruleType is required' }\n\ndef conds = (condIn instanceof List) ? condIn : []\nif (condIn != null && !(condIn instanceof List)) { valid = false; reason = 'conditions must be a list' }\n\n// ONE result per rule. A rule that produces nothing would match deals and change\n// no numbers, which is a rule nobody can see the effect of.\ndef res = null\nif (resIn == null) { valid = false; reason = 'result is required' }\nelse if (!(resIn instanceof Map)) { valid = false; reason = 'result must be an object' }\nelse {\n    res = resIn\n    def rn = res.get('name')\n    if (rn == null || rn.toString().trim().isEmpty()) { valid = false; reason = 'the result needs a name' }\n}\n\ndef parseDate = { String s ->\n    if (s == null || s.trim().isEmpty()) return null\n    def t = s.trim()\n    if (t ==~ /^\\d+$/) return Long.valueOf(t)\n    try { return java.time.LocalDate.parse(t).toEpochDay() * 86400000L }\n    catch (Exception e) { valid = false; reason = 'not a date: ' + t; return null }\n}\ndef sEp = parseDate(opt('activeStart'))\ndef eEp = parseDate(opt('activeEnd'))\nif (sEp != null && eEp != null && eEp < sEp) { valid = false; reason = 'activeEnd is before activeStart' }\n\n// The id is MINTED here, not asked for: the form has no field for it and a\n// human-picked key on a rule buys nothing, unlike a position code.\ndef rid = 'PR-' + System.currentTimeMillis() + '-' + new Random().nextInt(9000).plus(1000)\n\n// conditions stays wrapped under 'items' because it IS a list and a bare array is\n// dropped on write. result is a single object, so it is stored as itself.\nreturn [valid: valid, reason: reason, ruleId: rid, nm: nm, rt: rt, desc: desc, tg: tg, extra: extra,\n        activeStart: sEp, activeEnd: eEp,\n        conditions: [items: conds], result: res,\n        conditionCount: conds.size(),\n        dupFilter: [operator:'AND', filters:[[property:'properties.ruleId', filter:[operator:'EQUAL', value: rid]]]]]\n",
         "captureStdOutput": false,
         "parameters": {
           "name": "{{ n_sTaRt.outputs.name }}",
@@ -300,9 +314,9 @@
           "activeStart": "{{ n_sTaRt.outputs.activeStart }}",
           "activeEnd": "{{ n_sTaRt.outputs.activeEnd }}",
           "tags": "{{ n_sTaRt.outputs.tags }}",
-          "conditionsJson": "{{ n_sTaRt.outputs.conditionsJson }}",
-          "resultsJson": "{{ n_sTaRt.outputs.resultsJson }}",
-          "multiplier": "{{ n_sTaRt.outputs.multiplier }}"
+          "multiplier": "{{ n_sTaRt.outputs.multiplier }}",
+          "conditions": "{{ n_sTaRt.outputs.conditions }}",
+          "result": "{{ n_sTaRt.outputs.result }}"
         }
       },
       "skip": false,
@@ -485,7 +499,7 @@
           "activeEnd": "{{ n_Norm.outputs.result.activeEnd }}",
           "multiplier": "{{ n_Norm.outputs.result.extra }}",
           "conditions": "{{ n_Norm.outputs.result.conditions }}",
-          "results": "{{ n_Norm.outputs.result.results }}"
+          "result": "{{ n_Norm.outputs.result.result }}"
         }
       },
       "options": {
@@ -517,8 +531,7 @@
           "message": "Payout rule created",
           "ruleId": "{{ n_Norm.outputs.result.ruleId }}",
           "recordId": "{{ n_Cr.outputs.id }}",
-          "conditionCount": "{{ n_Norm.outputs.result.conditionCount }}",
-          "resultCount": "{{ n_Norm.outputs.result.resultCount }}"
+          "conditionCount": "{{ n_Norm.outputs.result.conditionCount }}"
         }
       },
       "skip": false,
@@ -541,5 +554,5 @@
   "tags": [
     "icm"
   ],
-  "version": 1
+  "version": 2
 }

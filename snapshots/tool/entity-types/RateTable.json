@@ -1,5 +1,5 @@
 {
-  "columnCounts": 4,
+  "columnCounts": 10,
   "createdTime": 1788769606850,
   "deleted": false,
   "description": "",
@@ -12,7 +12,13 @@
         "rateTableId",
         "name",
         "mode",
-        "tiering"
+        "tiering",
+        "description",
+        "tags",
+        "unitType",
+        "version",
+        "effectiveStart",
+        "effectiveEnd"
       ]
     },
     "schema": {
@@ -67,13 +73,69 @@
           "title": "Tiering",
           "filterable": true,
           "sortable": true
+        },
+        "description": {
+          "type": "string",
+          "title": "Description",
+          "filterable": true,
+          "sortable": true
+        },
+        "tags": {
+          "type": "array",
+          "title": "Tags",
+          "items": {
+            "type": "string"
+          }
+        },
+        "unitType": {
+          "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "Percent",
+              "title": "Percent"
+            },
+            {
+              "const": "Amount",
+              "title": "Amount"
+            },
+            {
+              "const": "Quantity",
+              "title": "Quantity"
+            }
+          ],
+          "title": "Attainment Unit Type",
+          "filterable": true,
+          "sortable": true
+        },
+        "version": {
+          "type": "integer",
+          "title": "Version",
+          "filterable": true,
+          "sortable": true
+        },
+        "effectiveStart": {
+          "type": "integer",
+          "format": "date",
+          "dateFormat": "epoch",
+          "title": "Effective Start Date",
+          "filterable": true,
+          "sortable": true
+        },
+        "effectiveEnd": {
+          "type": "integer",
+          "format": "date",
+          "dateFormat": "epoch",
+          "title": "Effective End Date",
+          "filterable": true,
+          "sortable": true
         }
       }
     }
   },
-  "lastModifiedBy": 435691,
-  "lastPlatformUpdateBy": 435691,
-  "lastPlatformUpdateOn": 1788769606852,
+  "lastModifiedBy": 475503,
+  "lastPlatformUpdateBy": 475503,
+  "lastPlatformUpdateOn": 1788855892523,
   "lcName": "ratetable",
   "metadata": {
     "auditable": true,
@@ -82,7 +144,10 @@
     "captureActivity": true,
     "captureReferences": false,
     "captureReporting": true,
-    "dateFields": [],
+    "dateFields": [
+      "effectiveStart",
+      "effectiveEnd"
+    ],
     "deployable": false,
     "encryptedFields": [],
     "external": false,
@@ -90,7 +155,13 @@
       "rateTableId",
       "name",
       "mode",
-      "tiering"
+      "tiering",
+      "description",
+      "tags",
+      "unitType",
+      "version",
+      "effectiveStart",
+      "effectiveEnd"
     ],
     "graphType": "LEGACY_MDM",
     "hasTimeSeriesRecords": true,
@@ -137,7 +208,7 @@
     "vectorFields": [],
     "versioningEnabled": true
   },
-  "modifiedTime": 1788769606852,
+  "modifiedTime": 1788855892523,
   "name": "RateTable",
   "ownerUserId": 435691,
   "packaged": false,
@@ -197,6 +268,62 @@
           "title": "Tiering",
           "filterable": true,
           "sortable": true
+        },
+        "description": {
+          "type": "string",
+          "title": "Description",
+          "filterable": true,
+          "sortable": true
+        },
+        "tags": {
+          "type": "array",
+          "title": "Tags",
+          "items": {
+            "type": "string"
+          }
+        },
+        "unitType": {
+          "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "Percent",
+              "title": "Percent"
+            },
+            {
+              "const": "Amount",
+              "title": "Amount"
+            },
+            {
+              "const": "Quantity",
+              "title": "Quantity"
+            }
+          ],
+          "title": "Attainment Unit Type",
+          "filterable": true,
+          "sortable": true
+        },
+        "version": {
+          "type": "integer",
+          "title": "Version",
+          "filterable": true,
+          "sortable": true
+        },
+        "effectiveStart": {
+          "type": "integer",
+          "format": "date",
+          "dateFormat": "epoch",
+          "title": "Effective Start Date",
+          "filterable": true,
+          "sortable": true
+        },
+        "effectiveEnd": {
+          "type": "integer",
+          "format": "date",
+          "dateFormat": "epoch",
+          "title": "Effective End Date",
+          "filterable": true,
+          "sortable": true
         }
       }
     }
@@ -205,5 +332,5 @@
   "tags": [
     "icm"
   ],
-  "version": 0
+  "version": 1
 }

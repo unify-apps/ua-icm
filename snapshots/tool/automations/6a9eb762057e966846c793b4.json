@@ -2,6 +2,16 @@
   "appsUsed": [],
   "createdTime": 1788786530748,
   "deleted": false,
+  "deployedVersion": 1,
+  "deploymentState": {
+    "deployedAt": 1788787387114,
+    "deployedBy": 435691,
+    "deployedDefinitionId": "6a9ebabb057e966846c8a11d",
+    "deploymentNotes": "First deploy of the rule callables behind Plan Design > Rules. Suites green, validate and lint clean. Approved by krish.sharma in session 2026-09-07.",
+    "status": "DEPLOYED",
+    "version": 1,
+    "workflowVersion": 1
+  },
   "description": "A paged, searchable list of positions, optionally with who occupies each one as of a date - resolved in BULK so a page never makes one call per row. Spec: docs/automations/list-positions.md",
   "edges": [
     {
@@ -58,9 +68,9 @@
   "id": "6a9eb762057e966846c793b4",
   "lastModifiedBy": 435691,
   "lastPlatformUpdateBy": 435691,
-  "lastPlatformUpdateOn": 1788786697492,
+  "lastPlatformUpdateOn": 1788868415483,
   "lcName": "icm | list credit rules",
-  "modifiedTime": 1788786697492,
+  "modifiedTime": 1788868415483,
   "name": "ICM | List Credit Rules",
   "nodes": [
     {
@@ -306,7 +316,7 @@
           "properties.activeEnd",
           "properties.tags",
           "properties.conditions",
-          "properties.results"
+          "properties.result"
         ]
       },
       "options": {
@@ -376,7 +386,7 @@
           }
         },
         "compile_static": false,
-        "code": "\n// conditions/results are stored as { items: [...] } because a bare array is\n// dropped on write. Counting through .items is not defensiveness, it is the shape.\ndef out = []\nif (rows != null) rows.each { r ->\n    def p = r.properties\n    def cs = (p?.conditions instanceof Map) ? (p.conditions.get('items') ?: []) : []\n    def rs = (p?.results instanceof Map) ? (p.results.get('items') ?: []) : []\n    out << [ruleId: p?.ruleId ?: '', recordId: String.valueOf(r.id),\n            name: p?.name ?: '', ruleType: p?.ruleType ?: '',\n            description: p?.description ?: '', stage: p?.stage ?: '',\n            activeStart: p?.activeStart, activeEnd: p?.activeEnd,\n            tags: p?.tags ?: '', conditionCount: cs.size(), resultCount: rs.size()]\n}\nint tot = (total == null) ? out.size() : Integer.valueOf(String.valueOf(total))\nreturn [rules: out, total: tot, hasMore: (pageOffset + out.size()) < tot,\n        message: out.size() + ' credit rule(s) on this page']",
+        "code": "\n// conditions is a list and stays wrapped under 'items'; result is a single object\n// stored as itself. The row carries the result's NAME rather than a count of one.\ndef out = []\nif (rows != null) rows.each { r ->\n    def p = r.properties\n    def cs = (p?.conditions instanceof Map) ? (p.conditions.get('items') ?: []) : []\n    def res = (p?.result instanceof Map) ? p.result : null\n    out << [ruleId: p?.ruleId ?: '', recordId: String.valueOf(r.id),\n            name: p?.name ?: '', ruleType: p?.ruleType ?: '',\n            description: p?.description ?: '', stage: p?.stage ?: '',\n            activeStart: p?.activeStart, activeEnd: p?.activeEnd,\n            tags: p?.tags ?: '', conditionCount: cs.size(),\n            resultName: (res == null) ? '' : (res.get('name') ?: '')]\n}\nint tot = (total == null) ? out.size() : Integer.valueOf(String.valueOf(total))\nreturn [rules: out, total: tot, hasMore: (pageOffset + out.size()) < tot,\n        message: out.size() + ' credit rule' + (out.size() == 1 ? '' : 's') + ' on this page']\n",
         "captureStdOutput": false,
         "parameters": {
           "rows": "{{ n_Ft.outputs.objects }}",
@@ -492,5 +502,5 @@
   "tags": [
     "icm"
   ],
-  "version": 1
+  "version": 2
 }

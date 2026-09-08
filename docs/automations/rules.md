@@ -39,12 +39,13 @@ seed a rule of the OTHER stage purely so that guard is testable.
 | `activeStart`, `activeEnd` | no | `YYYY-MM-DD` or epoch ms. `""` means UNSET, not today — a rule with no window is in force for all time |
 | `rollableOnReporting` | credit only | |
 | `multiplier` | payout only | |
-| `conditionsJson`, `resultsJson` | no / **effectively yes** | JSON arrays as strings, parsed server-side |
+| `conditions` | no | a real ARRAY, not a JSON string. Stored under `{items:[...]}` because a bare array is dropped on write |
+| `result` | **yes** | a real OBJECT — ONE result per rule. Stored as itself; it is not a list, so it needs no wrapper |
 
 | status | meaning |
 |---|---|
-| `OK` | created. Returns `ruleId`, `recordId`, `conditionCount`, `resultCount` |
-| `INVALID_INPUT` | missing name or ruleType, unparseable JSON, a result with no name, no results at all, a bad date, or `activeEnd` before `activeStart` |
+| `OK` | created. Returns `ruleId`, `recordId`, `conditionCount` |
+| `INVALID_INPUT` | missing name or ruleType, a `result` that is absent or not an object, a result with no name, a bad date, or `activeEnd` before `activeStart` |
 | `DUPLICATE_RULE_ID` | the minted id collided; the caller should retry |
 
 **`ruleId` is minted, not asked for** (`CR-`/`PR-` + epoch + a random suffix).
@@ -63,7 +64,7 @@ Every check runs before the write, so a refusal never leaves a half-made rule.
 **server-side**, so `total` and `hasMore` describe the filtered set and the
 pager only offers pages that exist.
 
-Rows carry `conditionCount` and `resultCount`, read through `.items`.
+Rows carry `conditionCount` (read through `conditions.items`) and `resultName`, taken straight off the stored `result` object. A count of one carries no information, so the name is returned instead.
 
 ## Changes — the system of changes
 
@@ -79,3 +80,27 @@ Rows carry `conditionCount` and `resultCount`, read through `.items`.
 `node scripts/regress.mjs <id>` per callable. The list suites seed four rules,
 **wait 15 seconds**, then assert — entity search is eventually consistent and a
 6-second settle was measurably not enough. Not padding; see `runtime-facts.md`.
+
+
+## One result, passed natively (2026-09-08)
+
+A rule has exactly ONE result. It used to be a one-element array inside
+`results: {items:[...]}`, reached through `resultsJson` — a JSON string the
+automation parsed. Both of those are gone:
+
+- the object stores `result`, a single JSON object, not a list
+- the callable takes `result` as a **real object** and `conditions` as a **real
+  array**; nothing is stringified on the way in
+
+**Objects and arrays cross `execute-node` intact.** Probed against tool: sending a
+Map and a List where the START node declared strings arrived at the Groovy node as
+a real Map and a real List. The old round trip existed because `opt()` calls
+`toString()`, and a Java map's `toString` is not JSON — so the code now reads those
+two variables directly instead of stringifying and re-parsing them.
+
+`conditions` keeps its `{items:[...]}` wrapper on the way to STORAGE, because a
+bare array written into a `json` property is still silently dropped. `result` is an
+object, so it needs no wrapper.
+
+**The `results` column still exists on `Rule`** and is no longer written. Removing
+it is a deliberate contract step, separate from this expand.

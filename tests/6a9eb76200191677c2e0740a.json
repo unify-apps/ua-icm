@@ -2,27 +2,110 @@
   "name": "ICM | Create Payout Rule",
   "note": "Mirrors the credit create. The stage is the automation's own, never a caller input, so a payout rule cannot be filed as a credit one.",
   "cases": [
-    { "name": "pre-clean", "entityDelete": { "entityType": "Rule", "filters": { "name": "KITFIX-Payout Rule A" }, "allowZero": true } },
+    {
+      "name": "pre-clean",
+      "entityDelete": {
+        "entityType": "Rule",
+        "filters": {
+          "name": "KITFIX-Payout Rule A"
+        },
+        "allowZero": true
+      }
+    },
     {
       "name": "INVALID_INPUT - no name",
-      "payload": { "name": "", "ruleType": "Commission", "description": "", "activeStart": "", "activeEnd": "", "tags": "", "multiplier": "Credit - Amount", "conditionsJson": "", "resultsJson": "[{\"name\":\"R1\"}]" },
-      "checks": [{ "path": "status", "equals": "INVALID_INPUT" }, { "path": "ruleId", "absent": true }]
+      "payload": {
+        "name": "",
+        "ruleType": "Commission",
+        "description": "",
+        "activeStart": "",
+        "activeEnd": "",
+        "tags": "",
+        "multiplier": "Credit - Amount",
+        "conditions": [],
+        "result": {
+          "name": "R1"
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        },
+        {
+          "path": "ruleId",
+          "absent": true
+        }
+      ]
     },
     {
       "name": "INVALID_INPUT - no ruleType",
-      "payload": { "name": "KITFIX-No Type", "ruleType": "", "description": "", "activeStart": "", "activeEnd": "", "tags": "", "multiplier": "", "conditionsJson": "", "resultsJson": "[{\"name\":\"R1\"}]" },
-      "checks": [{ "path": "status", "equals": "INVALID_INPUT" }]
+      "payload": {
+        "name": "KITFIX-No Type",
+        "ruleType": "",
+        "description": "",
+        "activeStart": "",
+        "activeEnd": "",
+        "tags": "",
+        "multiplier": "",
+        "conditions": [],
+        "result": {
+          "name": "R1"
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        }
+      ]
     },
     {
       "name": "OK - a payout rule stores its multiplier and its results",
-      "payload": { "name": "KITFIX-Payout Rule A", "ruleType": "Commission", "description": "seeded by the suite", "activeStart": "", "activeEnd": "", "tags": "kitfix", "multiplier": "Credit - Amount", "conditionsJson": "[{\"connector\":\"If\",\"subject\":\"Credit\",\"value\":\"Booked\"}]", "resultsJson": "[{\"name\":\"Payout 1\",\"resultRateType\":\"Flat Rate\"},{\"name\":\"Payout 2\"}]" },
+      "payload": {
+        "name": "KITFIX-Payout Rule A",
+        "ruleType": "Commission",
+        "description": "seeded by the suite",
+        "activeStart": "",
+        "activeEnd": "",
+        "tags": "kitfix",
+        "multiplier": "Credit - Amount",
+        "conditions": [
+          {
+            "connector": "If",
+            "subject": "Credit",
+            "value": "Booked"
+          }
+        ],
+        "result": {
+          "name": "Payout 1",
+          "resultRateType": "Flat Rate"
+        }
+      },
       "checks": [
-        { "path": "status", "equals": "OK" },
-        { "path": "ruleId", "type": "string", "minLen": 6 },
-        { "path": "conditionCount", "equals": 1 },
-        { "path": "resultCount", "equals": 2 }
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "ruleId",
+          "type": "string",
+          "minLen": 6
+        },
+        {
+          "path": "conditionCount",
+          "equals": 1
+        }
       ]
     },
-    { "name": "clean up", "entityDelete": { "entityType": "Rule", "filters": { "name": "KITFIX-Payout Rule A" } } }
+    {
+      "name": "clean up",
+      "entityDelete": {
+        "entityType": "Rule",
+        "filters": {
+          "name": "KITFIX-Payout Rule A"
+        }
+      }
+    }
   ]
 }

@@ -1414,3 +1414,73 @@ into the APPLICATION's deploy, which is why every working data source on this ap
 sits at exactly the interface's own version (v10). Deploying the app is what
 stamps them — a human action on production, not something to do on a hunch.
 
+
+## `requestType: "UPDATED"` REPLACES properties — it does not merge (ICM, 2026-09-08)
+
+**This one destroyed real data before it was understood.** Writing
+
+```json
+{"entity": {"entityType":"Rule","id":"e_...","properties":{"result": {...}}},
+ "requestType":"UPDATED"}
+```
+
+to `/api/entity/create-update-or-delete/hierarchical` does not add `result` to the
+record. It makes `{result: …}` the WHOLE property set. `ruleId`, `name`, `stage`,
+`conditions` and every other field are gone, with an HTTP 200 and no warning.
+
+There is **no version history to recover from**. `GET /api/entity/<Type>/<id>?version=0`
+accepts the parameter and ignores it, returning current state — so a read that looks
+like a rollback is not one.
+
+**Always read the full properties first and spread them:**
+
+```js
+const cur = await get(id)
+const next = { ...cur.properties, result: value }   // the WHOLE set
+```
+
+and then assert the READ: compare `Object.keys(before)` against the record you get
+back, rather than trusting the write's 200.
+
+## "Not found" is HTTP 500 with errorCode 5002, not 404 (ICM, 2026-09-08)
+
+For `e_data_source` and `WORKFLOW_DEFINITION`, reading a deleted asset answers
+
+```
+HTTP 500 {"rootCauseMessage":"... with id ... not found","errorCode":5002}
+```
+
+Entity records (`/api/entity/Rule/<id>`) DO answer 404 for the same condition. So a
+delete-verification that tests `status === 404` reports a deleted data source as
+"still present". Test the BODY for `not found`, or test errorCode 5002.
+
+## Delete the DEPLOYED copy BEFORE the draft (ICM, 2026-09-08)
+
+`POST /api/workflow-definition/delete/{id}?version=N` needs the draft definition to
+exist. Delete the draft first and the deployed copy is stranded: every later delete
+answers `WORKFLOW_DEFINITION with id ... not found`, while
+`/deployed-workflow/{id}` still returns it.
+
+A stranded deployed copy is inert — a caller needs a data source, and that is a
+separate entity — but the only way to remove it is the platform-admin
+`deleteDeployedVersion`, which takes a `customerId`. Order the deletes correctly
+instead.
+
+## Objects and arrays cross execute-node INTACT (ICM, 2026-09-08)
+
+A callable input declared `{"type":"string"}` in the START node's `setup` will still
+carry a real object or array. Probed against tool: sending
+
+```json
+"conditions": [{"connector":"If", ...}], "result": {"name":"probe", ...}
+```
+
+arrived at the Groovy node as a real `List` and a real `Map`.
+
+So the JSON-string round trip (`resultsJson`, `JsonSlurper.parseText`) was never
+necessary. It only appeared to be because `opt()` calls `toString()`, and a Java
+map's `toString` is `{a=1}` — not JSON — so parsing it threw. Read those variables
+directly with `binding.getVariable(k)` and use them as the Map or List they are.
+
+Storage is the part that still cares: a bare ARRAY written into a `json` property is
+dropped, so a list still needs its `{items:[...]}` wrapper. A single OBJECT does not.

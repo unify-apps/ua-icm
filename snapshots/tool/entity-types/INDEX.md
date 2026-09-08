@@ -14,6 +14,10 @@ Rebuilt automatically by `scripts/ua.mjs snap-types`. One JSON per object type.
 | Dispute | Dispute | icm | 12 |
 | Earning | Earning | icm | 20 |
 | FxRate | FxRate | icm | 5 |
+| IngestTest | IngestTest | icm | 6 |
+| IngestTest2 | IngestTest2 | icm | 6 |
+| IngestTest3 | IngestTest3 | icm | 6 |
+| IngestTest4 | IngestTest4 | icm | 6 |
 | Leave | Leave | icm | 8 |
 | MeasureResult | MeasureResult | icm | 10 |
 | NotificationLog | NotificationLog | icm | 7 |
@@ -21,6 +25,9 @@ Rebuilt automatically by `scripts/ua.mjs snap-types`. One JSON per object type.
 | PayeePositionAssignment | PayeePositionAssignment | icm | 6 |
 | PayrollExport | PayrollExport | icm | 9 |
 | Period | Period | icm | 6 |
+| Pipeline | Pipeline | icm | 25 |
+| PipelineRun | PipelineRun | icm | 17 |
+| PipelineRunError | PipelineRunError | icm | 10 |
 | Plan | Plan | icm | 6 |
 | PlanAssignment | PlanAssignment | icm | 6 |
 | PlanComponent | PlanComponent | icm | 14 |
@@ -28,9 +35,10 @@ Rebuilt automatically by `scripts/ua.mjs snap-types`. One JSON per object type.
 | PositionAttribute | PositionAttribute | icm | 6 |
 | PositionHierarchy | Position Hierarchy | icm | 5 |
 | Quota | Quota | icm | 6 |
-| RateTable | RateTable | icm | 4 |
-| RateTableBand | RateTableBand | icm | 5 |
-| Rule | Rule | icm | 12 |
+| RateTable | RateTable | icm | 10 |
+| RateTableBand | RateTableBand | icm | 6 |
+| Rule | Rule | icm | 13 |
+| SourceConnection | SourceConnection | icm | 8 |
 | Statement | Statement | icm | 7 |
 | Territory | Territory | icm | 3 |
 | Title | Title | icm | 8 |

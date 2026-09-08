@@ -1,45 +1,191 @@
 {
   "name": "ICM | Create Credit Rule",
-  "note": "The OK cases WRITE. They clean up after themselves by ruleId prefix, and the id is minted by the automation so a case cannot assert it - the cleanup matches on name instead, which the case controls.",
+  "note": "ONE result per rule, passed as a real object rather than a JSON string - objects and arrays cross execute-node intact, so the old stringify/parse round trip is gone. conditions is a real array. Every refusal is checked BEFORE the write, so a rejected rule never leaves a half-made record.",
   "cases": [
-    { "name": "pre-clean", "entityDelete": { "entityType": "Rule", "filters": { "name": "KITFIX-Credit Rule A" }, "allowZero": true } },
     {
-      "name": "INVALID_INPUT - no name",
-      "payload": { "name": "", "ruleType": "Direct Credit", "description": "", "activeStart": "", "activeEnd": "", "tags": "", "rollableOnReporting": "", "conditionsJson": "", "resultsJson": "[{\"name\":\"R1\"}]" },
-      "checks": [{ "path": "status", "equals": "INVALID_INPUT" }, { "path": "ruleId", "absent": true }]
+      "name": "pre-clean",
+      "entityDelete": {
+        "entityType": "Rule",
+        "filters": {
+          "name": "KITFIX-Credit Rule A"
+        },
+        "allowZero": true
+      }
     },
     {
-      "name": "INVALID_INPUT - a rule with no results would match deals and change nothing",
-      "payload": { "name": "KITFIX-No Results", "ruleType": "Direct Credit", "description": "", "activeStart": "", "activeEnd": "", "tags": "", "rollableOnReporting": "", "conditionsJson": "", "resultsJson": "[]" },
-      "checks": [{ "path": "status", "equals": "INVALID_INPUT" }, { "path": "ruleId", "absent": true }]
+      "name": "INVALID_INPUT - no name",
+      "payload": {
+        "name": "",
+        "ruleType": "Direct Credit",
+        "description": "",
+        "activeStart": "",
+        "activeEnd": "",
+        "tags": "",
+        "rollableOnReporting": "",
+        "conditions": [],
+        "result": {
+          "name": "R1"
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        },
+        {
+          "path": "ruleId",
+          "absent": true
+        }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - a rule with no result would match deals and change nothing",
+      "payload": {
+        "name": "KITFIX-No Results",
+        "ruleType": "Direct Credit",
+        "description": "",
+        "activeStart": "",
+        "activeEnd": "",
+        "tags": "",
+        "rollableOnReporting": "",
+        "conditions": []
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        },
+        {
+          "path": "ruleId",
+          "absent": true
+        }
+      ]
     },
     {
       "name": "INVALID_INPUT - a result without a name",
-      "payload": { "name": "KITFIX-Unnamed Result", "ruleType": "Direct Credit", "description": "", "activeStart": "", "activeEnd": "", "tags": "", "rollableOnReporting": "", "conditionsJson": "", "resultsJson": "[{\"value\":\"Credit.Amount\"}]" },
-      "checks": [{ "path": "status", "equals": "INVALID_INPUT" }]
+      "payload": {
+        "name": "KITFIX-Unnamed Result",
+        "ruleType": "Direct Credit",
+        "description": "",
+        "activeStart": "",
+        "activeEnd": "",
+        "tags": "",
+        "rollableOnReporting": "",
+        "conditions": [],
+        "result": {
+          "value": "Credit.Amount"
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        }
+      ]
     },
     {
-      "name": "INVALID_INPUT - resultsJson that is not JSON at all",
-      "payload": { "name": "KITFIX-Bad JSON", "ruleType": "Direct Credit", "description": "", "activeStart": "", "activeEnd": "", "tags": "", "rollableOnReporting": "", "conditionsJson": "", "resultsJson": "not json" },
-      "checks": [{ "path": "status", "equals": "INVALID_INPUT" }]
+      "name": "INVALID_INPUT - result is a string, not an object",
+      "payload": {
+        "name": "KITFIX-Bad JSON",
+        "ruleType": "Direct Credit",
+        "description": "",
+        "activeStart": "",
+        "activeEnd": "",
+        "tags": "",
+        "rollableOnReporting": "",
+        "conditions": [],
+        "result": "not json"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        }
+      ]
     },
     {
       "name": "INVALID_INPUT - activeEnd before activeStart",
-      "payload": { "name": "KITFIX-Backwards Window", "ruleType": "Direct Credit", "description": "", "activeStart": "2026-06-01", "activeEnd": "2026-01-01", "tags": "", "rollableOnReporting": "", "conditionsJson": "", "resultsJson": "[{\"name\":\"R1\"}]" },
-      "checks": [{ "path": "status", "equals": "INVALID_INPUT" }]
+      "payload": {
+        "name": "KITFIX-Backwards Window",
+        "ruleType": "Direct Credit",
+        "description": "",
+        "activeStart": "2026-06-01",
+        "activeEnd": "2026-01-01",
+        "tags": "",
+        "rollableOnReporting": "",
+        "conditions": [],
+        "result": {
+          "name": "R1"
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        }
+      ]
     },
     {
       "name": "OK - conditions and results survive the write, counted back",
-      "payload": { "name": "KITFIX-Credit Rule A", "ruleType": "Direct Credit", "description": "seeded by the suite", "activeStart": "2026-01-01", "activeEnd": "", "tags": "kitfix", "rollableOnReporting": "true", "conditionsJson": "[{\"connector\":\"If\",\"subject\":\"Transaction\",\"value\":\"Type = New\"},{\"connector\":\"And\",\"subject\":\"Position\",\"value\":\"Active\"}]", "resultsJson": "[{\"name\":\"R1\",\"value\":\"Credit.Amount\",\"creditType\":\"Booked\"}]" },
+      "payload": {
+        "name": "KITFIX-Credit Rule A",
+        "ruleType": "Direct Credit",
+        "description": "seeded by the suite",
+        "activeStart": "2026-01-01",
+        "activeEnd": "",
+        "tags": "kitfix",
+        "rollableOnReporting": "true",
+        "conditions": [
+          {
+            "connector": "If",
+            "subject": "Transaction",
+            "value": "Type = New"
+          },
+          {
+            "connector": "And",
+            "subject": "Position",
+            "value": "Active"
+          }
+        ],
+        "result": {
+          "name": "R1",
+          "value": "Credit.Amount",
+          "creditType": "Booked"
+        }
+      },
       "checks": [
-        { "path": "status", "equals": "OK" },
-        { "path": "success", "equals": true },
-        { "path": "ruleId", "type": "string", "minLen": 6 },
-        { "path": "recordId", "type": "string", "minLen": 3 },
-        { "path": "conditionCount", "equals": 2 },
-        { "path": "resultCount", "equals": 1 }
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "success",
+          "equals": true
+        },
+        {
+          "path": "ruleId",
+          "type": "string",
+          "minLen": 6
+        },
+        {
+          "path": "recordId",
+          "type": "string",
+          "minLen": 3
+        },
+        {
+          "path": "conditionCount",
+          "equals": 2
+        }
       ]
     },
-    { "name": "clean up", "entityDelete": { "entityType": "Rule", "filters": { "name": "KITFIX-Credit Rule A" } } }
+    {
+      "name": "clean up",
+      "entityDelete": {
+        "entityType": "Rule",
+        "filters": {
+          "name": "KITFIX-Credit Rule A"
+        }
+      }
+    }
   ]
 }
