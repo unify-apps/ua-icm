@@ -1,339 +1,1228 @@
 {
   "name": "ICM | List Positions",
   "fixtures": "tests/fixtures/positions.json - seed with: node scripts/fixtures.mjs seed positions",
-  "note": "Read-only suite, safe to re-run. Every occupancy case isolates ONE position with `search` first, so nothing depends on row order - a suite that assumed positions.0 was a particular position would pass today and go flaky the moment another position is added.",
+  "note": "Read-only suite, safe to re-run. Every occupancy case isolates ONE position with `search` first, so nothing depends on row order - a suite that assumed positions.0 was a particular position would pass today and go flaky the moment another position is added. Filter cases added 2026-09-08: this list filters in TWO places - positionCode and name narrow in storage, while occupancy, personName, titleName and employeeId only exist after the fold, so leaves on them are evaluated there. The split is only sound under an AND, which is why an OR across the two kinds is refused rather than answered wrong. The occupancy pair asserts a complement so it cannot be fooled by the fixture count.",
   "cases": [
     {
       "name": "OK - every input blank, the payload real callers actually send",
-      "payload": { "search": "", "asOfDate": "", "limit": "", "offset": "", "includeOccupancy": "" },
+      "payload": {
+        "search": "",
+        "asOfDate": "",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "status", "equals": "OK" },
-        { "path": "success", "equals": true },
-        { "path": "limit", "equals": 50 },
-        { "path": "offset", "equals": 0 },
-        { "path": "occupancyResolved", "equals": true },
-        { "path": "positions", "type": "array", "minLen": 6 },
-        { "path": "asOfDate", "type": "string", "minLen": 10 }
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "success",
+          "equals": true
+        },
+        {
+          "path": "limit",
+          "equals": 50
+        },
+        {
+          "path": "offset",
+          "equals": 0
+        },
+        {
+          "path": "occupancyResolved",
+          "equals": true
+        },
+        {
+          "path": "positions",
+          "type": "array",
+          "minLen": 6
+        },
+        {
+          "path": "asOfDate",
+          "type": "string",
+          "minLen": 10
+        }
       ]
     },
     {
       "name": "OK - search matches a positionCode, and total reflects the filter (proves the OR group narrows SERVER-side)",
-      "payload": { "search": "KITFIX-POS-01", "asOfDate": "2026-02-15", "limit": "", "offset": "", "includeOccupancy": "" },
+      "payload": {
+        "search": "KITFIX-POS-01",
+        "asOfDate": "2026-02-15",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "status", "equals": "OK" },
-        { "path": "total", "equals": 1 },
-        { "path": "positions.0.positionCode", "equals": "KITFIX-POS-01" },
-        { "path": "hasMore", "equals": false }
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.positionCode",
+          "equals": "KITFIX-POS-01"
+        },
+        {
+          "path": "hasMore",
+          "equals": false
+        }
       ]
     },
     {
       "name": "OK - search matches a NAME in a different case (ICONTAINS is case-insensitive)",
-      "payload": { "search": "contested position", "asOfDate": "2026-02-15", "limit": "", "offset": "", "includeOccupancy": "" },
+      "payload": {
+        "search": "contested position",
+        "asOfDate": "2026-02-15",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "status", "equals": "OK" },
-        { "path": "total", "equals": 1 },
-        { "path": "positions.0.positionCode", "equals": "KITFIX-POS-03" }
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.positionCode",
+          "equals": "KITFIX-POS-03"
+        }
       ]
     },
     {
       "name": "OK - search matches nothing: empty is a result, not an error",
-      "payload": { "search": "ZZZ-NO-SUCH-SEAT-ANYWHERE", "asOfDate": "", "limit": "", "offset": "", "includeOccupancy": "" },
+      "payload": {
+        "search": "ZZZ-NO-SUCH-SEAT-ANYWHERE",
+        "asOfDate": "",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "status", "equals": "OK" },
-        { "path": "success", "equals": true },
-        { "path": "total", "equals": 0 },
-        { "path": "positions", "type": "array", "maxLen": 0 },
-        { "path": "counts.total", "equals": 0 }
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "success",
+          "equals": true
+        },
+        {
+          "path": "total",
+          "equals": 0
+        },
+        {
+          "path": "positions",
+          "type": "array",
+          "maxLen": 0
+        },
+        {
+          "path": "counts.total",
+          "equals": 0
+        }
       ]
     },
-
     {
       "name": "OCCUPIED - a date inside a closed assignment range",
-      "payload": { "search": "KITFIX-POS-01", "asOfDate": "2026-02-15", "limit": "", "offset": "", "includeOccupancy": "" },
+      "payload": {
+        "search": "KITFIX-POS-01",
+        "asOfDate": "2026-02-15",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "positions.0.occupancy", "equals": "OCCUPIED" },
-        { "path": "positions.0.employeeId", "equals": "KITFIX-E001" },
-        { "path": "positions.0.payeeName", "equals": "KITFIX-Asha Rao" },
-        { "path": "positions.0.matchCount", "equals": 1 },
-        { "path": "counts.occupied", "equals": 1 }
+        {
+          "path": "positions.0.occupancy",
+          "equals": "OCCUPIED"
+        },
+        {
+          "path": "positions.0.employeeId",
+          "equals": "KITFIX-E001"
+        },
+        {
+          "path": "positions.0.payeeName",
+          "equals": "KITFIX-Asha Rao"
+        },
+        {
+          "path": "positions.0.matchCount",
+          "equals": 1
+        },
+        {
+          "path": "counts.occupied",
+          "equals": 1
+        }
       ]
     },
     {
       "name": "OCCUPIED - open-ended assignment (the case a server-side effectiveEnd filter would break)",
-      "payload": { "search": "KITFIX-POS-02", "asOfDate": "2026-08-20", "limit": "", "offset": "", "includeOccupancy": "" },
+      "payload": {
+        "search": "KITFIX-POS-02",
+        "asOfDate": "2026-08-20",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "positions.0.occupancy", "equals": "OCCUPIED" },
-        { "path": "positions.0.employeeId", "equals": "KITFIX-E002" },
-        { "path": "positions.0.matchCount", "equals": 1 }
+        {
+          "path": "positions.0.occupancy",
+          "equals": "OCCUPIED"
+        },
+        {
+          "path": "positions.0.employeeId",
+          "equals": "KITFIX-E002"
+        },
+        {
+          "path": "positions.0.matchCount",
+          "equals": 1
+        }
       ]
     },
     {
       "name": "VACANT - the date is before the assignment starts",
-      "payload": { "search": "KITFIX-POS-01", "asOfDate": "2025-12-31", "limit": "", "offset": "", "includeOccupancy": "" },
+      "payload": {
+        "search": "KITFIX-POS-01",
+        "asOfDate": "2025-12-31",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "positions.0.occupancy", "equals": "VACANT" },
-        { "path": "positions.0.payeeId", "equals": "" },
-        { "path": "positions.0.matchCount", "equals": 0 },
-        { "path": "counts.vacant", "equals": 1 }
+        {
+          "path": "positions.0.occupancy",
+          "equals": "VACANT"
+        },
+        {
+          "path": "positions.0.payeeId",
+          "equals": ""
+        },
+        {
+          "path": "positions.0.matchCount",
+          "equals": 0
+        },
+        {
+          "path": "counts.vacant",
+          "equals": 1
+        }
       ]
     },
     {
       "name": "VACANT - a position nobody ever filled",
-      "payload": { "search": "KITFIX-POS-04", "asOfDate": "2026-02-15", "limit": "", "offset": "", "includeOccupancy": "" },
+      "payload": {
+        "search": "KITFIX-POS-04",
+        "asOfDate": "2026-02-15",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "positions.0.occupancy", "equals": "VACANT" },
-        { "path": "positions.0.positionCode", "equals": "KITFIX-POS-04" }
+        {
+          "path": "positions.0.occupancy",
+          "equals": "VACANT"
+        },
+        {
+          "path": "positions.0.positionCode",
+          "equals": "KITFIX-POS-04"
+        }
       ]
     },
     {
       "name": "CONFLICT - two assignments cover the date, and no payee is named",
-      "payload": { "search": "KITFIX-POS-03", "asOfDate": "2026-03-14", "limit": "", "offset": "", "includeOccupancy": "" },
+      "payload": {
+        "search": "KITFIX-POS-03",
+        "asOfDate": "2026-03-14",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "positions.0.occupancy", "equals": "CONFLICT" },
-        { "path": "positions.0.matchCount", "equals": 2 },
-        { "path": "positions.0.payeeId", "equals": "" },
-        { "path": "positions.0.employeeId", "equals": "" },
-        { "path": "counts.conflict", "equals": 1 }
+        {
+          "path": "positions.0.occupancy",
+          "equals": "CONFLICT"
+        },
+        {
+          "path": "positions.0.matchCount",
+          "equals": 2
+        },
+        {
+          "path": "positions.0.payeeId",
+          "equals": ""
+        },
+        {
+          "path": "positions.0.employeeId",
+          "equals": ""
+        },
+        {
+          "path": "counts.conflict",
+          "equals": 1
+        }
       ]
     },
     {
       "name": "OCCUPIED - a TERMINATED payee still held the position back then",
-      "payload": { "search": "KITFIX-POS-06", "asOfDate": "2026-01-20", "limit": "", "offset": "", "includeOccupancy": "" },
+      "payload": {
+        "search": "KITFIX-POS-06",
+        "asOfDate": "2026-01-20",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "positions.0.occupancy", "equals": "OCCUPIED" },
-        { "path": "positions.0.employeeId", "equals": "KITFIX-E004" }
+        {
+          "path": "positions.0.occupancy",
+          "equals": "OCCUPIED"
+        },
+        {
+          "path": "positions.0.employeeId",
+          "equals": "KITFIX-E004"
+        }
       ]
     },
     {
       "name": "OCCUPIED - a dangling payeeId leaves the position occupied but unnamed, it does not crash",
-      "payload": { "search": "KITFIX-POS-05", "asOfDate": "2026-02-15", "limit": "", "offset": "", "includeOccupancy": "" },
+      "payload": {
+        "search": "KITFIX-POS-05",
+        "asOfDate": "2026-02-15",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "positions.0.occupancy", "equals": "OCCUPIED" },
-        { "path": "positions.0.matchCount", "equals": 1 },
-        { "path": "positions.0.payeeName", "equals": "" }
+        {
+          "path": "positions.0.occupancy",
+          "equals": "OCCUPIED"
+        },
+        {
+          "path": "positions.0.matchCount",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.payeeName",
+          "equals": ""
+        }
       ]
     },
-
     {
       "name": "OK - includeOccupancy false skips the fold entirely",
-      "payload": { "search": "KITFIX-POS-01", "asOfDate": "2026-02-15", "limit": "", "offset": "", "includeOccupancy": "false" },
+      "payload": {
+        "search": "KITFIX-POS-01",
+        "asOfDate": "2026-02-15",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": "false"
+      },
       "checks": [
-        { "path": "status", "equals": "OK" },
-        { "path": "occupancyResolved", "equals": false },
-        { "path": "positions.0.occupancy", "equals": "UNKNOWN" },
-        { "path": "positions.0.payeeId", "equals": "" },
-        { "path": "counts.occupied", "equals": 0 }
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "occupancyResolved",
+          "equals": false
+        },
+        {
+          "path": "positions.0.occupancy",
+          "equals": "UNKNOWN"
+        },
+        {
+          "path": "positions.0.payeeId",
+          "equals": ""
+        },
+        {
+          "path": "counts.occupied",
+          "equals": 0
+        }
       ]
     },
     {
       "name": "OK - a boolean never set is MISSING, not false: an unticked position still reads active",
-      "payload": { "search": "KITFIX-POS-01", "asOfDate": "2026-02-15", "limit": "", "offset": "", "includeOccupancy": "" },
-      "checks": [{ "path": "positions.0.active", "type": "boolean" }]
+      "payload": {
+        "search": "KITFIX-POS-01",
+        "asOfDate": "2026-02-15",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "positions.0.active",
+          "type": "boolean"
+        }
+      ]
     },
-
     {
       "name": "OK - first page of two, hasMore is true",
-      "payload": { "search": "KITFIX-POS", "asOfDate": "2026-02-15", "limit": "2", "offset": "0", "includeOccupancy": "" },
+      "payload": {
+        "search": "KITFIX-POS",
+        "asOfDate": "2026-02-15",
+        "limit": "2",
+        "offset": "0",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "status", "equals": "OK" },
-        { "path": "limit", "equals": 2 },
-        { "path": "offset", "equals": 0 },
-        { "path": "positions", "maxLen": 2 },
-        { "path": "total", "min": 6 },
-        { "path": "hasMore", "equals": true },
-        { "path": "counts.total", "equals": 2 }
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "limit",
+          "equals": 2
+        },
+        {
+          "path": "offset",
+          "equals": 0
+        },
+        {
+          "path": "positions",
+          "maxLen": 2
+        },
+        {
+          "path": "total",
+          "min": 6
+        },
+        {
+          "path": "hasMore",
+          "equals": true
+        },
+        {
+          "path": "counts.total",
+          "equals": 2
+        }
       ]
     },
     {
       "name": "OK - the last page reports hasMore false",
-      "payload": { "search": "KITFIX-POS", "asOfDate": "2026-02-15", "limit": "50", "offset": "0", "includeOccupancy": "" },
+      "payload": {
+        "search": "KITFIX-POS",
+        "asOfDate": "2026-02-15",
+        "limit": "50",
+        "offset": "0",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "hasMore", "equals": false },
-        { "path": "total", "min": 6 }
+        {
+          "path": "hasMore",
+          "equals": false
+        },
+        {
+          "path": "total",
+          "min": 6
+        }
       ]
     },
     {
       "name": "OK - an offset past the end is an empty page, not an error",
-      "payload": { "search": "KITFIX-POS", "asOfDate": "2026-02-15", "limit": "10", "offset": "500", "includeOccupancy": "" },
+      "payload": {
+        "search": "KITFIX-POS",
+        "asOfDate": "2026-02-15",
+        "limit": "10",
+        "offset": "500",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "status", "equals": "OK" },
-        { "path": "positions", "maxLen": 0 },
-        { "path": "hasMore", "equals": false }
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "positions",
+          "maxLen": 0
+        },
+        {
+          "path": "hasMore",
+          "equals": false
+        }
       ]
     },
     {
       "name": "OK - limit is clamped to the 200 ceiling rather than trusted",
-      "payload": { "search": "KITFIX-POS-01", "asOfDate": "", "limit": "9999", "offset": "", "includeOccupancy": "" },
-      "checks": [{ "path": "limit", "equals": 200 }]
+      "payload": {
+        "search": "KITFIX-POS-01",
+        "asOfDate": "",
+        "limit": "9999",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "limit",
+          "equals": 200
+        }
+      ]
     },
-
     {
       "name": "INVALID_INPUT - unparseable date",
-      "payload": { "search": "", "asOfDate": "not-a-date", "limit": "", "offset": "", "includeOccupancy": "" },
+      "payload": {
+        "search": "",
+        "asOfDate": "not-a-date",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "status", "equals": "INVALID_INPUT" },
-        { "path": "success", "equals": false },
-        { "path": "positions", "maxLen": 0 },
-        { "path": "message", "minLen": 1 }
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        },
+        {
+          "path": "success",
+          "equals": false
+        },
+        {
+          "path": "positions",
+          "maxLen": 0
+        },
+        {
+          "path": "message",
+          "minLen": 1
+        }
       ]
     },
     {
       "name": "INVALID_INPUT - a date-shaped string that is not a real day",
-      "payload": { "search": "", "asOfDate": "2026-02-30", "limit": "", "offset": "", "includeOccupancy": "" },
-      "checks": [{ "path": "status", "equals": "INVALID_INPUT" }]
+      "payload": {
+        "search": "",
+        "asOfDate": "2026-02-30",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        }
+      ]
     },
     {
       "name": "INVALID_INPUT - limit is not a number",
-      "payload": { "search": "", "asOfDate": "", "limit": "abc", "offset": "", "includeOccupancy": "" },
+      "payload": {
+        "search": "",
+        "asOfDate": "",
+        "limit": "abc",
+        "offset": "",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "status", "equals": "INVALID_INPUT" },
-        { "path": "message", "minLen": 1 }
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        },
+        {
+          "path": "message",
+          "minLen": 1
+        }
       ]
     },
     {
       "name": "INVALID_INPUT - offset is not a number",
-      "payload": { "search": "", "asOfDate": "", "limit": "", "offset": "-5", "includeOccupancy": "" },
-      "checks": [{ "path": "status", "equals": "INVALID_INPUT" }]
+      "payload": {
+        "search": "",
+        "asOfDate": "",
+        "limit": "",
+        "offset": "-5",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        }
+      ]
     },
     {
       "name": "OK - epoch milliseconds are accepted as the second date form",
-      "payload": { "search": "KITFIX-POS-01", "asOfDate": "1771113600000", "limit": "", "offset": "", "includeOccupancy": "" },
+      "payload": {
+        "search": "KITFIX-POS-01",
+        "asOfDate": "1771113600000",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "status", "equals": "OK" },
-        { "path": "asOfDate", "equals": "2026-02-15" },
-        { "path": "positions.0.occupancy", "equals": "OCCUPIED" }
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "asOfDate",
+          "equals": "2026-02-15"
+        },
+        {
+          "path": "positions.0.occupancy",
+          "equals": "OCCUPIED"
+        }
       ]
     },
     {
       "name": "filter - positionCode narrows SERVER-side, and total reflects it",
-      "payload": { "search": "", "asOfDate": "2026-03-14", "limit": "", "offset": "", "includeOccupancy": "", "positionCode": "KITFIX-POS-01", "name": "", "personName": "", "occupancy": "" },
+      "payload": {
+        "search": "",
+        "asOfDate": "2026-03-14",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": "",
+        "positionCode": "KITFIX-POS-01",
+        "name": "",
+        "personName": "",
+        "occupancy": ""
+      },
       "checks": [
-        { "path": "status", "equals": "OK" },
-        { "path": "total", "equals": 1 },
-        { "path": "positions.0.positionCode", "equals": "KITFIX-POS-01" },
-        { "path": "truncated", "equals": false }
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.positionCode",
+          "equals": "KITFIX-POS-01"
+        },
+        {
+          "path": "truncated",
+          "equals": false
+        }
       ]
     },
     {
       "name": "filter - name is a separate field from positionCode",
-      "payload": { "search": "", "asOfDate": "2026-03-14", "limit": "", "offset": "", "includeOccupancy": "", "positionCode": "", "name": "Contested", "personName": "", "occupancy": "" },
+      "payload": {
+        "search": "",
+        "asOfDate": "2026-03-14",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": "",
+        "positionCode": "",
+        "name": "Contested",
+        "personName": "",
+        "occupancy": ""
+      },
       "checks": [
-        { "path": "total", "equals": 1 },
-        { "path": "positions.0.positionCode", "equals": "KITFIX-POS-03" }
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.positionCode",
+          "equals": "KITFIX-POS-03"
+        }
       ]
     },
     {
       "name": "filter - occupancy CONFLICT, and total counts the FILTERED set not the page",
-      "payload": { "search": "KITFIX-", "asOfDate": "2026-03-14", "limit": "", "offset": "", "includeOccupancy": "", "positionCode": "", "name": "", "personName": "", "occupancy": "CONFLICT" },
+      "payload": {
+        "search": "KITFIX-",
+        "asOfDate": "2026-03-14",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": "",
+        "positionCode": "",
+        "name": "",
+        "personName": "",
+        "occupancy": "CONFLICT"
+      },
       "checks": [
-        { "path": "status", "equals": "OK" },
-        { "path": "total", "equals": 1 },
-        { "path": "positions.0.positionCode", "equals": "KITFIX-POS-03" },
-        { "path": "positions.0.occupancy", "equals": "CONFLICT" }
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.positionCode",
+          "equals": "KITFIX-POS-03"
+        },
+        {
+          "path": "positions.0.occupancy",
+          "equals": "CONFLICT"
+        }
       ]
     },
     {
       "name": "filter - occupancy VACANT returns only vacant seats",
-      "payload": { "search": "KITFIX-", "asOfDate": "2026-03-14", "limit": "", "offset": "", "includeOccupancy": "", "positionCode": "", "name": "", "personName": "", "occupancy": "VACANT" },
+      "payload": {
+        "search": "KITFIX-",
+        "asOfDate": "2026-03-14",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": "",
+        "positionCode": "",
+        "name": "",
+        "personName": "",
+        "occupancy": "VACANT"
+      },
       "checks": [
-        { "path": "status", "equals": "OK" },
-        { "path": "positions.0.occupancy", "equals": "VACANT" },
-        { "path": "counts.conflict", "equals": 0 }
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "positions.0.occupancy",
+          "equals": "VACANT"
+        },
+        {
+          "path": "counts.conflict",
+          "equals": 0
+        }
       ]
     },
     {
       "name": "filter - personName matches the resolved occupant, which is not a stored field",
-      "payload": { "search": "", "asOfDate": "2026-03-14", "limit": "", "offset": "", "includeOccupancy": "", "positionCode": "", "name": "", "personName": "bhavna", "occupancy": "" },
+      "payload": {
+        "search": "",
+        "asOfDate": "2026-03-14",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": "",
+        "positionCode": "",
+        "name": "",
+        "personName": "bhavna",
+        "occupancy": ""
+      },
       "checks": [
-        { "path": "status", "equals": "OK" },
-        { "path": "total", "equals": 1 },
-        { "path": "positions.0.payeeName", "equals": "KITFIX-Bhavna Iyer" }
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.payeeName",
+          "equals": "KITFIX-Bhavna Iyer"
+        }
       ]
     },
     {
       "name": "filter - occupancy and personName together, both must hold",
-      "payload": { "search": "", "asOfDate": "2026-03-14", "limit": "", "offset": "", "includeOccupancy": "", "positionCode": "", "name": "", "personName": "bhavna", "occupancy": "VACANT" },
+      "payload": {
+        "search": "",
+        "asOfDate": "2026-03-14",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": "",
+        "positionCode": "",
+        "name": "",
+        "personName": "bhavna",
+        "occupancy": "VACANT"
+      },
       "checks": [
-        { "path": "status", "equals": "OK" },
-        { "path": "total", "equals": 0 }
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 0
+        }
       ]
     },
     {
       "name": "INVALID_INPUT - an occupancy that is not one of the four states",
-      "payload": { "search": "", "asOfDate": "", "limit": "", "offset": "", "includeOccupancy": "", "positionCode": "", "name": "", "personName": "", "occupancy": "MAYBE" },
-      "checks": [{ "path": "status", "equals": "INVALID_INPUT" }]
+      "payload": {
+        "search": "",
+        "asOfDate": "",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": "",
+        "positionCode": "",
+        "name": "",
+        "personName": "",
+        "occupancy": "MAYBE"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        }
+      ]
     },
     {
       "name": "window - closed range: the assignment's own start, end and split come back",
-      "payload": { "search": "KITFIX-POS-01", "asOfDate": "2026-02-15", "limit": "", "offset": "", "includeOccupancy": "" },
+      "payload": {
+        "search": "KITFIX-POS-01",
+        "asOfDate": "2026-02-15",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "positions.0.occupancy", "equals": "OCCUPIED" },
-        { "path": "positions.0.effectiveStart", "type": "number" },
-        { "path": "positions.0.effectiveEnd", "type": "number" },
-        { "path": "positions.0.allocationPct", "equals": 100 }
+        {
+          "path": "positions.0.occupancy",
+          "equals": "OCCUPIED"
+        },
+        {
+          "path": "positions.0.effectiveStart",
+          "type": "number"
+        },
+        {
+          "path": "positions.0.effectiveEnd",
+          "type": "number"
+        },
+        {
+          "path": "positions.0.allocationPct",
+          "equals": 100
+        }
       ]
     },
     {
       "name": "window - open-ended assignment: effectiveEnd is ABSENT, meaning STILL HELD and not unknown",
-      "payload": { "search": "KITFIX-POS-02", "asOfDate": "2026-03-14", "limit": "", "offset": "", "includeOccupancy": "" },
+      "payload": {
+        "search": "KITFIX-POS-02",
+        "asOfDate": "2026-03-14",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "positions.0.occupancy", "equals": "OCCUPIED" },
-        { "path": "positions.0.effectiveStart", "type": "number" },
-        { "path": "positions.0.effectiveEnd", "absent": true },
-        { "path": "positions.0.allocationPct", "equals": 100 }
+        {
+          "path": "positions.0.occupancy",
+          "equals": "OCCUPIED"
+        },
+        {
+          "path": "positions.0.effectiveStart",
+          "type": "number"
+        },
+        {
+          "path": "positions.0.effectiveEnd",
+          "absent": true
+        },
+        {
+          "path": "positions.0.allocationPct",
+          "equals": 100
+        }
       ]
     },
     {
       "name": "window - VACANT: no assignment applied, so there is no window to report",
-      "payload": { "search": "KITFIX-POS-04", "asOfDate": "2026-03-14", "limit": "", "offset": "", "includeOccupancy": "" },
+      "payload": {
+        "search": "KITFIX-POS-04",
+        "asOfDate": "2026-03-14",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "positions.0.occupancy", "equals": "VACANT" },
-        { "path": "positions.0.effectiveStart", "absent": true },
-        { "path": "positions.0.effectiveEnd", "absent": true },
-        { "path": "positions.0.allocationPct", "absent": true }
+        {
+          "path": "positions.0.occupancy",
+          "equals": "VACANT"
+        },
+        {
+          "path": "positions.0.effectiveStart",
+          "absent": true
+        },
+        {
+          "path": "positions.0.effectiveEnd",
+          "absent": true
+        },
+        {
+          "path": "positions.0.allocationPct",
+          "absent": true
+        }
       ]
     },
     {
       "name": "window - CONFLICT: several assignments covered the date, so naming one window would be the guess we refuse",
-      "payload": { "search": "KITFIX-POS-03", "asOfDate": "2026-03-14", "limit": "", "offset": "", "includeOccupancy": "" },
+      "payload": {
+        "search": "KITFIX-POS-03",
+        "asOfDate": "2026-03-14",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "positions.0.occupancy", "equals": "CONFLICT" },
-        { "path": "positions.0.matchCount", "equals": 2 },
-        { "path": "positions.0.effectiveStart", "absent": true },
-        { "path": "positions.0.allocationPct", "absent": true }
+        {
+          "path": "positions.0.occupancy",
+          "equals": "CONFLICT"
+        },
+        {
+          "path": "positions.0.matchCount",
+          "equals": 2
+        },
+        {
+          "path": "positions.0.effectiveStart",
+          "absent": true
+        },
+        {
+          "path": "positions.0.allocationPct",
+          "absent": true
+        }
       ]
     },
     {
       "name": "attributes - the position's title and the date it took effect come back",
-      "payload": { "search": "KITFIX-POS-01", "asOfDate": "2026-02-15", "limit": "", "offset": "", "includeOccupancy": "" },
+      "payload": {
+        "search": "KITFIX-POS-01",
+        "asOfDate": "2026-02-15",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "positions.0.titleName", "equals": "KITFIX-Account Executive" },
-        { "path": "positions.0.attributeEffectiveStart", "type": "number" }
+        {
+          "path": "positions.0.titleName",
+          "equals": "KITFIX-Account Executive"
+        },
+        {
+          "path": "positions.0.attributeEffectiveStart",
+          "type": "number"
+        }
       ]
     },
     {
       "name": "attributes - a position with no attribute row reports an empty title, not a crash",
-      "payload": { "search": "KITFIX-POS-04", "asOfDate": "2026-03-14", "limit": "", "offset": "", "includeOccupancy": "" },
+      "payload": {
+        "search": "KITFIX-POS-04",
+        "asOfDate": "2026-03-14",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "positions.0.titleName", "equals": "" },
-        { "path": "positions.0.attributeEffectiveStart", "absent": true }
+        {
+          "path": "positions.0.titleName",
+          "equals": ""
+        },
+        {
+          "path": "positions.0.attributeEffectiveStart",
+          "absent": true
+        }
       ]
     },
     {
       "name": "attributes - effective dating: a date BEFORE the attribute row starts reports no title",
-      "payload": { "search": "KITFIX-POS-01", "asOfDate": "2025-06-01", "limit": "", "offset": "", "includeOccupancy": "" },
+      "payload": {
+        "search": "KITFIX-POS-01",
+        "asOfDate": "2025-06-01",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
       "checks": [
-        { "path": "positions.0.titleName", "equals": "" },
-        { "path": "positions.0.attributeEffectiveStart", "absent": true }
+        {
+          "path": "positions.0.titleName",
+          "equals": ""
+        },
+        {
+          "path": "positions.0.attributeEffectiveStart",
+          "absent": true
+        }
       ]
     },
     {
       "name": "window - includeOccupancy false: the fold never ran, so there is nothing to report",
-      "payload": { "search": "KITFIX-POS-01", "asOfDate": "2026-02-15", "limit": "", "offset": "", "includeOccupancy": "false" },
+      "payload": {
+        "search": "KITFIX-POS-01",
+        "asOfDate": "2026-02-15",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": "false"
+      },
       "checks": [
-        { "path": "positions.0.occupancy", "equals": "UNKNOWN" },
-        { "path": "positions.0.effectiveStart", "absent": true },
-        { "path": "positions.0.allocationPct", "absent": true }
+        {
+          "path": "positions.0.occupancy",
+          "equals": "UNKNOWN"
+        },
+        {
+          "path": "positions.0.effectiveStart",
+          "absent": true
+        },
+        {
+          "path": "positions.0.allocationPct",
+          "absent": true
+        }
+      ]
+    },
+    {
+      "name": "FILTER stored - positionCode narrows in storage",
+      "payload": {
+        "search": "",
+        "asOfDate": "2026-03-14",
+        "limit": "50",
+        "offset": "",
+        "includeOccupancy": "",
+        "filter": {
+          "op": "AND",
+          "values": [
+            {
+              "field": "positionCode",
+              "op": "ICONTAINS",
+              "values": [
+                "KITFIX-POS-"
+              ]
+            }
+          ]
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 6
+        }
+      ]
+    },
+    {
+      "name": "FILTER derived - occupancy is produced by the fold, so it filters after it",
+      "payload": {
+        "search": "",
+        "asOfDate": "2026-03-14",
+        "limit": "50",
+        "offset": "",
+        "includeOccupancy": "",
+        "filter": {
+          "op": "AND",
+          "values": [
+            {
+              "field": "positionCode",
+              "op": "ICONTAINS",
+              "values": [
+                "KITFIX-POS-"
+              ]
+            },
+            {
+              "field": "occupancy",
+              "op": "EQUAL",
+              "values": [
+                "VACANT"
+              ]
+            }
+          ]
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 2
+        }
+      ]
+    },
+    {
+      "name": "FILTER derived - the complement, which must sum back to the pinned set",
+      "payload": {
+        "search": "",
+        "asOfDate": "2026-03-14",
+        "limit": "50",
+        "offset": "",
+        "includeOccupancy": "",
+        "filter": {
+          "op": "AND",
+          "values": [
+            {
+              "field": "positionCode",
+              "op": "ICONTAINS",
+              "values": [
+                "KITFIX-POS-"
+              ]
+            },
+            {
+              "field": "occupancy",
+              "op": "NOT_EQUAL",
+              "values": [
+                "VACANT"
+              ]
+            }
+          ]
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 4
+        }
+      ]
+    },
+    {
+      "name": "FILTER mixed - a row field AND a resolved field, evaluated in two places",
+      "payload": {
+        "search": "",
+        "asOfDate": "2026-03-14",
+        "limit": "50",
+        "offset": "",
+        "includeOccupancy": "",
+        "filter": {
+          "op": "AND",
+          "values": [
+            {
+              "field": "positionCode",
+              "op": "ICONTAINS",
+              "values": [
+                "KITFIX-POS-0"
+              ]
+            },
+            {
+              "field": "occupancy",
+              "op": "EQUAL",
+              "values": [
+                "CONFLICT"
+              ]
+            }
+          ]
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.positionCode",
+          "equals": "KITFIX-POS-03"
+        }
+      ]
+    },
+    {
+      "name": "FILTER derived - personName reads the folded payee, not the row",
+      "payload": {
+        "search": "",
+        "asOfDate": "2026-03-14",
+        "limit": "50",
+        "offset": "",
+        "includeOccupancy": "",
+        "filter": {
+          "op": "AND",
+          "values": [
+            {
+              "field": "positionCode",
+              "op": "ICONTAINS",
+              "values": [
+                "KITFIX-POS-"
+              ]
+            },
+            {
+              "field": "personName",
+              "op": "ICONTAINS",
+              "values": [
+                "kitfix"
+              ]
+            }
+          ]
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - an OR across a row field and a resolved field is refused, not answered wrong",
+      "payload": {
+        "search": "",
+        "asOfDate": "2026-03-14",
+        "limit": "50",
+        "offset": "",
+        "includeOccupancy": "",
+        "filter": {
+          "op": "OR",
+          "values": [
+            {
+              "field": "positionCode",
+              "op": "ICONTAINS",
+              "values": [
+                "KITFIX"
+              ]
+            },
+            {
+              "field": "occupancy",
+              "op": "EQUAL",
+              "values": [
+                "VACANT"
+              ]
+            }
+          ]
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - a field this list cannot filter by",
+      "payload": {
+        "search": "",
+        "asOfDate": "2026-03-14",
+        "limit": "50",
+        "offset": "",
+        "includeOccupancy": "",
+        "filter": {
+          "op": "AND",
+          "values": [
+            {
+              "field": "salary",
+              "op": "EQUAL",
+              "values": [
+                "1"
+              ]
+            }
+          ]
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - an unsupported operator",
+      "payload": {
+        "search": "",
+        "asOfDate": "2026-03-14",
+        "limit": "50",
+        "offset": "",
+        "includeOccupancy": "",
+        "filter": {
+          "op": "AND",
+          "values": [
+            {
+              "field": "name",
+              "op": "REGEX",
+              "values": [
+                ".*"
+              ]
+            }
+          ]
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        }
       ]
     }
   ]

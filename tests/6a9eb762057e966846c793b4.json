@@ -1,6 +1,6 @@
 {
   "name": "ICM | List Credit Rules",
-  "note": "Seeds four rules - three of this stage, one of the other - so 'the other stage never leaks in' is testable. Every filter case pins itself to the seeds with an ICONTAINS 'KITFIX-' leaf and asserts a COMPLEMENT: EQUAL gives 1 of 3 and NOT_EQUAL the other 2. That is deliberate. Asserting against an assumed table size is what once made every negative operator look broken - there were leftover rules nobody counted, so the correct complement read as 'the filter was ignored', and the refusals built on that reading were wrong.",
+  "note": "Seeds four rules - three of this stage at activeStart 1e6/2e6/3e6, one of the other stage - so both 'the other stage never leaks in' and the date boundaries are testable. Every filter case pins itself to the seeds with an ICONTAINS 'KITFIX-' leaf and asserts a COMPLEMENT or a boundary rather than an assumed table size: asserting against a guessed row count is what once made every negative operator look broken. BETWEEN is checked narrow AND wide over the same data, because an operator that ignores its bounds returns the same number either way.",
   "cases": [
     {
       "name": "pre-clean KITFIX-CR-1",
@@ -67,7 +67,8 @@
           },
           "result": {
             "name": "R1"
-          }
+          },
+          "activeStart": 1000000
         }
       },
       "checks": []
@@ -93,7 +94,8 @@
           },
           "result": {
             "name": "R1"
-          }
+          },
+          "activeStart": 2000000
         }
       },
       "checks": []
@@ -119,7 +121,8 @@
           },
           "result": {
             "name": "R1"
-          }
+          },
+          "activeStart": 3000000
         }
       },
       "checks": []
@@ -145,7 +148,8 @@
           },
           "result": {
             "name": "R1"
-          }
+          },
+          "activeStart": 4000000
         }
       },
       "checks": []
@@ -308,6 +312,316 @@
         {
           "path": "total",
           "equals": 2
+        }
+      ]
+    },
+    {
+      "name": "DATE EQUAL - one seed sits on that instant",
+      "payload": {
+        "search": "",
+        "name": "",
+        "ruleType": "",
+        "limit": "50",
+        "offset": "0",
+        "filter": {
+          "op": "AND",
+          "values": [
+            {
+              "field": "name",
+              "op": "ICONTAINS",
+              "values": [
+                "KITFIX-"
+              ]
+            },
+            {
+              "field": "activeStart",
+              "op": "EQUAL",
+              "values": [
+                2000000
+              ]
+            }
+          ]
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        }
+      ]
+    },
+    {
+      "name": "DATE GT - the two above it",
+      "payload": {
+        "search": "",
+        "name": "",
+        "ruleType": "",
+        "limit": "50",
+        "offset": "0",
+        "filter": {
+          "op": "AND",
+          "values": [
+            {
+              "field": "name",
+              "op": "ICONTAINS",
+              "values": [
+                "KITFIX-"
+              ]
+            },
+            {
+              "field": "activeStart",
+              "op": "GT",
+              "values": [
+                1500000
+              ]
+            }
+          ]
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 2
+        }
+      ]
+    },
+    {
+      "name": "DATE GTE - inclusive of the bound",
+      "payload": {
+        "search": "",
+        "name": "",
+        "ruleType": "",
+        "limit": "50",
+        "offset": "0",
+        "filter": {
+          "op": "AND",
+          "values": [
+            {
+              "field": "name",
+              "op": "ICONTAINS",
+              "values": [
+                "KITFIX-"
+              ]
+            },
+            {
+              "field": "activeStart",
+              "op": "GTE",
+              "values": [
+                2000000
+              ]
+            }
+          ]
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 2
+        }
+      ]
+    },
+    {
+      "name": "DATE LT - the two below it",
+      "payload": {
+        "search": "",
+        "name": "",
+        "ruleType": "",
+        "limit": "50",
+        "offset": "0",
+        "filter": {
+          "op": "AND",
+          "values": [
+            {
+              "field": "name",
+              "op": "ICONTAINS",
+              "values": [
+                "KITFIX-"
+              ]
+            },
+            {
+              "field": "activeStart",
+              "op": "LT",
+              "values": [
+                2500000
+              ]
+            }
+          ]
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 2
+        }
+      ]
+    },
+    {
+      "name": "DATE LTE - inclusive of the bound",
+      "payload": {
+        "search": "",
+        "name": "",
+        "ruleType": "",
+        "limit": "50",
+        "offset": "0",
+        "filter": {
+          "op": "AND",
+          "values": [
+            {
+              "field": "name",
+              "op": "ICONTAINS",
+              "values": [
+                "KITFIX-"
+              ]
+            },
+            {
+              "field": "activeStart",
+              "op": "LTE",
+              "values": [
+                2000000
+              ]
+            }
+          ]
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 2
+        }
+      ]
+    },
+    {
+      "name": "DATE BETWEEN - a narrow window keeps only the middle seed",
+      "payload": {
+        "search": "",
+        "name": "",
+        "ruleType": "",
+        "limit": "50",
+        "offset": "0",
+        "filter": {
+          "op": "AND",
+          "values": [
+            {
+              "field": "name",
+              "op": "ICONTAINS",
+              "values": [
+                "KITFIX-"
+              ]
+            },
+            {
+              "field": "activeStart",
+              "op": "BETWEEN",
+              "values": [
+                1500000,
+                2500000
+              ]
+            }
+          ]
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        }
+      ]
+    },
+    {
+      "name": "DATE BETWEEN - a wide window keeps all three",
+      "payload": {
+        "search": "",
+        "name": "",
+        "ruleType": "",
+        "limit": "50",
+        "offset": "0",
+        "filter": {
+          "op": "AND",
+          "values": [
+            {
+              "field": "name",
+              "op": "ICONTAINS",
+              "values": [
+                "KITFIX-"
+              ]
+            },
+            {
+              "field": "activeStart",
+              "op": "BETWEEN",
+              "values": [
+                900000,
+                3100000
+              ]
+            }
+          ]
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 3
+        }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - BETWEEN with one bound is refused",
+      "payload": {
+        "search": "",
+        "name": "",
+        "ruleType": "",
+        "limit": "50",
+        "offset": "0",
+        "filter": {
+          "op": "AND",
+          "values": [
+            {
+              "field": "name",
+              "op": "ICONTAINS",
+              "values": [
+                "KITFIX-"
+              ]
+            },
+            {
+              "field": "activeStart",
+              "op": "BETWEEN",
+              "values": [
+                1500000
+              ]
+            }
+          ]
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
         }
       ]
     },
