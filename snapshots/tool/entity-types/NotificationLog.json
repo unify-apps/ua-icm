@@ -1,38 +1,27 @@
 {
-  "columnCounts": 8,
-  "createdTime": 1788594607505,
+  "columnCounts": 7,
+  "createdTime": 1788769613158,
   "deleted": false,
-  "description": "A person who can be paid incentive compensation. The bridge from a platform user to the comp world. A payee holds a Position over a date range (PayeePositionAssignment); credit attaches to the POSITION and resolves to the payee who held it on the transaction's close date. Currency is a LOOKUP to Currency, not a loose three-letter string: a typo cannot silently create a second currency that sums separately.",
-  "id": "Payee",
+  "description": "",
+  "id": "NotificationLog",
   "input": {
     "type": "SCHEMA_AND_LAYOUT",
     "dynamic": false,
     "layout": {
       "ui:order": [
+        "notificationId",
+        "event",
         "employeeId",
-        "name",
-        "email",
-        "userId",
-        "currencyId",
-        "hireDate",
-        "terminationDate",
-        "status"
+        "channel",
+        "sentAt",
+        "status",
+        "payload"
       ],
-      "currencyId": {
+      "employeeId": {
         "ui:widget": "LookupWidget",
         "ui:options": {
           "ua:payload": {
-            "lookupType": "ENTITY_ID:Currency",
-            "type": "ByQuery"
-          },
-          "multiple": false
-        }
-      },
-      "userId": {
-        "ui:widget": "LookupWidget",
-        "ui:options": {
-          "ua:payload": {
-            "lookupType": "USER",
+            "lookupType": "ENTITY_ID:Payee",
             "type": "ByQuery"
           },
           "multiple": false
@@ -42,84 +31,89 @@
     "schema": {
       "type": "object",
       "properties": {
-        "employeeId": {
+        "notificationId": {
           "type": "string",
-          "title": "Employee Id",
+          "title": "Notification Id",
           "filterable": true,
           "sortable": true,
           "searchable": true,
-          "uniqueKey": true
-        },
-        "name": {
-          "type": "string",
-          "title": "Name",
-          "filterable": true,
-          "sortable": true,
-          "searchable": true,
+          "uniqueKey": true,
           "nameField": true
         },
-        "email": {
+        "event": {
           "type": "string",
-          "title": "Email",
+          "title": "Event",
           "filterable": true,
           "sortable": true,
           "searchable": true
         },
-        "userId": {
+        "employeeId": {
           "type": "string",
           "format": "single-select",
-          "title": "Platform User",
+          "title": "Employee Id",
           "filterable": true,
           "foreignKey": {
-            "reference": "USER"
+            "reference": "ENTITY_ID:Payee"
           },
           "foreignKeyConstraintEnforced": false
         },
-        "currencyId": {
+        "channel": {
           "type": "string",
           "format": "single-select",
-          "title": "Currency",
-          "filterable": true,
-          "foreignKey": {
-            "reference": "ENTITY_ID:Currency"
-          },
-          "foreignKeyConstraintEnforced": false
-        },
-        "hireDate": {
-          "type": "integer",
-          "format": "date",
-          "dateFormat": "epoch",
-          "title": "Hire Date",
+          "oneOf": [
+            {
+              "const": "Email",
+              "title": "Email"
+            },
+            {
+              "const": "Slack",
+              "title": "Slack"
+            }
+          ],
+          "title": "Channel",
           "filterable": true,
           "sortable": true
         },
-        "terminationDate": {
+        "sentAt": {
           "type": "integer",
-          "format": "date",
+          "format": "date-time",
           "dateFormat": "epoch",
-          "title": "Termination Date",
+          "title": "Sent At",
           "filterable": true,
           "sortable": true
         },
         "status": {
           "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "Sent",
+              "title": "Sent"
+            },
+            {
+              "const": "Failed",
+              "title": "Failed"
+            }
+          ],
           "title": "Status",
           "filterable": true,
           "sortable": true
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {},
+          "title": "Payload",
+          "filterable": true,
+          "sortable": true
         }
-      },
-      "required": [
-        "employeeId",
-        "name",
-        "currencyId",
-        "status"
-      ]
+      }
     }
   },
-  "lastModifiedBy": 372563,
-  "lastPlatformUpdateBy": 372563,
-  "lastPlatformUpdateOn": 1788941432162,
-  "lcName": "people",
+  "lastModifiedBy": 435691,
+  "lastPlatformUpdateBy": 435691,
+  "lastPlatformUpdateOn": 1788769613162,
+  "lcName": "notificationlog",
   "metadata": {
     "auditable": true,
     "autoGeneratedFields": [],
@@ -128,44 +122,41 @@
     "captureReferences": false,
     "captureReporting": true,
     "dateFields": [
-      "terminationDate",
-      "hireDate"
+      "sentAt"
     ],
     "deployable": false,
     "encryptedFields": [],
     "external": false,
     "filterableFields": [
+      "notificationId",
+      "event",
       "employeeId",
-      "name",
-      "email",
-      "userId",
-      "currencyId",
-      "hireDate",
-      "terminationDate",
-      "status"
+      "channel",
+      "sentAt",
+      "status",
+      "payload"
     ],
     "graphType": "LEGACY_MDM",
     "hasTimeSeriesRecords": true,
     "hashedFields": [],
     "inaccessibleFromUI": false,
     "includeInDependency": false,
-    "nameField": "name",
+    "nameField": "notificationId",
     "partFields": [],
     "piiFields": [],
     "primaryKeyField": "",
     "referenceKeys": [
       {
-        "key": "properties.currencyId",
-        "referenceType": "Currency"
+        "key": "properties.employeeId",
+        "referenceType": "Payee"
       }
     ],
     "scdType2Enabled": false,
     "schemaValidationEnabled": true,
     "searchableFields": [
-      "employeeId",
-      "name",
-      "name",
-      "email"
+      "notificationId",
+      "notificationId",
+      "event"
     ],
     "sessionBackedStorageEnabled": false,
     "skipConfigSyncIfModified": false,
@@ -187,7 +178,7 @@
     "syncFromSourceCustomer": false,
     "translationsEnabled": false,
     "uniqueKeyFields": [
-      "employeeId"
+      "notificationId"
     ],
     "urlValidationEnabledFields": [],
     "useCachedEntityStoreForAutomations": false,
@@ -195,94 +186,99 @@
     "vectorFields": [],
     "versioningEnabled": true
   },
-  "modifiedTime": 1788941432162,
-  "name": "People",
-  "ownerUserId": 372563,
+  "modifiedTime": 1788769613162,
+  "name": "NotificationLog",
+  "ownerUserId": 435691,
   "packaged": false,
-  "pluralName": "People",
+  "pluralName": "Notification Logs",
   "schema": {
     "type": "SCHEMA",
     "dynamic": false,
     "schema": {
       "type": "object",
       "properties": {
-        "employeeId": {
+        "notificationId": {
           "type": "string",
-          "title": "Employee Id",
+          "title": "Notification Id",
           "filterable": true,
           "sortable": true,
           "searchable": true,
-          "uniqueKey": true
-        },
-        "name": {
-          "type": "string",
-          "title": "Name",
-          "filterable": true,
-          "sortable": true,
-          "searchable": true,
+          "uniqueKey": true,
           "nameField": true
         },
-        "email": {
+        "event": {
           "type": "string",
-          "title": "Email",
+          "title": "Event",
           "filterable": true,
           "sortable": true,
           "searchable": true
         },
-        "userId": {
+        "employeeId": {
           "type": "string",
           "format": "single-select",
-          "title": "Platform User",
+          "title": "Employee Id",
           "filterable": true,
           "foreignKey": {
-            "reference": "USER"
+            "reference": "ENTITY_ID:Payee"
           },
           "foreignKeyConstraintEnforced": false
         },
-        "currencyId": {
+        "channel": {
           "type": "string",
           "format": "single-select",
-          "title": "Currency",
-          "filterable": true,
-          "foreignKey": {
-            "reference": "ENTITY_ID:Currency"
-          },
-          "foreignKeyConstraintEnforced": false
-        },
-        "hireDate": {
-          "type": "integer",
-          "format": "date",
-          "dateFormat": "epoch",
-          "title": "Hire Date",
+          "oneOf": [
+            {
+              "const": "Email",
+              "title": "Email"
+            },
+            {
+              "const": "Slack",
+              "title": "Slack"
+            }
+          ],
+          "title": "Channel",
           "filterable": true,
           "sortable": true
         },
-        "terminationDate": {
+        "sentAt": {
           "type": "integer",
-          "format": "date",
+          "format": "date-time",
           "dateFormat": "epoch",
-          "title": "Termination Date",
+          "title": "Sent At",
           "filterable": true,
           "sortable": true
         },
         "status": {
           "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "Sent",
+              "title": "Sent"
+            },
+            {
+              "const": "Failed",
+              "title": "Failed"
+            }
+          ],
           "title": "Status",
           "filterable": true,
           "sortable": true
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {},
+          "title": "Payload",
+          "filterable": true,
+          "sortable": true
         }
-      },
-      "required": [
-        "employeeId",
-        "name",
-        "currencyId",
-        "status"
-      ]
+      }
     }
   },
   "standard": false,
   "tags": [
     "icm"
   ],
-  "version": 2
+  "version": 0
 }
