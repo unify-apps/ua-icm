@@ -229,6 +229,16 @@ missing one.
 `scripts/ua-write.mjs` — direct workflow-definition update. Orbit only; refuses
 production outright.
 
+`scripts/sync-node-schemas.mjs` — rewrites a script node's DECLARED schemas
+(`inputs.input`, `inputs.output`) to match what it actually binds and returns.
+Those two bind nothing at runtime; only `inputs.parameters` does. Types come
+from a REAL RUN's observed values, so it EXECUTES the draft — treat the payload
+with the same care as a live run, and never point it at a write callable
+without a KITFIX payload you are willing to have committed. A node the run
+never reached is reported and skipped rather than guessed at. Delegates the
+write to `ua-write.mjs`, so the edge-metadata fix and the prod opt-in stay in
+one place.
+
 `scripts/ua-object.mjs` — CREATES an object type from a compact spec. Changes
 the data model for everyone. `plan` prints the body without calling anything;
 `create` POSTs it. Never updates, retypes or deletes. Writes prod when

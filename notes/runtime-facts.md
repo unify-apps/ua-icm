@@ -1642,3 +1642,80 @@ somebody types into one of those ghost boxes and presses Save, or whether a
 builder-side save reconciles `parameters` against `input` and drops bindings the schema
 does not mention. A script-side edit never touches `input`, so the residue is stable
 until a human opens the node. Prefer deleting the ghost properties over leaving them.
+
+## A whole-value template hides a fetch node's filter from the builder (ICM, 2026-09-10)
+
+`triggerInputCondition` on a Fetch records node accepts either form:
+
+```
+"triggerInputCondition": "{{ n_Norm.outputs.result.filter }}"          // resolves fine
+"triggerInputCondition": {"operator":"AND","filters":[               // resolves fine
+  {"property":"properties.planId","filter":{"operator":"EQUAL","value":"{{ n_Norm.outputs.result.planId }}"}}]}
+```
+
+Both work at runtime. Only the second one **renders**. The builder's "Filter records"
+section is a structured condition editor, so it can draw a `{operator, filters:[...]}`
+tree with a binding in a `value`, and can draw nothing at all from a string. The node
+then shows an empty "Add Condition / Add Condition Group / Add Filter" row while the
+run log plainly shows a filter being applied — which reads as a platform bug and is
+not one.
+
+Converting a string to a tree requires the filter's **shape** to be fixed, with only
+the values varying. Two patterns silently prevent that:
+
+- switching the **property** between branches (a validation failure filtering on `id`
+  where the happy path filters on `properties.planId`);
+- switching the **operator** for the empty case (`EQUAL '__none__'` when a list is
+  empty, `IN [...]` when it is not).
+
+Both are fixed the same way: keep one property and one operator, and carry a sentinel
+**value** no record can hold — `'__invalid_input__'`, or a one-element `['__none__']`
+list. Behaviour is identical and the condition becomes drawable. Get Plan's NOT_FOUND
+and INVALID_INPUT cases still pass after the conversion, which is what proves it.
+
+**When a template string is the only option:** a List callable merges caller-supplied
+filter rows with its own search group, so the tree's shape genuinely varies per call
+and cannot be expressed structurally. Those nodes will always look empty in the
+builder. That is a limitation to know about, not sloppiness to fix.
+
+## A template-string filter HIDES the builder's missing-index warnings (ICM, 2026-09-10)
+
+The builder's "Issues" rail gets its warnings from a callable, not from
+`/api/workflow-definition/validate` (which answers `[]` either way):
+
+```
+POST /api/workflow/execute/node
+{"context":{"appName":"standard_entities",
+            "resourceName":"standard_entities_get_index_recommendations_for_workflow"},
+ "id":"getIndexRecommendationsForWorkflow",
+ "inputs":{"includeOnlyMissingIndexes":true,"workflowId":"<id>"},"options":{}}
+-> response.result.workflowIndexRecommendations[] = [{nodeId, objectId, indexFieldMetadataList}]
+```
+
+That analyser reads the **structured** `triggerInputCondition` tree. It cannot read a
+whole-value template string, so it reports nothing for those nodes. Measured across
+five workflows on the same platform, same moment:
+
+| workflow | filter form | warnings |
+|---|---|---|
+| Get Plan (just converted) | 5 structured | 2 — `Position.id`, `Title.id` |
+| Resolve Position Occupant | 4 structured | 2 — `Position.id`, `Payee.id` |
+| List Plans | template string | **0** |
+| Get Rule | template string | **0** |
+| List Positions | 3 template, 2 structured | **1** — only from a structured node |
+
+List Positions is the control that settles it: within ONE workflow, the structured node
+warns and the template nodes do not.
+
+So **a workflow showing "Δ 0" whose filters are template strings has not been checked
+— it has been skipped.** Converting a filter to a structured tree does not make a query
+slow; it makes an already-unindexed query visible. Get Plan's two new warnings were
+always true and always unreported.
+
+The recurring offender is filtering by bare `id` on a custom object: `id EQUAL` and
+`id IN` both want a custom index that does not exist by default, which every
+"resolve the names behind these ids" node hits. Business keys already carrying a unique
+index (`properties.ruleId`, `properties.planId`) draw no warning.
+
+Do not treat this as a reason to keep filters as template strings. Losing the warning
+is not the same as fixing it.
