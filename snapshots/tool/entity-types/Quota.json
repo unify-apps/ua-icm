@@ -1,0 +1,451 @@
+{
+  "columnCounts": 14,
+  "createdTime": 1788769609089,
+  "deleted": false,
+  "description": "",
+  "id": "Quota",
+  "input": {
+    "type": "SCHEMA_AND_LAYOUT",
+    "dynamic": false,
+    "layout": {
+      "measureId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:AttainmentMeasure",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "periodId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:Period",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "positionId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:Position",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "ui:order": [
+        "quotaId",
+        "positionId",
+        "measureId",
+        "periodId",
+        "amount",
+        "targetIncentive",
+        "name",
+        "quotaType",
+        "unitType",
+        "currencyId",
+        "description",
+        "tags",
+        "effectiveStart",
+        "effectiveEnd"
+      ],
+      "currencyId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:Currency",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      }
+    },
+    "schema": {
+      "type": "object",
+      "properties": {
+        "quotaId": {
+          "type": "string",
+          "title": "Quota Id",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true,
+          "uniqueKey": true,
+          "nameField": true
+        },
+        "positionId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Position Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Position"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "measureId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Measure Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:AttainmentMeasure"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "periodId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Period Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Period"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "amount": {
+          "type": "number",
+          "title": "Amount",
+          "filterable": true,
+          "sortable": true
+        },
+        "targetIncentive": {
+          "type": "number",
+          "title": "Target Incentive",
+          "filterable": true,
+          "sortable": true
+        },
+        "name": {
+          "type": "string",
+          "title": "Name",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true
+        },
+        "quotaType": {
+          "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "PLAN",
+              "title": "PLAN"
+            },
+            {
+              "const": "POSITION",
+              "title": "POSITION"
+            }
+          ],
+          "title": "Quota Type",
+          "filterable": true,
+          "sortable": true
+        },
+        "unitType": {
+          "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "CURRENCY",
+              "title": "CURRENCY"
+            },
+            {
+              "const": "QUANTITY",
+              "title": "QUANTITY"
+            }
+          ],
+          "title": "Unit Type",
+          "filterable": true,
+          "sortable": true
+        },
+        "currencyId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Currency",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Currency"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "description": {
+          "type": "string",
+          "title": "Description",
+          "filterable": true,
+          "sortable": true
+        },
+        "tags": {
+          "type": "array",
+          "title": "Tags",
+          "items": {
+            "type": "string"
+          }
+        },
+        "effectiveStart": {
+          "type": "integer",
+          "format": "date",
+          "dateFormat": "epoch",
+          "title": "Effective Start",
+          "filterable": true,
+          "sortable": true
+        },
+        "effectiveEnd": {
+          "type": "integer",
+          "format": "date",
+          "dateFormat": "epoch",
+          "title": "Effective End",
+          "filterable": true,
+          "sortable": true
+        }
+      }
+    }
+  },
+  "lastModifiedBy": 475503,
+  "lastPlatformUpdateBy": 475503,
+  "lastPlatformUpdateOn": 1788870788732,
+  "lcName": "quota",
+  "metadata": {
+    "auditable": true,
+    "autoGeneratedFields": [],
+    "cacheable": false,
+    "captureActivity": true,
+    "captureReferences": false,
+    "captureReporting": true,
+    "dateFields": [
+      "effectiveStart",
+      "effectiveEnd"
+    ],
+    "deployable": false,
+    "encryptedFields": [],
+    "external": false,
+    "filterableFields": [
+      "quotaId",
+      "positionId",
+      "measureId",
+      "periodId",
+      "amount",
+      "targetIncentive",
+      "name",
+      "quotaType",
+      "unitType",
+      "currencyId",
+      "description",
+      "tags",
+      "effectiveStart",
+      "effectiveEnd"
+    ],
+    "graphType": "LEGACY_MDM",
+    "hasTimeSeriesRecords": true,
+    "hashedFields": [],
+    "inaccessibleFromUI": false,
+    "includeInDependency": false,
+    "nameField": "quotaId",
+    "partFields": [],
+    "piiFields": [],
+    "primaryKeyField": "",
+    "referenceKeys": [
+      {
+        "key": "properties.positionId",
+        "referenceType": "Position"
+      },
+      {
+        "key": "properties.measureId",
+        "referenceType": "AttainmentMeasure"
+      },
+      {
+        "key": "properties.periodId",
+        "referenceType": "Period"
+      },
+      {
+        "key": "properties.currencyId",
+        "referenceType": "Currency"
+      }
+    ],
+    "scdType2Enabled": false,
+    "schemaValidationEnabled": true,
+    "searchableFields": [
+      "quotaId",
+      "quotaId",
+      "name"
+    ],
+    "sessionBackedStorageEnabled": false,
+    "skipConfigSyncIfModified": false,
+    "skipDeletedEntityBackup": false,
+    "skipFetchBeforeUpdate": false,
+    "skipIndexLimitValidation": false,
+    "skipPermissionCheckForAggregation": false,
+    "skipPermissionsFilter": false,
+    "skipReportingEventsOrdering": false,
+    "skipRoutineLoad": false,
+    "skipTotalHitsInAggregation": false,
+    "skipVersionIncrementOnUpdate": false,
+    "storeDetails": {
+      "store": "MONGO",
+      "uniqueKeySupported": true
+    },
+    "supportsDistinctValues": false,
+    "supportsWebhook": false,
+    "syncFromSourceCustomer": false,
+    "translationsEnabled": false,
+    "uniqueKeyFields": [
+      "quotaId"
+    ],
+    "urlValidationEnabledFields": [],
+    "useCachedEntityStoreForAutomations": false,
+    "userLevelEncryption": false,
+    "vectorFields": [],
+    "versioningEnabled": true
+  },
+  "modifiedTime": 1788870788732,
+  "name": "Quota",
+  "ownerUserId": 435691,
+  "packaged": false,
+  "pluralName": "Quotas",
+  "schema": {
+    "type": "SCHEMA",
+    "dynamic": false,
+    "schema": {
+      "type": "object",
+      "properties": {
+        "quotaId": {
+          "type": "string",
+          "title": "Quota Id",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true,
+          "uniqueKey": true,
+          "nameField": true
+        },
+        "positionId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Position Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Position"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "measureId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Measure Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:AttainmentMeasure"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "periodId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Period Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Period"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "amount": {
+          "type": "number",
+          "title": "Amount",
+          "filterable": true,
+          "sortable": true
+        },
+        "targetIncentive": {
+          "type": "number",
+          "title": "Target Incentive",
+          "filterable": true,
+          "sortable": true
+        },
+        "name": {
+          "type": "string",
+          "title": "Name",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true
+        },
+        "quotaType": {
+          "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "PLAN",
+              "title": "PLAN"
+            },
+            {
+              "const": "POSITION",
+              "title": "POSITION"
+            }
+          ],
+          "title": "Quota Type",
+          "filterable": true,
+          "sortable": true
+        },
+        "unitType": {
+          "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "CURRENCY",
+              "title": "CURRENCY"
+            },
+            {
+              "const": "QUANTITY",
+              "title": "QUANTITY"
+            }
+          ],
+          "title": "Unit Type",
+          "filterable": true,
+          "sortable": true
+        },
+        "currencyId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Currency",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Currency"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "description": {
+          "type": "string",
+          "title": "Description",
+          "filterable": true,
+          "sortable": true
+        },
+        "tags": {
+          "type": "array",
+          "title": "Tags",
+          "items": {
+            "type": "string"
+          }
+        },
+        "effectiveStart": {
+          "type": "integer",
+          "format": "date",
+          "dateFormat": "epoch",
+          "title": "Effective Start",
+          "filterable": true,
+          "sortable": true
+        },
+        "effectiveEnd": {
+          "type": "integer",
+          "format": "date",
+          "dateFormat": "epoch",
+          "title": "Effective End",
+          "filterable": true,
+          "sortable": true
+        }
+      }
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 2
+}

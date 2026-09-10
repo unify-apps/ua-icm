@@ -1,52 +1,50 @@
 {
-  "columnCounts": 16,
-  "createdTime": 1788594607505,
+  "columnCounts": 14,
+  "createdTime": 1788769605500,
   "deleted": false,
-  "description": "A person who can be paid incentive compensation. The bridge from a platform user to the comp world. A payee holds a Position over a date range (PayeePositionAssignment); credit attaches to the POSITION and resolves to the payee who held it on the transaction's close date. Currency is a LOOKUP to Currency, not a loose three-letter string: a typo cannot silently create a second currency that sums separately.",
-  "id": "Payee",
+  "description": "",
+  "id": "Transaction",
   "input": {
     "type": "SCHEMA_AND_LAYOUT",
     "dynamic": false,
     "layout": {
+      "positionId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:Position",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
       "ui:order": [
-        "employeeId",
-        "name",
-        "email",
-        "userId",
+        "transactionId",
+        "sourceId",
+        "sourceSystem",
+        "positionId",
+        "closeDate",
+        "incentiveDate",
+        "amount",
         "currencyId",
-        "hireDate",
-        "terminationDate",
-        "status",
-        "firstName",
-        "lastName",
-        "region",
-        "businessGroup",
-        "team",
-        "personalTarget",
-        "salary",
-        "personalCurrencyId"
+        "amountBase",
+        "product",
+        "customer",
+        "attrs",
+        "batchId",
+        "reversalOf"
       ],
+      "reversalOf": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:Transaction",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
       "currencyId": {
-        "ui:widget": "LookupWidget",
-        "ui:options": {
-          "ua:payload": {
-            "lookupType": "ENTITY_ID:Currency",
-            "type": "ByQuery"
-          },
-          "multiple": false
-        }
-      },
-      "userId": {
-        "ui:widget": "LookupWidget",
-        "ui:options": {
-          "ua:payload": {
-            "lookupType": "USER",
-            "type": "ByQuery"
-          },
-          "multiple": false
-        }
-      },
-      "personalCurrencyId": {
         "ui:widget": "LookupWidget",
         "ui:options": {
           "ua:payload": {
@@ -60,136 +58,119 @@
     "schema": {
       "type": "object",
       "properties": {
-        "employeeId": {
+        "transactionId": {
           "type": "string",
-          "title": "Employee Id",
+          "title": "Transaction Id",
           "filterable": true,
           "sortable": true,
           "searchable": true,
-          "uniqueKey": true
-        },
-        "name": {
-          "type": "string",
-          "title": "Name",
-          "filterable": true,
-          "sortable": true,
-          "searchable": true,
+          "uniqueKey": true,
           "nameField": true
         },
-        "email": {
+        "sourceId": {
           "type": "string",
-          "title": "Email",
+          "title": "Source Id",
           "filterable": true,
           "sortable": true,
           "searchable": true
         },
-        "userId": {
+        "sourceSystem": {
+          "type": "string",
+          "title": "Source System",
+          "filterable": true,
+          "sortable": true
+        },
+        "positionId": {
           "type": "string",
           "format": "single-select",
-          "title": "Platform User",
+          "title": "Position Id",
           "filterable": true,
           "foreignKey": {
-            "reference": "USER"
+            "reference": "ENTITY_ID:Position"
           },
           "foreignKeyConstraintEnforced": false
+        },
+        "closeDate": {
+          "type": "integer",
+          "format": "date",
+          "dateFormat": "epoch",
+          "title": "Close Date",
+          "filterable": true,
+          "sortable": true
+        },
+        "incentiveDate": {
+          "type": "integer",
+          "format": "date",
+          "dateFormat": "epoch",
+          "title": "Incentive Date",
+          "filterable": true,
+          "sortable": true
+        },
+        "amount": {
+          "type": "integer",
+          "title": "Amount (minor units)",
+          "filterable": true,
+          "sortable": true
         },
         "currencyId": {
           "type": "string",
           "format": "single-select",
-          "title": "Currency",
+          "title": "Currency Id",
           "filterable": true,
           "foreignKey": {
             "reference": "ENTITY_ID:Currency"
           },
           "foreignKeyConstraintEnforced": false
         },
-        "hireDate": {
+        "amountBase": {
           "type": "integer",
-          "format": "date",
-          "dateFormat": "epoch",
-          "title": "Hire Date",
+          "title": "Amount Base (minor units)",
           "filterable": true,
           "sortable": true
         },
-        "terminationDate": {
-          "type": "integer",
-          "format": "date",
-          "dateFormat": "epoch",
-          "title": "Termination Date",
-          "filterable": true,
-          "sortable": true
-        },
-        "status": {
+        "product": {
           "type": "string",
-          "title": "Status",
+          "title": "Product",
           "filterable": true,
           "sortable": true
         },
-        "firstName": {
+        "customer": {
           "type": "string",
-          "title": "First Name",
+          "title": "Customer",
           "filterable": true,
           "sortable": true
         },
-        "lastName": {
+        "attrs": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {},
+          "title": "Attrs",
+          "filterable": true,
+          "sortable": true
+        },
+        "batchId": {
           "type": "string",
-          "title": "Last Name",
+          "title": "Batch Id",
           "filterable": true,
           "sortable": true
         },
-        "region": {
-          "type": "string",
-          "title": "Region",
-          "filterable": true,
-          "sortable": true
-        },
-        "businessGroup": {
-          "type": "string",
-          "title": "Business Group",
-          "filterable": true,
-          "sortable": true
-        },
-        "team": {
-          "type": "string",
-          "title": "Team",
-          "filterable": true,
-          "sortable": true
-        },
-        "personalTarget": {
-          "type": "number",
-          "title": "Personal Target",
-          "filterable": true,
-          "sortable": true
-        },
-        "salary": {
-          "type": "number",
-          "title": "Salary",
-          "filterable": true,
-          "sortable": true
-        },
-        "personalCurrencyId": {
+        "reversalOf": {
           "type": "string",
           "format": "single-select",
-          "title": "Personal Currency Id",
+          "title": "Reversal Of",
           "filterable": true,
           "foreignKey": {
-            "reference": "ENTITY_ID:Currency"
+            "reference": "ENTITY_ID:Transaction"
           },
           "foreignKeyConstraintEnforced": false
         }
-      },
-      "required": [
-        "employeeId",
-        "name",
-        "currencyId",
-        "status"
-      ]
+      }
     }
   },
-  "lastModifiedBy": 388282,
-  "lastPlatformUpdateBy": 388282,
-  "lastPlatformUpdateOn": 1789046368337,
-  "lcName": "people",
+  "lastModifiedBy": 435691,
+  "lastPlatformUpdateBy": 435691,
+  "lastPlatformUpdateOn": 1788769628346,
+  "lcName": "transaction",
   "metadata": {
     "auditable": true,
     "autoGeneratedFields": [],
@@ -198,56 +179,57 @@
     "captureReferences": false,
     "captureReporting": true,
     "dateFields": [
-      "terminationDate",
-      "hireDate"
+      "closeDate",
+      "incentiveDate"
     ],
     "deployable": false,
     "encryptedFields": [],
     "external": false,
     "filterableFields": [
-      "employeeId",
-      "name",
-      "email",
-      "userId",
+      "transactionId",
+      "sourceId",
+      "sourceSystem",
+      "positionId",
+      "closeDate",
+      "incentiveDate",
+      "amount",
       "currencyId",
-      "hireDate",
-      "terminationDate",
-      "status",
-      "firstName",
-      "lastName",
-      "region",
-      "businessGroup",
-      "team",
-      "personalTarget",
-      "salary",
-      "personalCurrencyId"
+      "amountBase",
+      "product",
+      "customer",
+      "attrs",
+      "batchId",
+      "reversalOf"
     ],
     "graphType": "LEGACY_MDM",
     "hasTimeSeriesRecords": true,
     "hashedFields": [],
     "inaccessibleFromUI": false,
     "includeInDependency": false,
-    "nameField": "name",
+    "nameField": "transactionId",
     "partFields": [],
     "piiFields": [],
     "primaryKeyField": "",
     "referenceKeys": [
       {
+        "key": "properties.positionId",
+        "referenceType": "Position"
+      },
+      {
         "key": "properties.currencyId",
         "referenceType": "Currency"
       },
       {
-        "key": "properties.personalCurrencyId",
-        "referenceType": "Currency"
+        "key": "properties.reversalOf",
+        "referenceType": "Transaction"
       }
     ],
     "scdType2Enabled": false,
     "schemaValidationEnabled": true,
     "searchableFields": [
-      "employeeId",
-      "name",
-      "name",
-      "email"
+      "transactionId",
+      "transactionId",
+      "sourceId"
     ],
     "sessionBackedStorageEnabled": false,
     "skipConfigSyncIfModified": false,
@@ -269,7 +251,7 @@
     "syncFromSourceCustomer": false,
     "translationsEnabled": false,
     "uniqueKeyFields": [
-      "employeeId"
+      "transactionId"
     ],
     "urlValidationEnabledFields": [],
     "useCachedEntityStoreForAutomations": false,
@@ -277,146 +259,129 @@
     "vectorFields": [],
     "versioningEnabled": true
   },
-  "modifiedTime": 1789046368337,
-  "name": "People",
-  "ownerUserId": 372563,
+  "modifiedTime": 1788769628346,
+  "name": "Transaction",
+  "ownerUserId": 435691,
   "packaged": false,
-  "pluralName": "People",
+  "pluralName": "Transactions",
   "schema": {
     "type": "SCHEMA",
     "dynamic": false,
     "schema": {
       "type": "object",
       "properties": {
-        "employeeId": {
+        "transactionId": {
           "type": "string",
-          "title": "Employee Id",
+          "title": "Transaction Id",
           "filterable": true,
           "sortable": true,
           "searchable": true,
-          "uniqueKey": true
-        },
-        "name": {
-          "type": "string",
-          "title": "Name",
-          "filterable": true,
-          "sortable": true,
-          "searchable": true,
+          "uniqueKey": true,
           "nameField": true
         },
-        "email": {
+        "sourceId": {
           "type": "string",
-          "title": "Email",
+          "title": "Source Id",
           "filterable": true,
           "sortable": true,
           "searchable": true
         },
-        "userId": {
+        "sourceSystem": {
+          "type": "string",
+          "title": "Source System",
+          "filterable": true,
+          "sortable": true
+        },
+        "positionId": {
           "type": "string",
           "format": "single-select",
-          "title": "Platform User",
+          "title": "Position Id",
           "filterable": true,
           "foreignKey": {
-            "reference": "USER"
+            "reference": "ENTITY_ID:Position"
           },
           "foreignKeyConstraintEnforced": false
+        },
+        "closeDate": {
+          "type": "integer",
+          "format": "date",
+          "dateFormat": "epoch",
+          "title": "Close Date",
+          "filterable": true,
+          "sortable": true
+        },
+        "incentiveDate": {
+          "type": "integer",
+          "format": "date",
+          "dateFormat": "epoch",
+          "title": "Incentive Date",
+          "filterable": true,
+          "sortable": true
+        },
+        "amount": {
+          "type": "integer",
+          "title": "Amount (minor units)",
+          "filterable": true,
+          "sortable": true
         },
         "currencyId": {
           "type": "string",
           "format": "single-select",
-          "title": "Currency",
+          "title": "Currency Id",
           "filterable": true,
           "foreignKey": {
             "reference": "ENTITY_ID:Currency"
           },
           "foreignKeyConstraintEnforced": false
         },
-        "hireDate": {
+        "amountBase": {
           "type": "integer",
-          "format": "date",
-          "dateFormat": "epoch",
-          "title": "Hire Date",
+          "title": "Amount Base (minor units)",
           "filterable": true,
           "sortable": true
         },
-        "terminationDate": {
-          "type": "integer",
-          "format": "date",
-          "dateFormat": "epoch",
-          "title": "Termination Date",
-          "filterable": true,
-          "sortable": true
-        },
-        "status": {
+        "product": {
           "type": "string",
-          "title": "Status",
+          "title": "Product",
           "filterable": true,
           "sortable": true
         },
-        "firstName": {
+        "customer": {
           "type": "string",
-          "title": "First Name",
+          "title": "Customer",
           "filterable": true,
           "sortable": true
         },
-        "lastName": {
+        "attrs": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {},
+          "title": "Attrs",
+          "filterable": true,
+          "sortable": true
+        },
+        "batchId": {
           "type": "string",
-          "title": "Last Name",
+          "title": "Batch Id",
           "filterable": true,
           "sortable": true
         },
-        "region": {
-          "type": "string",
-          "title": "Region",
-          "filterable": true,
-          "sortable": true
-        },
-        "businessGroup": {
-          "type": "string",
-          "title": "Business Group",
-          "filterable": true,
-          "sortable": true
-        },
-        "team": {
-          "type": "string",
-          "title": "Team",
-          "filterable": true,
-          "sortable": true
-        },
-        "personalTarget": {
-          "type": "number",
-          "title": "Personal Target",
-          "filterable": true,
-          "sortable": true
-        },
-        "salary": {
-          "type": "number",
-          "title": "Salary",
-          "filterable": true,
-          "sortable": true
-        },
-        "personalCurrencyId": {
+        "reversalOf": {
           "type": "string",
           "format": "single-select",
-          "title": "Personal Currency Id",
+          "title": "Reversal Of",
           "filterable": true,
           "foreignKey": {
-            "reference": "ENTITY_ID:Currency"
+            "reference": "ENTITY_ID:Transaction"
           },
           "foreignKeyConstraintEnforced": false
         }
-      },
-      "required": [
-        "employeeId",
-        "name",
-        "currencyId",
-        "status"
-      ]
+      }
     }
   },
   "standard": false,
   "tags": [
     "icm"
   ],
-  "version": 3
+  "version": 1
 }

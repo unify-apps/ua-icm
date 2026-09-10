@@ -1,0 +1,691 @@
+{
+  "appsUsed": [],
+  "createdTime": 1789047269637,
+  "deleted": false,
+  "description": "The People screen's Download button: the whole roster written to a CSV file by the platform's CSV node, with currency codes joined and dates rendered yyyy-MM-dd UTC.",
+  "edges": [
+    {
+      "fromNodeId": "n_sTaRt",
+      "id": "next@n_sTaRt@n_Norm",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Norm",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Norm",
+      "id": "next@n_Norm@n_IfBad",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfBad",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "if@n_IfBad@n_StBad",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StBad",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_Fetch",
+      "id": "next@n_Fetch@n_Rows",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Rows",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Rows",
+      "id": "next@n_Rows@n_Write",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Write",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Write",
+      "id": "next@n_Write@n_StOk",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StOk",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "next@n_IfBad@n_FtCur",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtCur",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtCur",
+      "id": "next@n_FtCur@n_Fetch",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Fetch",
+      "type": "next"
+    }
+  ],
+  "id": "6aa2b1e58f7899040900afe2",
+  "lastModifiedBy": 388282,
+  "lastPlatformUpdateBy": 388282,
+  "lastPlatformUpdateOn": 1789047269637,
+  "lcName": "icm | export people csv",
+  "modifiedTime": 1789047269637,
+  "name": "ICM | Export People CSV",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_sTaRt",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "success",
+            "message",
+            "total"
+          ],
+          "properties": {
+            "status": {
+              "type": "string",
+              "title": "Status"
+            },
+            "success": {
+              "type": "boolean",
+              "title": "Success"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            },
+            "total": {
+              "type": "integer",
+              "title": "Total"
+            },
+            "matched": {
+              "type": "integer",
+              "title": "Matched"
+            },
+            "truncated": {
+              "type": "boolean",
+              "title": "Truncated"
+            },
+            "fileDetails": {
+              "type": "object",
+              "title": "File Details",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "title": "Name"
+                },
+                "source": {
+                  "type": "string",
+                  "title": "Source"
+                },
+                "sourceType": {
+                  "type": "string",
+                  "title": "Source Type"
+                },
+                "fileType": {
+                  "type": "string",
+                  "title": "File Type"
+                },
+                "mimeType": {
+                  "type": "string",
+                  "title": "Mime Type"
+                },
+                "fileFormat": {
+                  "type": "string",
+                  "title": "File Format"
+                },
+                "size": {
+                  "type": "integer",
+                  "title": "Size"
+                }
+              }
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "search": {
+              "type": "string",
+              "title": "Search"
+            },
+            "maxRows": {
+              "type": "string",
+              "title": "Max Rows"
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Norm",
+      "index": 2,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "valid": {
+              "type": "boolean",
+              "title": "Valid"
+            },
+            "reason": {
+              "type": "string",
+              "title": "Reason"
+            },
+            "search": {
+              "type": "string",
+              "title": "Search"
+            },
+            "rowCap": {
+              "type": "integer",
+              "title": "Row Cap"
+            },
+            "listFilter": {
+              "type": "object",
+              "title": "List Filter"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "search": {
+              "type": "string",
+              "title": "Search"
+            },
+            "maxRows": {
+              "type": "string",
+              "title": "Max Rows"
+            }
+          }
+        },
+        "code": "// A caller that OMITS a field entirely - rather than sending \"\" - must get a\n// business outcome, not \"No such property\". An unbound parameter is not a null\n// variable in Groovy; it is a missing one, so it has to be asked for by name.\ndef raw = { n -> binding.hasVariable(n) ? binding.getVariable(n) : null }\ndef t = { v -> v == null ? '' : v.toString().trim() }\ndef s  = t(raw('search'))\ndef mr = t(raw('maxRows'))\n\nboolean valid = true\nString reason = ''\n\n// THE WHOLE ROSTER, ALWAYS. This is an export, not a page of the screen - the\n// caller's own paging is deliberately ignored, and there is no offset. The\n// ceiling is a runaway guard, not a page size: nothing clamps page.limit on the\n// way through (BaseStorageAction.getPageDetailsOrDefault passes it straight to the\n// query), so one fetch really does return everything a realistic roster holds.\n// If it is ever hit, the run says TRUNCATED rather than handing back a short file.\nint rowCap = 50000\nif (!mr.isEmpty()) {\n    if (mr ==~ /^\\d+$/) { rowCap = Integer.parseInt(mr) } else { valid = false; reason = 'maxRows must be a whole number, got: ' + mr }\n}\nif (rowCap < 1) rowCap = 1\nif (rowCap > 50000) rowCap = 50000\n\n// The SAME OR-search ICM | Manage People uses for LIST, so the file is the rows the\n// screen is showing. This similarity is COPIED GROOVY, not a shared node, and it is\n// the one thing here that can silently drift - if the LIST search changes and this\n// does not, the download stops matching the table. The suite's anti-drift case\n// asserts both return the same count for the same search.\ndef lf = []\nif (!valid) {\n    lf << [property: 'id', filter: [operator: 'EQUAL', value: '__invalid_input__']]\n} else if (!s.isEmpty()) {\n    lf << [operator: 'OR', filters: [\n        [property: 'properties.employeeId', filter: [operator: 'ICONTAINS', value: s]],\n        [property: 'properties.name',       filter: [operator: 'ICONTAINS', value: s]],\n        [property: 'properties.email',      filter: [operator: 'ICONTAINS', value: s]]]]\n}\n\nreturn [valid: valid, reason: reason, search: s, rowCap: rowCap,\n        listFilter: [operator: 'AND', filters: lf]]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "search": "{{ n_sTaRt.outputs.search }}",
+          "maxRows": "{{ n_sTaRt.outputs.maxRows }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Validate the request and build the filter",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_IfBad",
+      "index": 3,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Norm.outputs.result.valid }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": false
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Did validation fail?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@y",
+      "id": "n_StBad",
+      "index": 4,
+      "inputs": {
+        "result": {
+          "status": "INVALID_INPUT",
+          "success": false,
+          "message": "{{ n_Norm.outputs.result.reason }}",
+          "total": 0,
+          "matched": 0,
+          "truncated": false
+        }
+      },
+      "skip": false,
+      "subTitle": "Refused before any fetch",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_FtCur",
+      "index": 5,
+      "inputs": {
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Currency",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 200,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": false,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.code"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The currency lookup table - so the file carries codes, not entity ids",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_Fetch",
+      "index": 6,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.listFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Payee",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.rowCap }}",
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.employeeId",
+          "properties.firstName",
+          "properties.lastName",
+          "properties.name",
+          "properties.email",
+          "properties.region",
+          "properties.businessGroup",
+          "properties.team",
+          "properties.status",
+          "properties.hireDate",
+          "properties.terminationDate",
+          "properties.currencyId",
+          "properties.personalCurrencyId",
+          "properties.personalTarget",
+          "properties.salary"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Every person matching the filter - the whole roster",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_Rows",
+      "index": 7,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "people": {
+              "type": "array",
+              "title": "People",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "employeeId": {
+                    "type": "string",
+                    "title": "Employee ID"
+                  },
+                  "firstName": {
+                    "type": "string",
+                    "title": "First Name"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "title": "Last Name"
+                  },
+                  "name": {
+                    "type": "string",
+                    "title": "Name"
+                  },
+                  "email": {
+                    "type": "string",
+                    "title": "Email"
+                  },
+                  "region": {
+                    "type": "string",
+                    "title": "Region"
+                  },
+                  "businessGroup": {
+                    "type": "string",
+                    "title": "Business Group"
+                  },
+                  "team": {
+                    "type": "string",
+                    "title": "Team"
+                  },
+                  "status": {
+                    "type": "string",
+                    "title": "Status"
+                  },
+                  "hireDate": {
+                    "type": "string",
+                    "title": "Hire Date"
+                  },
+                  "terminationDate": {
+                    "type": "string",
+                    "title": "Termination Date"
+                  },
+                  "currencyCode": {
+                    "type": "string",
+                    "title": "Payment Currency"
+                  },
+                  "personalCurrencyCode": {
+                    "type": "string",
+                    "title": "Personal Currency"
+                  },
+                  "personalTarget": {
+                    "type": "string",
+                    "title": "Personal Target"
+                  },
+                  "salary": {
+                    "type": "string",
+                    "title": "Salary"
+                  }
+                }
+              }
+            },
+            "total": {
+              "type": "integer",
+              "title": "Total"
+            },
+            "matched": {
+              "type": "integer",
+              "title": "Matched"
+            },
+            "truncated": {
+              "type": "boolean",
+              "title": "Truncated"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            },
+            "status": {
+              "type": "string",
+              "title": "Status"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rows": {
+              "type": "array",
+              "title": "Rows"
+            },
+            "currencyRows": {
+              "type": "array",
+              "title": "Currency Rows"
+            },
+            "total": {
+              "type": "integer",
+              "title": "Total"
+            }
+          }
+        },
+        "code": "// Flatten to the row shape the CSV node reads. EVERY value is a String: the CSV\n// writer is handed text, and a field never set on a record is MISSING, not null,\n// so it defaults to '' - otherwise the column holds \"null\".\ndef sv = { m, k -> (m != null && m[k] != null) ? m[k].toString() : '' }\n\n// ONE bulk fetch of Currency, joined here. A file of e_6a9c... ids is not something\n// a person can read or re-import, so the CODE is what gets written.\ndef codes = [:]\nif (currencyRows != null) currencyRows.each { c -> codes[String.valueOf(c.id)] = sv(c.properties, 'code') }\n\n// Dates are stored as epoch millis and rendered yyyy-MM-dd in UTC. A spreadsheet\n// column holding 1788594607505 is a file nobody can use. UTC because Manage People\n// stores UTC midnight for a chosen day - rendering in local time would move a hire\n// date across a day boundary.\ndef fmt = new java.text.SimpleDateFormat('yyyy-MM-dd')\nfmt.setTimeZone(java.util.TimeZone.getTimeZone('UTC'))\ndef dv = { m, k -> (m != null && m[k] != null) ? fmt.format(new Date(m[k] as long)) : '' }\n\ndef out = []\nif (rows != null) rows.each { r ->\n    def p = r.properties\n    out << [employeeId: sv(p, 'employeeId'), firstName: sv(p, 'firstName'),\n            lastName: sv(p, 'lastName'), name: sv(p, 'name'), email: sv(p, 'email'),\n            region: sv(p, 'region'), businessGroup: sv(p, 'businessGroup'),\n            team: sv(p, 'team'), status: sv(p, 'status'),\n            hireDate: dv(p, 'hireDate'), terminationDate: dv(p, 'terminationDate'),\n            currencyCode: codes.get(sv(p, 'currencyId')) ?: '',\n            personalCurrencyCode: codes.get(sv(p, 'personalCurrencyId')) ?: '',\n            personalTarget: sv(p, 'personalTarget'), salary: sv(p, 'salary')]\n}\n\n// `total` is the server's count of everything matching the filter (includeTotalCount\n// is on), and it is NOT capped by the fetch limit - so comparing it with what came\n// back is what makes a short file impossible to miss. The status is computed HERE\n// rather than being a literal on the STOP node, because only this node can know.\nint n = out.size()\nint tot = (total == null) ? n : (total as int)\nboolean truncated = tot > n\n\nreturn [people: out, total: n, matched: tot, truncated: truncated,\n        status: truncated ? 'TRUNCATED' : 'OK',\n        message: truncated\n            ? ('Incomplete file: ' + n + ' of ' + tot + ' people. Raise maxRows to export the rest.')\n            : (n == 0 ? 'No people found; the file has its header row only.'\n                      : ('All ' + n + ' person(s) exported.'))]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "rows": "{{ n_Fetch.outputs.objects }}",
+          "currencyRows": "{{ n_FtCur.outputs.objects }}",
+          "total": "{{ n_Fetch.outputs.total }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Flatten the records into CSV rows, joining currency codes and rendering dates",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "csv_by_unifyapps",
+        "resourceName": "csv_by_unifyapps_list_to_csv_file",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_Write",
+      "index": 8,
+      "inputs": {
+        "fileName": "people",
+        "quote": "\"",
+        "delimiter": ",",
+        "staticHeaders": [
+          {
+            "key": "Employee ID",
+            "value": "{{ n_Rows.outputs.result.people[0].employeeId }}"
+          },
+          {
+            "key": "First Name",
+            "value": "{{ n_Rows.outputs.result.people[0].firstName }}"
+          },
+          {
+            "key": "Last Name",
+            "value": "{{ n_Rows.outputs.result.people[0].lastName }}"
+          },
+          {
+            "key": "Name",
+            "value": "{{ n_Rows.outputs.result.people[0].name }}"
+          },
+          {
+            "key": "Email",
+            "value": "{{ n_Rows.outputs.result.people[0].email }}"
+          },
+          {
+            "key": "Region",
+            "value": "{{ n_Rows.outputs.result.people[0].region }}"
+          },
+          {
+            "key": "Business Group",
+            "value": "{{ n_Rows.outputs.result.people[0].businessGroup }}"
+          },
+          {
+            "key": "Team",
+            "value": "{{ n_Rows.outputs.result.people[0].team }}"
+          },
+          {
+            "key": "Status",
+            "value": "{{ n_Rows.outputs.result.people[0].status }}"
+          },
+          {
+            "key": "Hire Date",
+            "value": "{{ n_Rows.outputs.result.people[0].hireDate }}"
+          },
+          {
+            "key": "Termination Date",
+            "value": "{{ n_Rows.outputs.result.people[0].terminationDate }}"
+          },
+          {
+            "key": "Payment Currency",
+            "value": "{{ n_Rows.outputs.result.people[0].currencyCode }}"
+          },
+          {
+            "key": "Personal Currency",
+            "value": "{{ n_Rows.outputs.result.people[0].personalCurrencyCode }}"
+          },
+          {
+            "key": "Personal Target",
+            "value": "{{ n_Rows.outputs.result.people[0].personalTarget }}"
+          },
+          {
+            "key": "Salary",
+            "value": "{{ n_Rows.outputs.result.people[0].salary }}"
+          }
+        ],
+        "quoteMode": "MINIMAL",
+        "skipHeaderRow": false,
+        "headerType": "STATIC",
+        "encoding": "UTF-8",
+        "keepExactFileName": false,
+        "dataSource": "{{ n_Rows.outputs.result.people }}",
+        "fileType": "csv"
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Write the rows to a CSV file",
+      "title": "Write data to CSV file",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_StOk",
+      "index": 9,
+      "inputs": {
+        "result": {
+          "status": "{{ n_Rows.outputs.result.status }}",
+          "success": true,
+          "message": "{{ n_Rows.outputs.result.message }}",
+          "total": "{{ n_Rows.outputs.result.total }}",
+          "matched": "{{ n_Rows.outputs.result.matched }}",
+          "truncated": "{{ n_Rows.outputs.result.truncated }}",
+          "fileDetails": "{{ n_Write.outputs.fileDetails }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "The file - an empty catalog is OK, not an error",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 388282,
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 0
+}

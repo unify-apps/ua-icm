@@ -1,0 +1,491 @@
+{
+  "columnCounts": 25,
+  "createdTime": 1788843499489,
+  "deleted": false,
+  "description": "A saved ingestion: read one object from a connected source app into one storage object with a fixed field map. Owns a generated automation of its own. Once it leaves DRAFT the wiring is frozen - connection, objects, field map and dedupe key never change, so a run can trust the row it reads.",
+  "id": "Pipeline",
+  "input": {
+    "type": "SCHEMA_AND_LAYOUT",
+    "dynamic": false,
+    "layout": {
+      "ui:order": [
+        "pipelineId",
+        "name",
+        "state",
+        "appName",
+        "connectionId",
+        "connectionName",
+        "sourceObject",
+        "destinationObject",
+        "fieldMap",
+        "dedupeField",
+        "automationId",
+        "automationVersion",
+        "lastRunId",
+        "lastRunAt",
+        "lastRunStatus",
+        "lastError",
+        "lastErrorAt",
+        "lastCursor",
+        "lastModifiedSince",
+        "totalIngested",
+        "consecutiveFailures",
+        "lockedAt",
+        "pipelineType",
+        "cronExpression",
+        "timezone"
+      ]
+    },
+    "schema": {
+      "type": "object",
+      "properties": {
+        "pipelineId": {
+          "type": "string",
+          "title": "Pipeline Id",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true,
+          "uniqueKey": true
+        },
+        "name": {
+          "type": "string",
+          "title": "Name",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true,
+          "nameField": true
+        },
+        "state": {
+          "type": "string",
+          "title": "State",
+          "filterable": true,
+          "sortable": true
+        },
+        "appName": {
+          "type": "string",
+          "title": "App Name",
+          "filterable": true,
+          "sortable": true
+        },
+        "connectionId": {
+          "type": "string",
+          "title": "Connection Id",
+          "filterable": true,
+          "sortable": true
+        },
+        "connectionName": {
+          "type": "string",
+          "title": "Connection Name",
+          "filterable": true,
+          "sortable": true
+        },
+        "sourceObject": {
+          "type": "string",
+          "title": "Source Object",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true
+        },
+        "destinationObject": {
+          "type": "string",
+          "title": "Destination Object",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true
+        },
+        "fieldMap": {
+          "type": "string",
+          "title": "Field Map",
+          "filterable": true,
+          "sortable": true
+        },
+        "dedupeField": {
+          "type": "string",
+          "title": "Dedupe Field",
+          "filterable": true,
+          "sortable": true
+        },
+        "automationId": {
+          "type": "string",
+          "title": "Automation Id",
+          "filterable": true,
+          "sortable": true
+        },
+        "automationVersion": {
+          "type": "integer",
+          "title": "Automation Version",
+          "filterable": true,
+          "sortable": true
+        },
+        "lastRunId": {
+          "type": "string",
+          "title": "Last Run Id",
+          "filterable": true,
+          "sortable": true
+        },
+        "lastRunAt": {
+          "type": "integer",
+          "format": "date",
+          "dateFormat": "epoch",
+          "title": "Last Run At",
+          "filterable": true,
+          "sortable": true
+        },
+        "lastRunStatus": {
+          "type": "string",
+          "title": "Last Run Status",
+          "filterable": true,
+          "sortable": true
+        },
+        "lastError": {
+          "type": "string",
+          "title": "Last Error",
+          "filterable": true,
+          "sortable": true
+        },
+        "lastErrorAt": {
+          "type": "integer",
+          "format": "date",
+          "dateFormat": "epoch",
+          "title": "Last Error At",
+          "filterable": true,
+          "sortable": true
+        },
+        "lastCursor": {
+          "type": "string",
+          "title": "Last Cursor",
+          "filterable": true,
+          "sortable": true
+        },
+        "lastModifiedSince": {
+          "type": "string",
+          "title": "Last Modified Since",
+          "filterable": true,
+          "sortable": true
+        },
+        "totalIngested": {
+          "type": "integer",
+          "title": "Total Ingested",
+          "filterable": true,
+          "sortable": true
+        },
+        "consecutiveFailures": {
+          "type": "integer",
+          "title": "Consecutive Failures",
+          "filterable": true,
+          "sortable": true
+        },
+        "lockedAt": {
+          "type": "integer",
+          "format": "date",
+          "dateFormat": "epoch",
+          "title": "Locked At",
+          "filterable": true,
+          "sortable": true
+        },
+        "pipelineType": {
+          "type": "string",
+          "title": "Pipeline Type",
+          "filterable": true,
+          "sortable": true
+        },
+        "cronExpression": {
+          "type": "string",
+          "title": "Cron Expression",
+          "filterable": true,
+          "sortable": true
+        },
+        "timezone": {
+          "type": "string",
+          "title": "Timezone",
+          "filterable": true,
+          "sortable": true
+        }
+      },
+      "required": [
+        "pipelineId",
+        "name",
+        "state"
+      ]
+    }
+  },
+  "lastModifiedBy": 403181,
+  "lastPlatformUpdateBy": 403181,
+  "lastPlatformUpdateOn": 1788847296047,
+  "lcName": "pipeline",
+  "metadata": {
+    "auditable": true,
+    "autoGeneratedFields": [],
+    "cacheable": false,
+    "captureActivity": true,
+    "captureReferences": false,
+    "captureReporting": true,
+    "dateFields": [
+      "lastRunAt",
+      "lastErrorAt",
+      "lockedAt"
+    ],
+    "deployable": false,
+    "encryptedFields": [],
+    "external": false,
+    "filterableFields": [
+      "pipelineId",
+      "name",
+      "state",
+      "appName",
+      "connectionId",
+      "connectionName",
+      "sourceObject",
+      "destinationObject",
+      "fieldMap",
+      "dedupeField",
+      "automationId",
+      "automationVersion",
+      "lastRunId",
+      "lastRunAt",
+      "lastRunStatus",
+      "lastError",
+      "lastErrorAt",
+      "lastCursor",
+      "lastModifiedSince",
+      "totalIngested",
+      "consecutiveFailures",
+      "lockedAt",
+      "pipelineType",
+      "cronExpression",
+      "timezone"
+    ],
+    "graphType": "LEGACY_MDM",
+    "hasTimeSeriesRecords": true,
+    "hashedFields": [],
+    "inaccessibleFromUI": false,
+    "includeInDependency": false,
+    "nameField": "name",
+    "partFields": [],
+    "piiFields": [],
+    "primaryKeyField": "",
+    "referenceKeys": [],
+    "scdType2Enabled": false,
+    "schemaValidationEnabled": true,
+    "searchableFields": [
+      "pipelineId",
+      "name",
+      "name",
+      "sourceObject",
+      "destinationObject"
+    ],
+    "sessionBackedStorageEnabled": false,
+    "skipConfigSyncIfModified": false,
+    "skipDeletedEntityBackup": false,
+    "skipFetchBeforeUpdate": false,
+    "skipIndexLimitValidation": false,
+    "skipPermissionCheckForAggregation": false,
+    "skipPermissionsFilter": false,
+    "skipReportingEventsOrdering": false,
+    "skipRoutineLoad": false,
+    "skipTotalHitsInAggregation": false,
+    "skipVersionIncrementOnUpdate": false,
+    "storeDetails": {
+      "store": "MONGO",
+      "uniqueKeySupported": true
+    },
+    "supportsDistinctValues": false,
+    "supportsWebhook": false,
+    "syncFromSourceCustomer": false,
+    "translationsEnabled": false,
+    "uniqueKeyFields": [
+      "pipelineId"
+    ],
+    "urlValidationEnabledFields": [],
+    "useCachedEntityStoreForAutomations": false,
+    "userLevelEncryption": false,
+    "vectorFields": [],
+    "versioningEnabled": true
+  },
+  "modifiedTime": 1788847296047,
+  "name": "Pipeline",
+  "ownerUserId": 403181,
+  "packaged": false,
+  "pluralName": "Pipelines",
+  "schema": {
+    "type": "SCHEMA",
+    "dynamic": false,
+    "schema": {
+      "type": "object",
+      "properties": {
+        "pipelineId": {
+          "type": "string",
+          "title": "Pipeline Id",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true,
+          "uniqueKey": true
+        },
+        "name": {
+          "type": "string",
+          "title": "Name",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true,
+          "nameField": true
+        },
+        "state": {
+          "type": "string",
+          "title": "State",
+          "filterable": true,
+          "sortable": true
+        },
+        "appName": {
+          "type": "string",
+          "title": "App Name",
+          "filterable": true,
+          "sortable": true
+        },
+        "connectionId": {
+          "type": "string",
+          "title": "Connection Id",
+          "filterable": true,
+          "sortable": true
+        },
+        "connectionName": {
+          "type": "string",
+          "title": "Connection Name",
+          "filterable": true,
+          "sortable": true
+        },
+        "sourceObject": {
+          "type": "string",
+          "title": "Source Object",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true
+        },
+        "destinationObject": {
+          "type": "string",
+          "title": "Destination Object",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true
+        },
+        "fieldMap": {
+          "type": "string",
+          "title": "Field Map",
+          "filterable": true,
+          "sortable": true
+        },
+        "dedupeField": {
+          "type": "string",
+          "title": "Dedupe Field",
+          "filterable": true,
+          "sortable": true
+        },
+        "automationId": {
+          "type": "string",
+          "title": "Automation Id",
+          "filterable": true,
+          "sortable": true
+        },
+        "automationVersion": {
+          "type": "integer",
+          "title": "Automation Version",
+          "filterable": true,
+          "sortable": true
+        },
+        "lastRunId": {
+          "type": "string",
+          "title": "Last Run Id",
+          "filterable": true,
+          "sortable": true
+        },
+        "lastRunAt": {
+          "type": "integer",
+          "format": "date",
+          "dateFormat": "epoch",
+          "title": "Last Run At",
+          "filterable": true,
+          "sortable": true
+        },
+        "lastRunStatus": {
+          "type": "string",
+          "title": "Last Run Status",
+          "filterable": true,
+          "sortable": true
+        },
+        "lastError": {
+          "type": "string",
+          "title": "Last Error",
+          "filterable": true,
+          "sortable": true
+        },
+        "lastErrorAt": {
+          "type": "integer",
+          "format": "date",
+          "dateFormat": "epoch",
+          "title": "Last Error At",
+          "filterable": true,
+          "sortable": true
+        },
+        "lastCursor": {
+          "type": "string",
+          "title": "Last Cursor",
+          "filterable": true,
+          "sortable": true
+        },
+        "lastModifiedSince": {
+          "type": "string",
+          "title": "Last Modified Since",
+          "filterable": true,
+          "sortable": true
+        },
+        "totalIngested": {
+          "type": "integer",
+          "title": "Total Ingested",
+          "filterable": true,
+          "sortable": true
+        },
+        "consecutiveFailures": {
+          "type": "integer",
+          "title": "Consecutive Failures",
+          "filterable": true,
+          "sortable": true
+        },
+        "lockedAt": {
+          "type": "integer",
+          "format": "date",
+          "dateFormat": "epoch",
+          "title": "Locked At",
+          "filterable": true,
+          "sortable": true
+        },
+        "pipelineType": {
+          "type": "string",
+          "title": "Pipeline Type",
+          "filterable": true,
+          "sortable": true
+        },
+        "cronExpression": {
+          "type": "string",
+          "title": "Cron Expression",
+          "filterable": true,
+          "sortable": true
+        },
+        "timezone": {
+          "type": "string",
+          "title": "Timezone",
+          "filterable": true,
+          "sortable": true
+        }
+      },
+      "required": [
+        "pipelineId",
+        "name",
+        "state"
+      ]
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 1
+}

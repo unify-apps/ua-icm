@@ -1,0 +1,1607 @@
+{
+  "appsUsed": [],
+  "createdTime": 1789046788701,
+  "deleted": false,
+  "description": "The People screen behind one callable: list the roster (paged, searched, filtered), create a person, edit a person. Composes the required nameField from firstName/lastName and pre-checks the employeeId unique key.",
+  "edges": [
+    {
+      "fromNodeId": "n_sTaRt",
+      "id": "next@n_sTaRt@n_Norm",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Norm",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Norm",
+      "id": "next@n_Norm@n_IfBad",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfBad",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "if@n_IfBad@n_StBad",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StBad",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfList",
+      "id": "if@n_IfList@n_FtList",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtList",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_FtList",
+      "id": "next@n_FtList@n_Rows",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Rows",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Rows",
+      "id": "next@n_Rows@n_StList",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StList",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfList",
+      "id": "next@n_IfList@n_FtDup",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtDup",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtDup",
+      "id": "next@n_FtDup@n_FtOne",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtOne",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtOne",
+      "id": "next@n_FtOne@n_Guard",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Guard",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Guard",
+      "id": "next@n_Guard@n_IfDup",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfDup",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfDup",
+      "id": "if@n_IfDup@n_StDup",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StDup",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfDup",
+      "id": "next@n_IfDup@n_IfNF",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfNF",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfNF",
+      "id": "if@n_IfNF@n_StNF",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StNF",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfNF",
+      "id": "next@n_IfNF@n_IfCr",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfCr",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfCr",
+      "id": "if@n_IfCr@n_Create",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Create",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_Create",
+      "id": "next@n_Create@n_StCr",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StCr",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfCr",
+      "id": "next@n_IfCr@n_Update",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Update",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Update",
+      "id": "next@n_Update@n_StUp",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StUp",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "next@n_IfBad@n_FtCur",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtCur",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtCur",
+      "id": "next@n_FtCur@n_IfList",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfList",
+      "type": "next"
+    }
+  ],
+  "id": "6aa2b0043aa7845ea19179f4",
+  "lastModifiedBy": 388282,
+  "lastPlatformUpdateBy": 388282,
+  "lastPlatformUpdateOn": 1789047151762,
+  "lcName": "icm | manage people",
+  "modifiedTime": 1789047151762,
+  "name": "ICM | Manage People",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_sTaRt",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "success",
+            "message",
+            "total",
+            "people"
+          ],
+          "properties": {
+            "status": {
+              "type": "string",
+              "title": "Status"
+            },
+            "success": {
+              "type": "boolean",
+              "title": "Success"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            },
+            "action": {
+              "type": "string",
+              "title": "Action"
+            },
+            "total": {
+              "type": "integer",
+              "title": "Total"
+            },
+            "hasMore": {
+              "type": "boolean",
+              "title": "Has More"
+            },
+            "offset": {
+              "type": "integer",
+              "title": "Offset"
+            },
+            "limit": {
+              "type": "integer",
+              "title": "Limit"
+            },
+            "people": {
+              "type": "array",
+              "title": "People",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "payeeId": {
+                    "type": "string",
+                    "title": "Payee Id"
+                  },
+                  "employeeId": {
+                    "type": "string",
+                    "title": "Employee Id"
+                  },
+                  "firstName": {
+                    "type": "string",
+                    "title": "First Name"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "title": "Last Name"
+                  },
+                  "name": {
+                    "type": "string",
+                    "title": "Name"
+                  },
+                  "email": {
+                    "type": "string",
+                    "title": "Email"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "title": "User Id"
+                  },
+                  "currencyId": {
+                    "type": "string",
+                    "title": "Currency Id"
+                  },
+                  "currencyCode": {
+                    "type": "string",
+                    "title": "Currency Code"
+                  },
+                  "personalCurrencyId": {
+                    "type": "string",
+                    "title": "Personal Currency Id"
+                  },
+                  "personalCurrencyCode": {
+                    "type": "string",
+                    "title": "Personal Currency Code"
+                  },
+                  "hireDate": {
+                    "type": "integer",
+                    "title": "Hire Date"
+                  },
+                  "terminationDate": {
+                    "type": "integer",
+                    "title": "Termination Date"
+                  },
+                  "status": {
+                    "type": "string",
+                    "title": "Status"
+                  },
+                  "region": {
+                    "type": "string",
+                    "title": "Region"
+                  },
+                  "businessGroup": {
+                    "type": "string",
+                    "title": "Business Group"
+                  },
+                  "team": {
+                    "type": "string",
+                    "title": "Team"
+                  },
+                  "personalTarget": {
+                    "type": "number",
+                    "title": "Personal Target"
+                  },
+                  "salary": {
+                    "type": "number",
+                    "title": "Salary"
+                  }
+                }
+              }
+            },
+            "person": {
+              "type": "object",
+              "title": "Person",
+              "properties": {
+                "payeeId": {
+                  "type": "string",
+                  "title": "Payee Id"
+                },
+                "employeeId": {
+                  "type": "string",
+                  "title": "Employee Id"
+                },
+                "firstName": {
+                  "type": "string",
+                  "title": "First Name"
+                },
+                "lastName": {
+                  "type": "string",
+                  "title": "Last Name"
+                },
+                "name": {
+                  "type": "string",
+                  "title": "Name"
+                },
+                "email": {
+                  "type": "string",
+                  "title": "Email"
+                },
+                "userId": {
+                  "type": "string",
+                  "title": "User Id"
+                },
+                "currencyId": {
+                  "type": "string",
+                  "title": "Currency Id"
+                },
+                "currencyCode": {
+                  "type": "string",
+                  "title": "Currency Code"
+                },
+                "personalCurrencyId": {
+                  "type": "string",
+                  "title": "Personal Currency Id"
+                },
+                "personalCurrencyCode": {
+                  "type": "string",
+                  "title": "Personal Currency Code"
+                },
+                "hireDate": {
+                  "type": "integer",
+                  "title": "Hire Date"
+                },
+                "terminationDate": {
+                  "type": "integer",
+                  "title": "Termination Date"
+                },
+                "status": {
+                  "type": "string",
+                  "title": "Status"
+                },
+                "region": {
+                  "type": "string",
+                  "title": "Region"
+                },
+                "businessGroup": {
+                  "type": "string",
+                  "title": "Business Group"
+                },
+                "team": {
+                  "type": "string",
+                  "title": "Team"
+                },
+                "personalTarget": {
+                  "type": "number",
+                  "title": "Personal Target"
+                },
+                "salary": {
+                  "type": "number",
+                  "title": "Salary"
+                }
+              }
+            },
+            "currencies": {
+              "type": "array",
+              "title": "Currencies",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "currencyId": {
+                    "type": "string",
+                    "title": "Currency Id"
+                  },
+                  "code": {
+                    "type": "string",
+                    "title": "Code"
+                  },
+                  "name": {
+                    "type": "string",
+                    "title": "Name"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "action": {
+              "type": "string",
+              "title": "Action"
+            },
+            "payeeId": {
+              "type": "string",
+              "title": "Payee Id"
+            },
+            "employeeId": {
+              "type": "string",
+              "title": "Employee Id"
+            },
+            "firstName": {
+              "type": "string",
+              "title": "First Name"
+            },
+            "lastName": {
+              "type": "string",
+              "title": "Last Name"
+            },
+            "email": {
+              "type": "string",
+              "title": "Email"
+            },
+            "userId": {
+              "type": "string",
+              "title": "User Id"
+            },
+            "currencyId": {
+              "type": "string",
+              "title": "Currency Id"
+            },
+            "personalCurrencyId": {
+              "type": "string",
+              "title": "Personal Currency Id"
+            },
+            "hireDate": {
+              "type": "string",
+              "title": "Hire Date"
+            },
+            "terminationDate": {
+              "type": "string",
+              "title": "Termination Date"
+            },
+            "status": {
+              "type": "string",
+              "title": "Status"
+            },
+            "region": {
+              "type": "string",
+              "title": "Region"
+            },
+            "businessGroup": {
+              "type": "string",
+              "title": "Business Group"
+            },
+            "team": {
+              "type": "string",
+              "title": "Team"
+            },
+            "personalTarget": {
+              "type": "string",
+              "title": "Personal Target"
+            },
+            "salary": {
+              "type": "string",
+              "title": "Salary"
+            },
+            "search": {
+              "type": "string",
+              "title": "Search"
+            },
+            "filter": {
+              "type": "string",
+              "title": "Filter"
+            },
+            "limit": {
+              "type": "string",
+              "title": "Limit"
+            },
+            "offset": {
+              "type": "string",
+              "title": "Offset"
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Norm",
+      "index": 2,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "valid": {
+              "type": "boolean",
+              "title": "Valid"
+            },
+            "reason": {
+              "type": "string",
+              "title": "Reason"
+            },
+            "action": {
+              "type": "string",
+              "title": "Action"
+            },
+            "payeeId": {
+              "type": "string",
+              "title": "Payee Id"
+            },
+            "employeeId": {
+              "type": "string",
+              "title": "Employee Id"
+            },
+            "pageLimit": {
+              "type": "integer",
+              "title": "Page Limit"
+            },
+            "pageOffset": {
+              "type": "integer",
+              "title": "Page Offset"
+            },
+            "draft": {
+              "type": "object",
+              "title": "Draft"
+            },
+            "provided": {
+              "type": "array",
+              "title": "Provided",
+              "items": {
+                "type": "string"
+              }
+            },
+            "listFilter": {
+              "type": "object",
+              "title": "List Filter"
+            },
+            "dupFilter": {
+              "type": "object",
+              "title": "Dup Filter"
+            },
+            "oneFilter": {
+              "type": "object",
+              "title": "One Filter"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "action": {
+              "type": "string",
+              "title": "Action"
+            },
+            "payeeId": {
+              "type": "string",
+              "title": "Payee Id"
+            },
+            "employeeId": {
+              "type": "string",
+              "title": "Employee Id"
+            },
+            "firstName": {
+              "type": "string",
+              "title": "First Name"
+            },
+            "lastName": {
+              "type": "string",
+              "title": "Last Name"
+            },
+            "email": {
+              "type": "string",
+              "title": "Email"
+            },
+            "userId": {
+              "type": "string",
+              "title": "User Id"
+            },
+            "currencyId": {
+              "type": "string",
+              "title": "Currency Id"
+            },
+            "personalCurrencyId": {
+              "type": "string",
+              "title": "Personal Currency Id"
+            },
+            "hireDate": {
+              "type": "string",
+              "title": "Hire Date"
+            },
+            "terminationDate": {
+              "type": "string",
+              "title": "Termination Date"
+            },
+            "status": {
+              "type": "string",
+              "title": "Status"
+            },
+            "region": {
+              "type": "string",
+              "title": "Region"
+            },
+            "businessGroup": {
+              "type": "string",
+              "title": "Business Group"
+            },
+            "team": {
+              "type": "string",
+              "title": "Team"
+            },
+            "personalTarget": {
+              "type": "string",
+              "title": "Personal Target"
+            },
+            "salary": {
+              "type": "string",
+              "title": "Salary"
+            },
+            "search": {
+              "type": "string",
+              "title": "Search"
+            },
+            "filter": {
+              "type": "string",
+              "title": "Filter"
+            },
+            "limit": {
+              "type": "string",
+              "title": "Limit"
+            },
+            "offset": {
+              "type": "string",
+              "title": "Offset"
+            }
+          }
+        },
+        "code": "// Defaults are applied HERE. Real callers send \"\" for what they did not fill,\n// so \"\" is the value every branch is built around, not an edge case.\ndef t = { v -> v == null ? '' : v.toString().trim() }\n// Every parameter is read through hasVariable: an UNBOUND parameter is a MISSING\n// Groovy variable, not a null one, and a direct reference dies with \"No such\n// property\". That is what lets a data source with a smaller key set still call this.\ndef p = { String k -> binding.hasVariable(k) ? t(binding.getVariable(k)) : '' }\n\ndef act = p('action').toUpperCase()\nif (act.isEmpty()) act = 'LIST'\ndef id  = p('payeeId')\ndef eid = p('employeeId')\ndef s   = p('search')\ndef lim = p('limit')\ndef off = p('offset')\ndef rawFilter = binding.hasVariable('filter') ? binding.getVariable('filter') : null\n\nboolean valid = true\nString reason = ''\ndef problems = []\n\nif (!(act in ['LIST', 'CREATE', 'UPDATE'])) {\n    problems << ('action must be LIST, CREATE or UPDATE, got: ' + act)\n} else if (act == 'CREATE') {\n    // employeeId is the object's unique key; firstName composes the required\n    // nameField; currencyId and status are required by the schema.\n    if (eid.isEmpty())                 problems << 'employeeId is required to create a person'\n    if (p('firstName').isEmpty())      problems << 'firstName is required to create a person'\n    if (p('currencyId').isEmpty())     problems << 'currencyId is required to create a person'\n} else if (act == 'UPDATE' && id.isEmpty()) {\n    problems << 'payeeId is required to update a person'\n}\n\nint pageLimit = 50\nif (!lim.isEmpty()) {\n    if (lim ==~ /^\\d+$/) { pageLimit = Integer.parseInt(lim) } else { problems << ('limit must be a whole number, got: ' + lim) }\n}\nif (pageLimit < 1) pageLimit = 1\nif (pageLimit > 200) pageLimit = 200\n\nint pageOffset = 0\nif (!off.isEmpty()) {\n    if (off ==~ /^\\d+$/) { pageOffset = Integer.parseInt(off) } else { problems << ('offset must be a whole number, got: ' + off) }\n}\n\n// ---- the draft record -------------------------------------------------------\n// Coerced ONCE, here, so the guard node merges values rather than re-parsing\n// strings.\n//\n// A blank STRING is '' and is PRESENT: on UPDATE that clears the field, which is\n// what a user emptying the box means.\n//\n// A blank NUMBER or DATE is ABSENT from the map entirely, and on UPDATE that means\n// LEAVE IT ALONE. There is no '' for a number, and a null cannot carry the\n// intent either: the platform DROPS null-valued keys when it serialises between\n// nodes (observed on tool 2026-09-10 - the draft arrived at the guard without its\n// four null keys). So \"clear this number\" is not expressible here and is not\n// pretended to be; clearing a terminationDate is a follow-up that needs a real\n// sentinel, not a blank.\ndef draft = [:]\ndef provided = [] as Set\nif (!p('employeeId').isEmpty()) provided << 'employeeId'\ndraft['employeeId'] = p('employeeId')\nif (!p('firstName').isEmpty()) provided << 'firstName'\ndraft['firstName'] = p('firstName')\nif (!p('lastName').isEmpty()) provided << 'lastName'\ndraft['lastName'] = p('lastName')\nif (!p('email').isEmpty()) provided << 'email'\ndraft['email'] = p('email')\nif (!p('userId').isEmpty()) provided << 'userId'\ndraft['userId'] = p('userId')\nif (!p('currencyId').isEmpty()) provided << 'currencyId'\ndraft['currencyId'] = p('currencyId')\nif (!p('personalCurrencyId').isEmpty()) provided << 'personalCurrencyId'\ndraft['personalCurrencyId'] = p('personalCurrencyId')\nif (!p('hireDate').isEmpty()) { if (p('hireDate') ==~ /^\\d+$/) { draft['hireDate'] = Long.parseLong(p('hireDate')); provided << 'hireDate' } else { problems << ('hireDate must be epoch millis, got: ' + p('hireDate')) } }\nif (!p('terminationDate').isEmpty()) { if (p('terminationDate') ==~ /^\\d+$/) { draft['terminationDate'] = Long.parseLong(p('terminationDate')); provided << 'terminationDate' } else { problems << ('terminationDate must be epoch millis, got: ' + p('terminationDate')) } }\nif (!p('status').isEmpty()) provided << 'status'\ndraft['status'] = p('status')\nif (!p('region').isEmpty()) provided << 'region'\ndraft['region'] = p('region')\nif (!p('businessGroup').isEmpty()) provided << 'businessGroup'\ndraft['businessGroup'] = p('businessGroup')\nif (!p('team').isEmpty()) provided << 'team'\ndraft['team'] = p('team')\nif (!p('personalTarget').isEmpty()) { if (p('personalTarget') ==~ /^-?\\d+(\\.\\d+)?$/) { draft['personalTarget'] = new BigDecimal(p('personalTarget')); provided << 'personalTarget' } else { problems << ('personalTarget must be a number, got: ' + p('personalTarget')) } }\nif (!p('salary').isEmpty()) { if (p('salary') ==~ /^-?\\d+(\\.\\d+)?$/) { draft['salary'] = new BigDecimal(p('salary')); provided << 'salary' } else { problems << ('salary must be a number, got: ' + p('salary')) } }\n\n// ---- the filter block -------------------------------------------------------\n// The screen sends the platform's own wire shape - {op, values:[{field, op, values}]},\n// groups nested by the same rule - and the storage node speaks a DIFFERENT dialect:\n// {operator, filters:[{property, filter:{operator, value}}]}. Translating between the\n// two is this section's whole job. Sending the wire shape straight through answers\n// HTTP 500 \"Filter$Op ... op is null\" at RUN time, which names no node.\n//\n// Only the operators the screen can offer are accepted (platform-filter.ts,\n// TEXT_OPERATORS). Every one takes exactly one value or none, which is why there is\n// no list-valued case: dates and money are NOT filterable here, deliberately, and\n// adding one means growing a two-value BETWEEN branch FIRST.\ndef FILTER_FIELDS = [\"employeeId\",\"firstName\",\"lastName\",\"name\",\"email\",\"status\",\"region\",\"businessGroup\",\"team\"] as Set\ndef ONE_VALUE_OPS = ['EQUAL', 'NOT_EQUAL', 'ICONTAINS', 'NOT_ICONTAINS', 'CONTAINS', 'NOT_CONTAINS',\n                     'STARTS_WITH', 'NOT_STARTS_WITH', 'ENDS_WITH', 'NOT_ENDS_WITH', 'REGEX', 'NOT_REGEX'] as Set\ndef NO_VALUE_OPS = ['EXISTS', 'MISSING'] as Set\ndef GROUP_OPS = ['AND', 'OR'] as Set\n\ndef parsed = rawFilter\nif (parsed instanceof String) {\n    def raw = parsed.trim()\n    if (raw.isEmpty()) parsed = null\n    else {\n        try { parsed = new groovy.json.JsonSlurper().parseText(raw) }\n        catch (Exception e) { problems << ('filter is not valid JSON: ' + e.getMessage()); parsed = null }\n    }\n}\nif (parsed instanceof Map && parsed.isEmpty()) parsed = null\n\ndef toStorage\ntoStorage = { node, String path ->\n    if (!(node instanceof Map)) { problems << (path + ': a filter node must be an object'); return null }\n    def op = (node.op == null) ? '' : String.valueOf(node.op).trim().toUpperCase()\n    def field = (node.field == null) ? '' : String.valueOf(node.field).trim()\n\n    // No field means a GROUP. The wire shape carries a group's children in `values`, the\n    // same key a leaf uses for its operands - the presence of `field` is the only thing\n    // that tells them apart.\n    if (field.isEmpty()) {\n        if (!GROUP_OPS.contains(op)) { problems << (path + ': a group needs op AND or OR, got \"' + op + '\"'); return null }\n        def kids = []\n        def vals = node.values\n        if (vals != null && !(vals instanceof List)) { problems << (path + ': values of a group must be a list'); return null }\n        (vals ?: []).eachWithIndex { child, i ->\n            def c = toStorage(child, path + '.values[' + i + ']')\n            if (c != null) kids << c\n        }\n        // An empty group is not an error - it is a filter the user started and did not\n        // finish. Dropping it means \"no filter\", which is what the screen shows anyway.\n        if (kids.isEmpty()) return null\n        return [operator: op, filters: kids]\n    }\n\n    if (!FILTER_FIELDS.contains(field)) { problems << (path + ': unknown or non-filterable field \"' + field + '\"'); return null }\n    boolean takesValue = ONE_VALUE_OPS.contains(op)\n    if (!takesValue && !NO_VALUE_OPS.contains(op)) { problems << (path + ': operator \"' + op + '\" is not supported for ' + field); return null }\n\n    def leaf = [operator: op]\n    if (takesValue) {\n        def vals = (node.values instanceof List) ? node.values : (node.values == null ? [] : [node.values])\n        def first = vals.findResult { (it == null) ? null : (String.valueOf(it).trim() ?: null) }\n        if (first == null) { problems << (path + ': ' + op + ' needs one value'); return null }\n        if (op == 'REGEX' || op == 'NOT_REGEX') {\n            try { java.util.regex.Pattern.compile(first) }\n            catch (Exception e) { problems << (path + ': not a valid regular expression: ' + first); return null }\n        }\n        leaf.value = first\n    }\n    return [property: 'properties.' + field, filter: leaf]\n}\n\ndef filterNode = (parsed == null) ? null : toStorage(parsed, 'filter')\n\n// Collected, not thrown at the first one: a caller fixing three mistakes one\n// refusal at a time is the experience this avoids.\nif (!problems.isEmpty()) { valid = false; reason = problems.join('; ') }\n\ndef lf = []\nif (!valid) {\n    lf << [property: 'id', filter: [operator: 'EQUAL', value: '__invalid_input__']]\n} else {\n    // Search and filter are ANDed: the box narrows whatever the block already selected.\n    if (!s.isEmpty()) {\n        lf << [operator: 'OR', filters: [\n            [property: 'properties.employeeId', filter: [operator: 'ICONTAINS', value: s]],\n            [property: 'properties.name',       filter: [operator: 'ICONTAINS', value: s]],\n            [property: 'properties.email',      filter: [operator: 'ICONTAINS', value: s]]]]\n    }\n    if (filterNode != null) lf << filterNode\n}\n\n// The unique-key pre-check. A unique hit at WRITE time is a raw Mongo E11000\n// that kills the run - it is never save-time visible, so it is checked first.\ndef df = (valid && act != 'LIST' && !eid.isEmpty())\n    ? [[property: 'properties.employeeId', filter: [operator: 'EQUAL', value: eid]]]\n    : [[property: 'id', filter: [operator: 'EQUAL', value: '__none__']]]\n\n// The UPDATE target, read back so a missing id is NOT_FOUND rather than an engine error.\ndef of = (valid && act == 'UPDATE')\n    ? [[property: 'id', filter: [operator: 'EQUAL', value: id]]]\n    : [[property: 'id', filter: [operator: 'EQUAL', value: '__none__']]]\n\nreturn [valid: valid, reason: reason, action: act, payeeId: id, employeeId: eid,\n        pageLimit: pageLimit, pageOffset: pageOffset,\n        draft: draft, provided: (provided as List),\n        listFilter: [operator: 'AND', filters: lf],\n        dupFilter:  [operator: 'AND', filters: df],\n        oneFilter:  [operator: 'AND', filters: of]]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "action": "{{ n_sTaRt.outputs.action }}",
+          "payeeId": "{{ n_sTaRt.outputs.payeeId }}",
+          "employeeId": "{{ n_sTaRt.outputs.employeeId }}",
+          "firstName": "{{ n_sTaRt.outputs.firstName }}",
+          "lastName": "{{ n_sTaRt.outputs.lastName }}",
+          "email": "{{ n_sTaRt.outputs.email }}",
+          "userId": "{{ n_sTaRt.outputs.userId }}",
+          "currencyId": "{{ n_sTaRt.outputs.currencyId }}",
+          "personalCurrencyId": "{{ n_sTaRt.outputs.personalCurrencyId }}",
+          "hireDate": "{{ n_sTaRt.outputs.hireDate }}",
+          "terminationDate": "{{ n_sTaRt.outputs.terminationDate }}",
+          "status": "{{ n_sTaRt.outputs.status }}",
+          "region": "{{ n_sTaRt.outputs.region }}",
+          "businessGroup": "{{ n_sTaRt.outputs.businessGroup }}",
+          "team": "{{ n_sTaRt.outputs.team }}",
+          "personalTarget": "{{ n_sTaRt.outputs.personalTarget }}",
+          "salary": "{{ n_sTaRt.outputs.salary }}",
+          "search": "{{ n_sTaRt.outputs.search }}",
+          "filter": "{{ n_sTaRt.outputs.filter }}",
+          "limit": "{{ n_sTaRt.outputs.limit }}",
+          "offset": "{{ n_sTaRt.outputs.offset }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Validate the request, build every filter",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_IfBad",
+      "index": 3,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Norm.outputs.result.valid }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": false
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Was the request itself unusable?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@y",
+      "id": "n_StBad",
+      "index": 4,
+      "inputs": {
+        "result": {
+          "status": "INVALID_INPUT",
+          "success": false,
+          "message": "{{ n_Norm.outputs.result.reason }}",
+          "action": "{{ n_Norm.outputs.result.action }}",
+          "total": 0,
+          "hasMore": false,
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "people": []
+        }
+      },
+      "skip": false,
+      "subTitle": "Caller sent an unusable action or a missing required field",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_FtCur",
+      "index": 5,
+      "inputs": {
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Currency",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 200,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": false,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.code",
+          "properties.name"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The currency lookup table - one fetch, joined in code, never per row",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_IfList",
+      "index": 6,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Norm.outputs.result.action }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": "LIST"
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Is this a read?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfList@n_IfBad@root_id-1@n@y",
+      "id": "n_FtList",
+      "index": 7,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.listFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Payee",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}"
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.name",
+          "properties.employeeId",
+          "properties.firstName",
+          "properties.lastName",
+          "properties.email",
+          "properties.userId",
+          "properties.currencyId",
+          "properties.personalCurrencyId",
+          "properties.hireDate",
+          "properties.terminationDate",
+          "properties.status",
+          "properties.region",
+          "properties.businessGroup",
+          "properties.team",
+          "properties.personalTarget",
+          "properties.salary"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The page of people the caller asked for",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfList@n_IfBad@root_id-1@n@y",
+      "id": "n_Rows",
+      "index": 8,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "people": {
+              "type": "array",
+              "title": "People",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "payeeId": {
+                    "type": "string",
+                    "title": "Payee Id"
+                  },
+                  "employeeId": {
+                    "type": "string",
+                    "title": "Employee Id"
+                  },
+                  "firstName": {
+                    "type": "string",
+                    "title": "First Name"
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "title": "Last Name"
+                  },
+                  "name": {
+                    "type": "string",
+                    "title": "Name"
+                  },
+                  "email": {
+                    "type": "string",
+                    "title": "Email"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "title": "User Id"
+                  },
+                  "currencyId": {
+                    "type": "string",
+                    "title": "Currency Id"
+                  },
+                  "currencyCode": {
+                    "type": "string",
+                    "title": "Currency Code"
+                  },
+                  "personalCurrencyId": {
+                    "type": "string",
+                    "title": "Personal Currency Id"
+                  },
+                  "personalCurrencyCode": {
+                    "type": "string",
+                    "title": "Personal Currency Code"
+                  },
+                  "hireDate": {
+                    "type": "integer",
+                    "title": "Hire Date"
+                  },
+                  "terminationDate": {
+                    "type": "integer",
+                    "title": "Termination Date"
+                  },
+                  "status": {
+                    "type": "string",
+                    "title": "Status"
+                  },
+                  "region": {
+                    "type": "string",
+                    "title": "Region"
+                  },
+                  "businessGroup": {
+                    "type": "string",
+                    "title": "Business Group"
+                  },
+                  "team": {
+                    "type": "string",
+                    "title": "Team"
+                  },
+                  "personalTarget": {
+                    "type": "number",
+                    "title": "Personal Target"
+                  },
+                  "salary": {
+                    "type": "number",
+                    "title": "Salary"
+                  }
+                }
+              }
+            },
+            "currencies": {
+              "type": "array",
+              "title": "Currencies"
+            },
+            "total": {
+              "type": "integer",
+              "title": "Total"
+            },
+            "hasMore": {
+              "type": "boolean",
+              "title": "Has More"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rows": {
+              "type": "array",
+              "title": "Rows"
+            },
+            "currencyRows": {
+              "type": "array",
+              "title": "Currency Rows"
+            },
+            "total": {
+              "type": "integer",
+              "title": "Total"
+            },
+            "pageOffset": {
+              "type": "integer",
+              "title": "Page Offset"
+            }
+          }
+        },
+        "code": "// Flatten properties into the row shape the contract promises. A field never set\n// on a record is MISSING, not null - strings default to '' so the UI never renders\n// \"null\", and numbers/dates stay null so \"no salary\" is distinguishable from zero.\ndef sv = { m, k -> (m != null && m[k] != null) ? m[k].toString() : '' }\ndef nv = { m, k -> (m != null && m[k] != null) ? m[k] : null }\n\n// ONE bulk fetch of Currency, joined here. Never one call per row.\ndef codes = [:]\ndef cur = []\nif (currencyRows != null) currencyRows.each { c ->\n    def cp = c.properties\n    def code = sv(cp, 'code')\n    codes[String.valueOf(c.id)] = code\n    cur << [currencyId: String.valueOf(c.id), code: code, name: sv(cp, 'name')]\n}\n\ndef out = []\nif (rows != null) rows.each { r ->\n    def p = r.properties\n    out << [payeeId: String.valueOf(r.id),\n            employeeId: sv(p, 'employeeId'),\n            firstName: sv(p, 'firstName'),\n            lastName: sv(p, 'lastName'),\n            email: sv(p, 'email'),\n            userId: sv(p, 'userId'),\n            currencyId: sv(p, 'currencyId'),\n            personalCurrencyId: sv(p, 'personalCurrencyId'),\n            hireDate: nv(p, 'hireDate'),\n            terminationDate: nv(p, 'terminationDate'),\n            status: sv(p, 'status'),\n            region: sv(p, 'region'),\n            businessGroup: sv(p, 'businessGroup'),\n            team: sv(p, 'team'),\n            personalTarget: nv(p, 'personalTarget'),\n            salary: nv(p, 'salary'),\n            name: sv(p, 'name'),\n            currencyCode: codes.get(sv(p, 'currencyId')) ?: '',\n            personalCurrencyCode: codes.get(sv(p, 'personalCurrencyId')) ?: '']\n}\nint tot = (total == null) ? out.size() : (total as int)\nreturn [people: out, currencies: cur, total: tot,\n        hasMore: (pageOffset + out.size()) < tot,\n        message: out.isEmpty() ? 'No people matched.' : (out.size() + ' person(s).')]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "rows": "{{ n_FtList.outputs.objects }}",
+          "currencyRows": "{{ n_FtCur.outputs.objects }}",
+          "total": "{{ n_FtList.outputs.total }}",
+          "pageOffset": "{{ n_Norm.outputs.result.pageOffset }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Shape the rows into the contract's person objects, joining currency codes",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfList@n_IfBad@root_id-1@n@y",
+      "id": "n_StList",
+      "index": 9,
+      "inputs": {
+        "result": {
+          "status": "OK",
+          "success": true,
+          "message": "{{ n_Rows.outputs.result.message }}",
+          "action": "{{ n_Norm.outputs.result.action }}",
+          "total": "{{ n_Rows.outputs.result.total }}",
+          "hasMore": "{{ n_Rows.outputs.result.hasMore }}",
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "people": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Rows.outputs.result.people }}",
+            "items": "{{ n_Rows.outputs.result.people[0] }}"
+          },
+          "currencies": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Rows.outputs.result.currencies }}",
+            "items": "{{ n_Rows.outputs.result.currencies[0] }}"
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "The list, however long - empty is OK, not an error",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfList@n_IfBad@root_id-1@n@n",
+      "id": "n_FtDup",
+      "index": 10,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.dupFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Payee",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 5,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.employeeId"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Is this employeeId already taken? (unique key pre-check)",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfList@n_IfBad@root_id-1@n@n",
+      "id": "n_FtOne",
+      "index": 11,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.oneFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Payee",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 1,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.name",
+          "properties.employeeId",
+          "properties.firstName",
+          "properties.lastName",
+          "properties.email",
+          "properties.userId",
+          "properties.currencyId",
+          "properties.personalCurrencyId",
+          "properties.hireDate",
+          "properties.terminationDate",
+          "properties.status",
+          "properties.region",
+          "properties.businessGroup",
+          "properties.team",
+          "properties.personalTarget",
+          "properties.salary"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The UPDATE target, read back before it is written",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfList@n_IfBad@root_id-1@n@n",
+      "id": "n_Guard",
+      "index": 12,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "isDup": {
+              "type": "boolean",
+              "title": "Is Dup"
+            },
+            "notFound": {
+              "type": "boolean",
+              "title": "Not Found"
+            },
+            "record": {
+              "type": "object",
+              "title": "Record"
+            },
+            "dupMessage": {
+              "type": "string",
+              "title": "Dup Message"
+            },
+            "nfMessage": {
+              "type": "string",
+              "title": "Nf Message"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "norm": {
+              "type": "object",
+              "title": "Norm"
+            },
+            "dupRows": {
+              "type": "array",
+              "title": "Dup Rows"
+            },
+            "oneRows": {
+              "type": "array",
+              "title": "One Rows"
+            }
+          }
+        },
+        "code": "def t = { v -> v == null ? '' : v.toString().trim() }\ndef act = t(norm.action)\ndef id  = t(norm.payeeId)\ndef eid = t(norm.employeeId)\ndef draft = (norm.draft == null) ? [:] : norm.draft\ndef provided = ((norm.provided == null) ? [] : norm.provided) as Set\n\n// DUPLICATE: any OTHER record already carries this employeeId. On UPDATE the\n// record's own row is not a clash with itself.\nboolean isDup = false\nif (dupRows != null) dupRows.each { r -> if (String.valueOf(r.id) != id) isDup = true }\n\n// NOT_FOUND: an UPDATE whose target no longer exists.\nboolean notFound = (act == 'UPDATE') && (oneRows == null || oneRows.isEmpty())\n\ndef cur = (oneRows != null && !oneRows.isEmpty() && oneRows[0].properties != null) ? oneRows[0].properties : [:]\ndef curV = { k -> cur[k] == null ? '' : cur[k].toString() }\n\ndef REQUIRED = [\"employeeId\",\"firstName\",\"currencyId\",\"status\"] as Set\n\n// On UPDATE the caller is a form that posts every field, so an OPTIONAL field\n// arriving blank means \"clear it\" - '' for a string, null for a number or date.\n// The REQUIRED fields fall back to what is already stored, so a partial payload\n// can never blank out the unique key or the required currency.\ndef rec = [:]\ndraft.each { k, v ->\n    if (act == 'CREATE') { rec[k] = v }\n    else if (REQUIRED.contains(k) && !provided.contains(k)) { rec[k] = curV(k) }\n    else { rec[k] = v }\n}\n\n// ---- the composed name, and the BACKFILL guard ------------------------------\n// `name` is the object's required nameField and is never an input: the screen\n// collects First and Last, and two writers for one field is how a display name\n// drifts from the boxes that produce it.\ndef fn = t(rec.firstName)\ndef ln = t(rec.lastName)\nif (act == 'UPDATE' && fn.isEmpty() && ln.isEmpty()) {\n    def sf = curV('firstName'), sl = curV('lastName'), sn = curV('name')\n    if (sf.isEmpty() && sl.isEmpty() && !sn.isEmpty()) {\n        // BACKFILL: a record written before firstName/lastName existed. Split the\n        // stored name once, rather than composing '' and blanking someone's name.\n        int sp = sn.indexOf(' ')\n        fn = (sp < 0) ? sn : sn.substring(0, sp)\n        ln = (sp < 0) ? '' : sn.substring(sp + 1).trim()\n    } else { fn = sf; ln = sl }\n    rec.firstName = fn\n    rec.lastName = ln\n}\ndef composed = [fn, ln].findAll { it }.join(' ')\n// Last ditch: the nameField is required, so it is never written empty.\nrec.name = composed.isEmpty() ? curV('name') : composed\n\n// status has a schema default only in the sense that the object requires it.\n// ACTIVE, uppercase - that is what the 21 rows on tool actually carry, checked\n// 2026-09-10. A mixed-case status would sort and filter as a second value.\nif (t(rec.status).isEmpty()) rec.status = (act == 'CREATE') ? 'ACTIVE' : curV('status')\n\nreturn [isDup: isDup, notFound: notFound, record: rec,\n        dupMessage: 'A person with employee id \"' + eid + '\" already exists.',\n        nfMessage: 'No person with id \"' + id + '\" exists.']",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "norm": "{{ n_Norm.outputs.result }}",
+          "dupRows": "{{ n_FtDup.outputs.objects }}",
+          "oneRows": "{{ n_FtOne.outputs.objects }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Decide duplicate / not-found, compose the name, build the record to write",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfList@n_IfBad@root_id-1@n@n",
+      "id": "n_IfDup",
+      "index": 13,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Guard.outputs.result.isDup }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": true
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Is the titleCode already taken?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfDup@n_IfList@n_IfBad@root_id-1@n@n@y",
+      "id": "n_StDup",
+      "index": 14,
+      "inputs": {
+        "result": {
+          "status": "DUPLICATE_EMPLOYEE_ID",
+          "success": false,
+          "message": "{{ n_Guard.outputs.result.dupMessage }}",
+          "action": "{{ n_Norm.outputs.result.action }}",
+          "total": 0,
+          "hasMore": false,
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "people": []
+        }
+      },
+      "skip": false,
+      "subTitle": "Unique key would collide - refused BEFORE any write",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfDup@n_IfList@n_IfBad@root_id-1@n@n@n",
+      "id": "n_IfNF",
+      "index": 15,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Guard.outputs.result.notFound }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": true
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Does the UPDATE target still exist?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfNF@n_IfDup@n_IfList@n_IfBad@root_id-1@n@n@n@y",
+      "id": "n_StNF",
+      "index": 16,
+      "inputs": {
+        "result": {
+          "status": "NOT_FOUND",
+          "success": false,
+          "message": "{{ n_Guard.outputs.result.nfMessage }}",
+          "action": "{{ n_Norm.outputs.result.action }}",
+          "total": 0,
+          "hasMore": false,
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "people": []
+        }
+      },
+      "skip": false,
+      "subTitle": "Stale id - the record was deleted between load and save",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfNF@n_IfDup@n_IfList@n_IfBad@root_id-1@n@n@n@n",
+      "id": "n_IfCr",
+      "index": 17,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Norm.outputs.result.action }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": "CREATE"
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Create or update?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_create_record",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfCr@n_IfNF@n_IfDup@n_IfList@n_IfBad@root_id-1@n@n@n@n@y",
+      "id": "n_Create",
+      "index": 18,
+      "inputs": {
+        "useRawPayload": false,
+        "writeThroughSessionVariables": false,
+        "object_type": "Payee",
+        "skipIfBlank": false,
+        "inlineRefresh": false,
+        "record": "{{ n_Guard.outputs.result.record }}",
+        "useUuid": false,
+        "batching": false
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The new person - runs only after both guards passed",
+      "title": "Create record",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfCr@n_IfNF@n_IfDup@n_IfList@n_IfBad@root_id-1@n@n@n@n@y",
+      "id": "n_StCr",
+      "index": 19,
+      "inputs": {
+        "result": {
+          "status": "CREATED",
+          "success": true,
+          "message": "Person created.",
+          "action": "{{ n_Norm.outputs.result.action }}",
+          "total": 1,
+          "hasMore": false,
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "people": [],
+          "person": {
+            "payeeId": "{{ n_Create.outputs.id }}",
+            "employeeId": "{{ n_Guard.outputs.result.record.employeeId }}",
+            "firstName": "{{ n_Guard.outputs.result.record.firstName }}",
+            "lastName": "{{ n_Guard.outputs.result.record.lastName }}",
+            "name": "{{ n_Guard.outputs.result.record.name }}",
+            "email": "{{ n_Guard.outputs.result.record.email }}",
+            "userId": "{{ n_Guard.outputs.result.record.userId }}",
+            "currencyId": "{{ n_Guard.outputs.result.record.currencyId }}",
+            "currencyCode": "",
+            "personalCurrencyId": "{{ n_Guard.outputs.result.record.personalCurrencyId }}",
+            "personalCurrencyCode": "",
+            "hireDate": "{{ n_Guard.outputs.result.record.hireDate }}",
+            "terminationDate": "{{ n_Guard.outputs.result.record.terminationDate }}",
+            "status": "{{ n_Guard.outputs.result.record.status }}",
+            "region": "{{ n_Guard.outputs.result.record.region }}",
+            "businessGroup": "{{ n_Guard.outputs.result.record.businessGroup }}",
+            "team": "{{ n_Guard.outputs.result.record.team }}",
+            "personalTarget": "{{ n_Guard.outputs.result.record.personalTarget }}",
+            "salary": "{{ n_Guard.outputs.result.record.salary }}"
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Created",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_update_record_by_id",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfCr@n_IfNF@n_IfDup@n_IfList@n_IfBad@root_id-1@n@n@n@n@n",
+      "id": "n_Update",
+      "index": 20,
+      "inputs": {
+        "recordId": "{{ n_Norm.outputs.result.payeeId }}",
+        "object_type": "Payee",
+        "record": "{{ n_Guard.outputs.result.record }}",
+        "upsert": false
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The edited person - runs only after both guards passed",
+      "title": "Update record by id",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfCr@n_IfNF@n_IfDup@n_IfList@n_IfBad@root_id-1@n@n@n@n@n",
+      "id": "n_StUp",
+      "index": 21,
+      "inputs": {
+        "result": {
+          "status": "UPDATED",
+          "success": true,
+          "message": "Person saved.",
+          "action": "{{ n_Norm.outputs.result.action }}",
+          "total": 1,
+          "hasMore": false,
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "people": [],
+          "person": {
+            "payeeId": "{{ n_Norm.outputs.result.payeeId }}",
+            "employeeId": "{{ n_Guard.outputs.result.record.employeeId }}",
+            "firstName": "{{ n_Guard.outputs.result.record.firstName }}",
+            "lastName": "{{ n_Guard.outputs.result.record.lastName }}",
+            "name": "{{ n_Guard.outputs.result.record.name }}",
+            "email": "{{ n_Guard.outputs.result.record.email }}",
+            "userId": "{{ n_Guard.outputs.result.record.userId }}",
+            "currencyId": "{{ n_Guard.outputs.result.record.currencyId }}",
+            "currencyCode": "",
+            "personalCurrencyId": "{{ n_Guard.outputs.result.record.personalCurrencyId }}",
+            "personalCurrencyCode": "",
+            "hireDate": "{{ n_Guard.outputs.result.record.hireDate }}",
+            "terminationDate": "{{ n_Guard.outputs.result.record.terminationDate }}",
+            "status": "{{ n_Guard.outputs.result.record.status }}",
+            "region": "{{ n_Guard.outputs.result.record.region }}",
+            "businessGroup": "{{ n_Guard.outputs.result.record.businessGroup }}",
+            "team": "{{ n_Guard.outputs.result.record.team }}",
+            "personalTarget": "{{ n_Guard.outputs.result.record.personalTarget }}",
+            "salary": "{{ n_Guard.outputs.result.record.salary }}"
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Updated",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 388282,
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 2
+}

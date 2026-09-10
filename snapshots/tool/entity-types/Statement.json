@@ -1,36 +1,47 @@
 {
-  "columnCounts": 6,
-  "createdTime": 1788594608345,
+  "columnCounts": 7,
+  "createdTime": 1788769611363,
   "deleted": false,
-  "description": "Who held which seat, over which date range. The join that turns a credit on a Position into money for a Payee. Overlapping rows for the same position, or for the same payee, mean a deal pays twice - Mongo cannot express 'no overlapping ranges' as an index, so it is an automation guard with its own status and its own regression case, never a schema promise.",
-  "id": "PayeePositionAssignment",
+  "description": "",
+  "id": "Statement",
   "input": {
     "type": "SCHEMA_AND_LAYOUT",
     "dynamic": false,
     "layout": {
-      "positionId": {
+      "periodId": {
         "ui:widget": "LookupWidget",
         "ui:options": {
           "ua:payload": {
-            "lookupType": "ENTITY_ID:Position",
+            "lookupType": "ENTITY_ID:Period",
             "type": "ByQuery"
           },
           "multiple": false
         }
       },
       "ui:order": [
-        "name",
-        "payeeId",
-        "positionId",
-        "effectiveStart",
-        "effectiveEnd",
-        "allocationPct"
+        "statementId",
+        "runId",
+        "employeeId",
+        "periodId",
+        "total",
+        "status",
+        "releasedAt"
       ],
-      "payeeId": {
+      "employeeId": {
         "ui:widget": "LookupWidget",
         "ui:options": {
           "ua:payload": {
             "lookupType": "ENTITY_ID:Payee",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "runId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:CalculationRun",
             "type": "ByQuery"
           },
           "multiple": false
@@ -40,69 +51,91 @@
     "schema": {
       "type": "object",
       "properties": {
-        "name": {
+        "statementId": {
           "type": "string",
-          "title": "Name",
+          "title": "Statement Id",
           "filterable": true,
           "sortable": true,
           "searchable": true,
+          "uniqueKey": true,
           "nameField": true
         },
-        "payeeId": {
+        "runId": {
           "type": "string",
           "format": "single-select",
-          "title": "Payee Id",
+          "title": "Run Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:CalculationRun"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "employeeId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Employee Id",
           "filterable": true,
           "foreignKey": {
             "reference": "ENTITY_ID:Payee"
           },
           "foreignKeyConstraintEnforced": false
         },
-        "positionId": {
+        "periodId": {
           "type": "string",
           "format": "single-select",
-          "title": "Position Id",
+          "title": "Period Id",
           "filterable": true,
           "foreignKey": {
-            "reference": "ENTITY_ID:Position"
+            "reference": "ENTITY_ID:Period"
           },
           "foreignKeyConstraintEnforced": false
         },
-        "effectiveStart": {
+        "total": {
           "type": "integer",
-          "format": "date",
-          "dateFormat": "epoch",
-          "title": "Effective Start",
+          "title": "Total (minor units)",
           "filterable": true,
           "sortable": true
         },
-        "effectiveEnd": {
-          "type": "integer",
-          "format": "date",
-          "dateFormat": "epoch",
-          "title": "Effective End",
+        "status": {
+          "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "Draft",
+              "title": "Draft"
+            },
+            {
+              "const": "Released",
+              "title": "Released"
+            },
+            {
+              "const": "Acknowledged",
+              "title": "Acknowledged"
+            },
+            {
+              "const": "Paid",
+              "title": "Paid"
+            }
+          ],
+          "title": "Status",
           "filterable": true,
           "sortable": true
         },
-        "allocationPct": {
-          "type": "number",
-          "title": "Allocation Pct",
+        "releasedAt": {
+          "type": "integer",
+          "format": "date-time",
+          "dateFormat": "epoch",
+          "title": "Released At",
           "filterable": true,
           "sortable": true
         }
-      },
-      "required": [
-        "name",
-        "payeeId",
-        "positionId",
-        "effectiveStart"
-      ]
+      }
     }
   },
-  "lastModifiedBy": 372563,
-  "lastPlatformUpdateBy": 372563,
-  "lastPlatformUpdateOn": 1788594608348,
-  "lcName": "payeepositionassignment",
+  "lastModifiedBy": 435691,
+  "lastPlatformUpdateBy": 435691,
+  "lastPlatformUpdateOn": 1788769611365,
+  "lcName": "statement",
   "metadata": {
     "auditable": true,
     "autoGeneratedFields": [],
@@ -111,44 +144,48 @@
     "captureReferences": false,
     "captureReporting": true,
     "dateFields": [
-      "effectiveStart",
-      "effectiveEnd"
+      "releasedAt"
     ],
     "deployable": false,
     "encryptedFields": [],
     "external": false,
     "filterableFields": [
-      "name",
-      "payeeId",
-      "positionId",
-      "effectiveStart",
-      "effectiveEnd",
-      "allocationPct"
+      "statementId",
+      "runId",
+      "employeeId",
+      "periodId",
+      "total",
+      "status",
+      "releasedAt"
     ],
     "graphType": "LEGACY_MDM",
     "hasTimeSeriesRecords": true,
     "hashedFields": [],
     "inaccessibleFromUI": false,
     "includeInDependency": false,
-    "nameField": "name",
+    "nameField": "statementId",
     "partFields": [],
     "piiFields": [],
     "primaryKeyField": "",
     "referenceKeys": [
       {
-        "key": "properties.payeeId",
+        "key": "properties.runId",
+        "referenceType": "CalculationRun"
+      },
+      {
+        "key": "properties.employeeId",
         "referenceType": "Payee"
       },
       {
-        "key": "properties.positionId",
-        "referenceType": "Position"
+        "key": "properties.periodId",
+        "referenceType": "Period"
       }
     ],
     "scdType2Enabled": false,
     "schemaValidationEnabled": true,
     "searchableFields": [
-      "name",
-      "name"
+      "statementId",
+      "statementId"
     ],
     "sessionBackedStorageEnabled": false,
     "skipConfigSyncIfModified": false,
@@ -169,81 +206,105 @@
     "supportsWebhook": false,
     "syncFromSourceCustomer": false,
     "translationsEnabled": false,
-    "uniqueKeyFields": [],
+    "uniqueKeyFields": [
+      "statementId"
+    ],
     "urlValidationEnabledFields": [],
     "useCachedEntityStoreForAutomations": false,
     "userLevelEncryption": false,
     "vectorFields": [],
     "versioningEnabled": true
   },
-  "modifiedTime": 1788594608348,
-  "name": "PayeePositionAssignment",
-  "ownerUserId": 372563,
+  "modifiedTime": 1788769611365,
+  "name": "Statement",
+  "ownerUserId": 435691,
   "packaged": false,
-  "pluralName": "PayeePositionAssignments",
+  "pluralName": "Statements",
   "schema": {
     "type": "SCHEMA",
     "dynamic": false,
     "schema": {
       "type": "object",
       "properties": {
-        "name": {
+        "statementId": {
           "type": "string",
-          "title": "Name",
+          "title": "Statement Id",
           "filterable": true,
           "sortable": true,
           "searchable": true,
+          "uniqueKey": true,
           "nameField": true
         },
-        "payeeId": {
+        "runId": {
           "type": "string",
           "format": "single-select",
-          "title": "Payee Id",
+          "title": "Run Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:CalculationRun"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "employeeId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Employee Id",
           "filterable": true,
           "foreignKey": {
             "reference": "ENTITY_ID:Payee"
           },
           "foreignKeyConstraintEnforced": false
         },
-        "positionId": {
+        "periodId": {
           "type": "string",
           "format": "single-select",
-          "title": "Position Id",
+          "title": "Period Id",
           "filterable": true,
           "foreignKey": {
-            "reference": "ENTITY_ID:Position"
+            "reference": "ENTITY_ID:Period"
           },
           "foreignKeyConstraintEnforced": false
         },
-        "effectiveStart": {
+        "total": {
           "type": "integer",
-          "format": "date",
-          "dateFormat": "epoch",
-          "title": "Effective Start",
+          "title": "Total (minor units)",
           "filterable": true,
           "sortable": true
         },
-        "effectiveEnd": {
-          "type": "integer",
-          "format": "date",
-          "dateFormat": "epoch",
-          "title": "Effective End",
+        "status": {
+          "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "Draft",
+              "title": "Draft"
+            },
+            {
+              "const": "Released",
+              "title": "Released"
+            },
+            {
+              "const": "Acknowledged",
+              "title": "Acknowledged"
+            },
+            {
+              "const": "Paid",
+              "title": "Paid"
+            }
+          ],
+          "title": "Status",
           "filterable": true,
           "sortable": true
         },
-        "allocationPct": {
-          "type": "number",
-          "title": "Allocation Pct",
+        "releasedAt": {
+          "type": "integer",
+          "format": "date-time",
+          "dateFormat": "epoch",
+          "title": "Released At",
           "filterable": true,
           "sortable": true
         }
-      },
-      "required": [
-        "name",
-        "payeeId",
-        "positionId",
-        "effectiveStart"
-      ]
+      }
     }
   },
   "standard": false,

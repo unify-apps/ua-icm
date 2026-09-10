@@ -1,0 +1,584 @@
+{
+  "appsUsed": [],
+  "createdTime": 1788940416814,
+  "deleted": false,
+  "deployedVersion": 1,
+  "deploymentState": {
+    "deployedAt": 1788941569889,
+    "deployedBy": 388282,
+    "deployedDefinitionId": "6aa11501cab06d30bab4a5fe",
+    "status": "DEPLOYED",
+    "version": 1,
+    "workflowVersion": 3
+  },
+  "description": "The Titles screen’s Download button: the same filtered list the screen is showing, written to a CSV file by the platform’s CSV node and returned as fileDetails.",
+  "edges": [
+    {
+      "fromNodeId": "n_sTaRt",
+      "id": "next@n_sTaRt@n_Norm",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Norm",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Norm",
+      "id": "next@n_Norm@n_IfBad",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfBad",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "if@n_IfBad@n_StBad",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StBad",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "next@n_IfBad@n_Fetch",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Fetch",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Fetch",
+      "id": "next@n_Fetch@n_Rows",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Rows",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Rows",
+      "id": "next@n_Rows@n_Write",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Write",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Write",
+      "id": "next@n_Write@n_StOk",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StOk",
+      "type": "next"
+    }
+  ],
+  "id": "6aa110803c7f7b6b919d9695",
+  "lastModifiedBy": 388282,
+  "lastPlatformUpdateBy": 388282,
+  "lastPlatformUpdateOn": 1788941916503,
+  "lcName": "icm | export titles csv",
+  "modifiedTime": 1788941916503,
+  "name": "ICM | Export Titles CSV",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_sTaRt",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "success",
+            "message",
+            "total"
+          ],
+          "properties": {
+            "status": {
+              "type": "string",
+              "title": "Status"
+            },
+            "success": {
+              "type": "boolean",
+              "title": "Success"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            },
+            "total": {
+              "type": "integer",
+              "title": "Total"
+            },
+            "matched": {
+              "type": "integer",
+              "title": "Matched"
+            },
+            "truncated": {
+              "type": "boolean",
+              "title": "Truncated"
+            },
+            "fileDetails": {
+              "type": "object",
+              "title": "File Details",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "title": "Name"
+                },
+                "source": {
+                  "type": "string",
+                  "title": "Source"
+                },
+                "sourceType": {
+                  "type": "string",
+                  "title": "Source Type"
+                },
+                "fileType": {
+                  "type": "string",
+                  "title": "File Type"
+                },
+                "mimeType": {
+                  "type": "string",
+                  "title": "Mime Type"
+                },
+                "fileFormat": {
+                  "type": "string",
+                  "title": "File Format"
+                },
+                "size": {
+                  "type": "integer",
+                  "title": "Size"
+                }
+              }
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "search": {
+              "type": "string",
+              "title": "Search"
+            },
+            "maxRows": {
+              "type": "string",
+              "title": "Max Rows"
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Norm",
+      "index": 2,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "valid": {
+              "type": "boolean",
+              "title": "Valid"
+            },
+            "reason": {
+              "type": "string",
+              "title": "Reason"
+            },
+            "search": {
+              "type": "string",
+              "title": "Search"
+            },
+            "rowCap": {
+              "type": "integer",
+              "title": "Row Cap"
+            },
+            "listFilter": {
+              "type": "object",
+              "title": "List Filter"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "search": {
+              "type": "string",
+              "title": "Search"
+            },
+            "maxRows": {
+              "type": "string",
+              "title": "Max Rows"
+            }
+          }
+        },
+        "code": "// A caller that OMITS a field entirely - rather than sending \"\" - must get a\n// business outcome, not \"No such property\". An unbound parameter is not a null\n// variable in Groovy; it is a missing one, so it has to be asked for by name.\ndef raw = { n -> binding.hasVariable(n) ? binding.getVariable(n) : null }\ndef t = { v -> v == null ? '' : v.toString().trim() }\ndef s  = t(raw('search'))\ndef mr = t(raw('maxRows'))\n\nboolean valid = true\nString reason = ''\n\n// THE WHOLE CATALOG, ALWAYS. This is an export, not a page of the screen - the\n// caller's own paging is deliberately ignored, and there is no offset. The\n// ceiling is a runaway guard, not a page size: nothing clamps `page.limit` on the\n// way through (BaseStorageAction.getPageDetailsOrDefault passes it straight to the\n// query), so one fetch really does return everything a realistic catalog holds.\n// If it is ever hit, the run says TRUNCATED rather than handing back a short file.\nint rowCap = 50000\nif (!mr.isEmpty()) {\n    if (mr ==~ /^\\d+$/) { rowCap = Integer.parseInt(mr) } else { valid = false; reason = 'maxRows must be a whole number, got: ' + mr }\n}\nif (rowCap < 1) rowCap = 1\nif (rowCap > 50000) rowCap = 50000\n\n// The SAME OR-search ICM | Manage Titles uses for LIST. Left blank by the Download\n// button, which wants the whole catalog; supported so a caller that wants the file\n// to match a filtered screen can ask for exactly that.\ndef lf = []\nif (!valid) {\n    lf << [property: 'id', filter: [operator: 'EQUAL', value: '__invalid_input__']]\n} else if (!s.isEmpty()) {\n    lf << [operator: 'OR', filters: [\n        [property: 'properties.titleCode',   filter: [operator: 'ICONTAINS', value: s]],\n        [property: 'properties.name',        filter: [operator: 'ICONTAINS', value: s]],\n        [property: 'properties.description', filter: [operator: 'ICONTAINS', value: s]]]]\n}\n\nreturn [valid: valid, reason: reason, search: s, rowCap: rowCap,\n        listFilter: [operator: 'AND', filters: lf]]\n",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "search": "{{ n_sTaRt.outputs.search }}",
+          "maxRows": "{{ n_sTaRt.outputs.maxRows }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Validate the request and build the filter",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_IfBad",
+      "index": 3,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Norm.outputs.result.valid }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": false
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Did validation fail?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@y",
+      "id": "n_StBad",
+      "index": 4,
+      "inputs": {
+        "result": {
+          "status": "INVALID_INPUT",
+          "success": false,
+          "message": "{{ n_Norm.outputs.result.reason }}",
+          "total": 0,
+          "matched": 0,
+          "truncated": false
+        }
+      },
+      "skip": false,
+      "subTitle": "Refused before any fetch",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_Fetch",
+      "index": 5,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.listFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Title",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.rowCap }}",
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.titleCode",
+          "properties.name",
+          "properties.description",
+          "properties.category",
+          "properties.level",
+          "properties.market",
+          "properties.function",
+          "properties.payPeriod"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Every title matching the filter - the whole catalog",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_Rows",
+      "index": 6,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "titles": {
+              "type": "array",
+              "title": "Titles",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "titleCode": {
+                    "type": "string",
+                    "title": "Title Code"
+                  },
+                  "name": {
+                    "type": "string",
+                    "title": "Title"
+                  },
+                  "description": {
+                    "type": "string",
+                    "title": "Description"
+                  },
+                  "category": {
+                    "type": "string",
+                    "title": "Category"
+                  },
+                  "level": {
+                    "type": "string",
+                    "title": "Level"
+                  },
+                  "market": {
+                    "type": "string",
+                    "title": "Market"
+                  },
+                  "function": {
+                    "type": "string",
+                    "title": "Function"
+                  },
+                  "payPeriod": {
+                    "type": "string",
+                    "title": "Pay Period"
+                  }
+                }
+              }
+            },
+            "total": {
+              "type": "integer",
+              "title": "Total"
+            },
+            "matched": {
+              "type": "integer",
+              "title": "Matched"
+            },
+            "truncated": {
+              "type": "boolean",
+              "title": "Truncated"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            },
+            "status": {
+              "type": "string",
+              "title": "Status"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rows": {
+              "type": "array",
+              "title": "Rows"
+            },
+            "total": {
+              "type": "integer",
+              "title": "Total"
+            }
+          }
+        },
+        "code": "// Flatten to the row shape the CSV node reads. A field never set on a record is\n// MISSING, not null, so it is defaulted to '' - otherwise the column holds \"null\".\ndef out = []\ndef v = { m, k -> (m != null && m[k] != null) ? m[k].toString() : '' }\nif (rows != null) rows.each { r ->\n    def p = r.properties\n    out << [titleCode: v(p, 'titleCode'), name: v(p, 'name'), description: v(p, 'description'),\n            category: v(p, 'category'), level: v(p, 'level'), market: v(p, 'market'),\n            function: v(p, 'function'), payPeriod: v(p, 'payPeriod')]\n}\n\n// `total` is the server's count of everything matching the filter (includeTotalCount\n// is on), and it is NOT capped by the fetch limit - so comparing it with what came\n// back is what makes a short file impossible to miss. The status is computed HERE\n// rather than being a literal on the STOP node, because only this node can know.\nint n = out.size()\nint tot = (total == null) ? n : (total as int)\nboolean truncated = tot > n\n\nreturn [titles: out, total: n, matched: tot, truncated: truncated,\n        status: truncated ? 'TRUNCATED' : 'OK',\n        message: truncated\n            ? ('Incomplete file: ' + n + ' of ' + tot + ' titles. Raise maxRows to export the rest.')\n            : (n == 0 ? 'No titles found; the file has its header row only.'\n                      : ('All ' + n + ' title(s) exported.'))]\n",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "rows": "{{ n_Fetch.outputs.objects }}",
+          "total": "{{ n_Fetch.outputs.total }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Flatten the records into CSV rows",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "csv_by_unifyapps",
+        "resourceName": "csv_by_unifyapps_list_to_csv_file",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_Write",
+      "index": 7,
+      "inputs": {
+        "fileName": "titles",
+        "quote": "\"",
+        "delimiter": ",",
+        "staticHeaders": [
+          {
+            "key": "Title Code",
+            "value": "{{ n_Rows.outputs.result.titles[0].titleCode }}"
+          },
+          {
+            "key": "Title",
+            "value": "{{ n_Rows.outputs.result.titles[0].name }}"
+          },
+          {
+            "key": "Description",
+            "value": "{{ n_Rows.outputs.result.titles[0].description }}"
+          },
+          {
+            "key": "Category",
+            "value": "{{ n_Rows.outputs.result.titles[0].category }}"
+          },
+          {
+            "key": "Level",
+            "value": "{{ n_Rows.outputs.result.titles[0].level }}"
+          },
+          {
+            "key": "Market",
+            "value": "{{ n_Rows.outputs.result.titles[0].market }}"
+          },
+          {
+            "key": "Function",
+            "value": "{{ n_Rows.outputs.result.titles[0].function }}"
+          },
+          {
+            "key": "Pay Period",
+            "value": "{{ n_Rows.outputs.result.titles[0].payPeriod }}"
+          }
+        ],
+        "quoteMode": "MINIMAL",
+        "skipHeaderRow": false,
+        "headerType": "STATIC",
+        "encoding": "UTF-8",
+        "keepExactFileName": false,
+        "dataSource": "{{ n_Rows.outputs.result.titles }}",
+        "fileType": "csv"
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Write the rows to a CSV file",
+      "title": "Write data to CSV file",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_StOk",
+      "index": 8,
+      "inputs": {
+        "result": {
+          "status": "{{ n_Rows.outputs.result.status }}",
+          "success": true,
+          "message": "{{ n_Rows.outputs.result.message }}",
+          "total": "{{ n_Rows.outputs.result.total }}",
+          "matched": "{{ n_Rows.outputs.result.matched }}",
+          "truncated": "{{ n_Rows.outputs.result.truncated }}",
+          "fileDetails": "{{ n_Write.outputs.fileDetails }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "The file - an empty catalog is OK, not an error",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 388282,
+  "schemaReferences": [],
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 4
+}

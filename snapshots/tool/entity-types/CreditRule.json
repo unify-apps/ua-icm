@@ -1,36 +1,39 @@
 {
-  "columnCounts": 6,
-  "createdTime": 1788594608345,
+  "columnCounts": 9,
+  "createdTime": 1788769608637,
   "deleted": false,
-  "description": "Who held which seat, over which date range. The join that turns a credit on a Position into money for a Payee. Overlapping rows for the same position, or for the same payee, mean a deal pays twice - Mongo cannot express 'no overlapping ranges' as an index, so it is an automation guard with its own status and its own regression case, never a schema promise.",
-  "id": "PayeePositionAssignment",
+  "description": "",
+  "id": "CreditRule",
   "input": {
     "type": "SCHEMA_AND_LAYOUT",
     "dynamic": false,
     "layout": {
-      "positionId": {
+      "ui:order": [
+        "ruleId",
+        "planId",
+        "name",
+        "condition",
+        "creditTypeId",
+        "splitPct",
+        "mode",
+        "rollup",
+        "rollupLevels"
+      ],
+      "planId": {
         "ui:widget": "LookupWidget",
         "ui:options": {
           "ua:payload": {
-            "lookupType": "ENTITY_ID:Position",
+            "lookupType": "ENTITY_ID:Plan",
             "type": "ByQuery"
           },
           "multiple": false
         }
       },
-      "ui:order": [
-        "name",
-        "payeeId",
-        "positionId",
-        "effectiveStart",
-        "effectiveEnd",
-        "allocationPct"
-      ],
-      "payeeId": {
+      "creditTypeId": {
         "ui:widget": "LookupWidget",
         "ui:options": {
           "ua:payload": {
-            "lookupType": "ENTITY_ID:Payee",
+            "lookupType": "ENTITY_ID:CreditType",
             "type": "ByQuery"
           },
           "multiple": false
@@ -40,6 +43,24 @@
     "schema": {
       "type": "object",
       "properties": {
+        "ruleId": {
+          "type": "string",
+          "title": "Rule Id",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true,
+          "uniqueKey": true
+        },
+        "planId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Plan Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Plan"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
         "name": {
           "type": "string",
           "title": "Name",
@@ -48,61 +69,66 @@
           "searchable": true,
           "nameField": true
         },
-        "payeeId": {
-          "type": "string",
-          "format": "single-select",
-          "title": "Payee Id",
-          "filterable": true,
-          "foreignKey": {
-            "reference": "ENTITY_ID:Payee"
-          },
-          "foreignKeyConstraintEnforced": false
-        },
-        "positionId": {
-          "type": "string",
-          "format": "single-select",
-          "title": "Position Id",
-          "filterable": true,
-          "foreignKey": {
-            "reference": "ENTITY_ID:Position"
-          },
-          "foreignKeyConstraintEnforced": false
-        },
-        "effectiveStart": {
-          "type": "integer",
-          "format": "date",
-          "dateFormat": "epoch",
-          "title": "Effective Start",
+        "condition": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {},
+          "title": "Condition (JsonLogic)",
           "filterable": true,
           "sortable": true
         },
-        "effectiveEnd": {
+        "creditTypeId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Credit Type Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:CreditType"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "splitPct": {
           "type": "integer",
-          "format": "date",
-          "dateFormat": "epoch",
-          "title": "Effective End",
+          "title": "Split % (bps)",
           "filterable": true,
           "sortable": true
         },
-        "allocationPct": {
-          "type": "number",
-          "title": "Allocation Pct",
+        "mode": {
+          "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "Add",
+              "title": "Add"
+            },
+            {
+              "const": "Override",
+              "title": "Override"
+            }
+          ],
+          "title": "Mode",
+          "filterable": true,
+          "sortable": true
+        },
+        "rollup": {
+          "type": "boolean",
+          "title": "Rollup",
+          "filterable": true,
+          "sortable": true
+        },
+        "rollupLevels": {
+          "type": "string",
+          "title": "Rollup Levels",
           "filterable": true,
           "sortable": true
         }
-      },
-      "required": [
-        "name",
-        "payeeId",
-        "positionId",
-        "effectiveStart"
-      ]
+      }
     }
   },
-  "lastModifiedBy": 372563,
-  "lastPlatformUpdateBy": 372563,
-  "lastPlatformUpdateOn": 1788594608348,
-  "lcName": "payeepositionassignment",
+  "lastModifiedBy": 435691,
+  "lastPlatformUpdateBy": 435691,
+  "lastPlatformUpdateOn": 1788769608639,
+  "lcName": "creditrule",
   "metadata": {
     "auditable": true,
     "autoGeneratedFields": [],
@@ -110,20 +136,20 @@
     "captureActivity": true,
     "captureReferences": false,
     "captureReporting": true,
-    "dateFields": [
-      "effectiveStart",
-      "effectiveEnd"
-    ],
+    "dateFields": [],
     "deployable": false,
     "encryptedFields": [],
     "external": false,
     "filterableFields": [
+      "ruleId",
+      "planId",
       "name",
-      "payeeId",
-      "positionId",
-      "effectiveStart",
-      "effectiveEnd",
-      "allocationPct"
+      "condition",
+      "creditTypeId",
+      "splitPct",
+      "mode",
+      "rollup",
+      "rollupLevels"
     ],
     "graphType": "LEGACY_MDM",
     "hasTimeSeriesRecords": true,
@@ -136,17 +162,18 @@
     "primaryKeyField": "",
     "referenceKeys": [
       {
-        "key": "properties.payeeId",
-        "referenceType": "Payee"
+        "key": "properties.planId",
+        "referenceType": "Plan"
       },
       {
-        "key": "properties.positionId",
-        "referenceType": "Position"
+        "key": "properties.creditTypeId",
+        "referenceType": "CreditType"
       }
     ],
     "scdType2Enabled": false,
     "schemaValidationEnabled": true,
     "searchableFields": [
+      "ruleId",
       "name",
       "name"
     ],
@@ -169,24 +196,44 @@
     "supportsWebhook": false,
     "syncFromSourceCustomer": false,
     "translationsEnabled": false,
-    "uniqueKeyFields": [],
+    "uniqueKeyFields": [
+      "ruleId"
+    ],
     "urlValidationEnabledFields": [],
     "useCachedEntityStoreForAutomations": false,
     "userLevelEncryption": false,
     "vectorFields": [],
     "versioningEnabled": true
   },
-  "modifiedTime": 1788594608348,
-  "name": "PayeePositionAssignment",
-  "ownerUserId": 372563,
+  "modifiedTime": 1788769608639,
+  "name": "CreditRule",
+  "ownerUserId": 435691,
   "packaged": false,
-  "pluralName": "PayeePositionAssignments",
+  "pluralName": "Credit Rules",
   "schema": {
     "type": "SCHEMA",
     "dynamic": false,
     "schema": {
       "type": "object",
       "properties": {
+        "ruleId": {
+          "type": "string",
+          "title": "Rule Id",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true,
+          "uniqueKey": true
+        },
+        "planId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Plan Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Plan"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
         "name": {
           "type": "string",
           "title": "Name",
@@ -195,55 +242,60 @@
           "searchable": true,
           "nameField": true
         },
-        "payeeId": {
-          "type": "string",
-          "format": "single-select",
-          "title": "Payee Id",
-          "filterable": true,
-          "foreignKey": {
-            "reference": "ENTITY_ID:Payee"
-          },
-          "foreignKeyConstraintEnforced": false
-        },
-        "positionId": {
-          "type": "string",
-          "format": "single-select",
-          "title": "Position Id",
-          "filterable": true,
-          "foreignKey": {
-            "reference": "ENTITY_ID:Position"
-          },
-          "foreignKeyConstraintEnforced": false
-        },
-        "effectiveStart": {
-          "type": "integer",
-          "format": "date",
-          "dateFormat": "epoch",
-          "title": "Effective Start",
+        "condition": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {},
+          "title": "Condition (JsonLogic)",
           "filterable": true,
           "sortable": true
         },
-        "effectiveEnd": {
+        "creditTypeId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Credit Type Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:CreditType"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "splitPct": {
           "type": "integer",
-          "format": "date",
-          "dateFormat": "epoch",
-          "title": "Effective End",
+          "title": "Split % (bps)",
           "filterable": true,
           "sortable": true
         },
-        "allocationPct": {
-          "type": "number",
-          "title": "Allocation Pct",
+        "mode": {
+          "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "Add",
+              "title": "Add"
+            },
+            {
+              "const": "Override",
+              "title": "Override"
+            }
+          ],
+          "title": "Mode",
+          "filterable": true,
+          "sortable": true
+        },
+        "rollup": {
+          "type": "boolean",
+          "title": "Rollup",
+          "filterable": true,
+          "sortable": true
+        },
+        "rollupLevels": {
+          "type": "string",
+          "title": "Rollup Levels",
           "filterable": true,
           "sortable": true
         }
-      },
-      "required": [
-        "name",
-        "payeeId",
-        "positionId",
-        "effectiveStart"
-      ]
+      }
     }
   },
   "standard": false,

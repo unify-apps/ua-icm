@@ -1,0 +1,447 @@
+{
+  "columnCounts": 14,
+  "createdTime": 1788769607727,
+  "deleted": false,
+  "description": "",
+  "id": "PlanComponent",
+  "input": {
+    "type": "SCHEMA_AND_LAYOUT",
+    "dynamic": false,
+    "layout": {
+      "measureId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:AttainmentMeasure",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "rateTableId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:RateTable",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "ui:order": [
+        "componentId",
+        "componentKey",
+        "planId",
+        "name",
+        "calcType",
+        "creditTypes",
+        "measureId",
+        "rateTableId",
+        "capPct",
+        "capAmount",
+        "payTrigger",
+        "drawAmount",
+        "drawRecoverable",
+        "sortOrder"
+      ],
+      "planId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:Plan",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      }
+    },
+    "schema": {
+      "type": "object",
+      "properties": {
+        "componentId": {
+          "type": "string",
+          "title": "Component Id",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true,
+          "uniqueKey": true
+        },
+        "componentKey": {
+          "type": "string",
+          "title": "Component Key",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true
+        },
+        "planId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Plan Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Plan"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "name": {
+          "type": "string",
+          "title": "Name",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true,
+          "nameField": true
+        },
+        "calcType": {
+          "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "Flat",
+              "title": "Flat"
+            },
+            {
+              "const": "PctToGoal",
+              "title": "PctToGoal"
+            },
+            {
+              "const": "PayCurve",
+              "title": "PayCurve"
+            },
+            {
+              "const": "Draw",
+              "title": "Draw"
+            }
+          ],
+          "title": "Calc Type",
+          "filterable": true,
+          "sortable": true
+        },
+        "creditTypes": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {},
+          "title": "Credit Types",
+          "filterable": true,
+          "sortable": true
+        },
+        "measureId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Measure Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:AttainmentMeasure"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "rateTableId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Rate Table Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:RateTable"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "capPct": {
+          "type": "integer",
+          "title": "Cap % (bps)",
+          "filterable": true,
+          "sortable": true
+        },
+        "capAmount": {
+          "type": "integer",
+          "title": "Cap Amount (minor units)",
+          "filterable": true,
+          "sortable": true
+        },
+        "payTrigger": {
+          "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "Close",
+              "title": "Close"
+            },
+            {
+              "const": "Invoice",
+              "title": "Invoice"
+            },
+            {
+              "const": "Collection",
+              "title": "Collection"
+            }
+          ],
+          "title": "Pay Trigger",
+          "filterable": true,
+          "sortable": true
+        },
+        "drawAmount": {
+          "type": "integer",
+          "title": "Draw Amount (minor units)",
+          "filterable": true,
+          "sortable": true
+        },
+        "drawRecoverable": {
+          "type": "boolean",
+          "title": "Draw Recoverable",
+          "filterable": true,
+          "sortable": true
+        },
+        "sortOrder": {
+          "type": "integer",
+          "title": "Sort Order",
+          "filterable": true,
+          "sortable": true
+        }
+      }
+    }
+  },
+  "lastModifiedBy": 435691,
+  "lastPlatformUpdateBy": 435691,
+  "lastPlatformUpdateOn": 1788769607730,
+  "lcName": "plancomponent",
+  "metadata": {
+    "auditable": true,
+    "autoGeneratedFields": [],
+    "cacheable": false,
+    "captureActivity": true,
+    "captureReferences": false,
+    "captureReporting": true,
+    "dateFields": [],
+    "deployable": false,
+    "encryptedFields": [],
+    "external": false,
+    "filterableFields": [
+      "componentId",
+      "componentKey",
+      "planId",
+      "name",
+      "calcType",
+      "creditTypes",
+      "measureId",
+      "rateTableId",
+      "capPct",
+      "capAmount",
+      "payTrigger",
+      "drawAmount",
+      "drawRecoverable",
+      "sortOrder"
+    ],
+    "graphType": "LEGACY_MDM",
+    "hasTimeSeriesRecords": true,
+    "hashedFields": [],
+    "inaccessibleFromUI": false,
+    "includeInDependency": false,
+    "nameField": "name",
+    "partFields": [],
+    "piiFields": [],
+    "primaryKeyField": "",
+    "referenceKeys": [
+      {
+        "key": "properties.planId",
+        "referenceType": "Plan"
+      },
+      {
+        "key": "properties.measureId",
+        "referenceType": "AttainmentMeasure"
+      },
+      {
+        "key": "properties.rateTableId",
+        "referenceType": "RateTable"
+      }
+    ],
+    "scdType2Enabled": false,
+    "schemaValidationEnabled": true,
+    "searchableFields": [
+      "componentId",
+      "componentKey",
+      "name",
+      "name"
+    ],
+    "sessionBackedStorageEnabled": false,
+    "skipConfigSyncIfModified": false,
+    "skipDeletedEntityBackup": false,
+    "skipFetchBeforeUpdate": false,
+    "skipIndexLimitValidation": false,
+    "skipPermissionCheckForAggregation": false,
+    "skipPermissionsFilter": false,
+    "skipReportingEventsOrdering": false,
+    "skipRoutineLoad": false,
+    "skipTotalHitsInAggregation": false,
+    "skipVersionIncrementOnUpdate": false,
+    "storeDetails": {
+      "store": "MONGO",
+      "uniqueKeySupported": true
+    },
+    "supportsDistinctValues": false,
+    "supportsWebhook": false,
+    "syncFromSourceCustomer": false,
+    "translationsEnabled": false,
+    "uniqueKeyFields": [
+      "componentId"
+    ],
+    "urlValidationEnabledFields": [],
+    "useCachedEntityStoreForAutomations": false,
+    "userLevelEncryption": false,
+    "vectorFields": [],
+    "versioningEnabled": true
+  },
+  "modifiedTime": 1788769607730,
+  "name": "PlanComponent",
+  "ownerUserId": 435691,
+  "packaged": false,
+  "pluralName": "Plan Components",
+  "schema": {
+    "type": "SCHEMA",
+    "dynamic": false,
+    "schema": {
+      "type": "object",
+      "properties": {
+        "componentId": {
+          "type": "string",
+          "title": "Component Id",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true,
+          "uniqueKey": true
+        },
+        "componentKey": {
+          "type": "string",
+          "title": "Component Key",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true
+        },
+        "planId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Plan Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Plan"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "name": {
+          "type": "string",
+          "title": "Name",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true,
+          "nameField": true
+        },
+        "calcType": {
+          "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "Flat",
+              "title": "Flat"
+            },
+            {
+              "const": "PctToGoal",
+              "title": "PctToGoal"
+            },
+            {
+              "const": "PayCurve",
+              "title": "PayCurve"
+            },
+            {
+              "const": "Draw",
+              "title": "Draw"
+            }
+          ],
+          "title": "Calc Type",
+          "filterable": true,
+          "sortable": true
+        },
+        "creditTypes": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {},
+          "title": "Credit Types",
+          "filterable": true,
+          "sortable": true
+        },
+        "measureId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Measure Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:AttainmentMeasure"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "rateTableId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Rate Table Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:RateTable"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "capPct": {
+          "type": "integer",
+          "title": "Cap % (bps)",
+          "filterable": true,
+          "sortable": true
+        },
+        "capAmount": {
+          "type": "integer",
+          "title": "Cap Amount (minor units)",
+          "filterable": true,
+          "sortable": true
+        },
+        "payTrigger": {
+          "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "Close",
+              "title": "Close"
+            },
+            {
+              "const": "Invoice",
+              "title": "Invoice"
+            },
+            {
+              "const": "Collection",
+              "title": "Collection"
+            }
+          ],
+          "title": "Pay Trigger",
+          "filterable": true,
+          "sortable": true
+        },
+        "drawAmount": {
+          "type": "integer",
+          "title": "Draw Amount (minor units)",
+          "filterable": true,
+          "sortable": true
+        },
+        "drawRecoverable": {
+          "type": "boolean",
+          "title": "Draw Recoverable",
+          "filterable": true,
+          "sortable": true
+        },
+        "sortOrder": {
+          "type": "integer",
+          "title": "Sort Order",
+          "filterable": true,
+          "sortable": true
+        }
+      }
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 0
+}

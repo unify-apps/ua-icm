@@ -1,0 +1,301 @@
+{
+  "name": "ICM | Manage People",
+  "fixtures": "Self-seeding: the write cases create their own KITFIX- payees and delete them at the end. No fixtures.mjs family, because that script is orbit-only and this automation lives on tool.",
+  "note": "The write cases CREATE AND DELETE REAL RECORDS on whichever env this runs against. Every one of them is prefixed KITFIX- and the suite ends by deleting them, so a re-run is safe; a suite that aborts halfway leaves a KITFIX- payee behind, which is visible and harmless. Read cases assert against the roster as it stands and use `min` rather than `equals` wherever the answer depends on data other people own.",
+  "cases": [
+    {
+      "name": "LIST: all-empty-strings",
+      "payload": {
+        "action": "", "payeeId": "", "employeeId": "", "firstName": "", "lastName": "",
+        "email": "", "userId": "", "currencyId": "", "personalCurrencyId": "",
+        "hireDate": "", "terminationDate": "", "status": "", "region": "",
+        "businessGroup": "", "team": "", "personalTarget": "", "salary": "",
+        "search": "", "filter": "", "limit": "", "offset": ""
+      },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "success", "equals": true },
+        { "path": "action", "equals": "LIST" },
+        { "path": "people", "type": "array" },
+        { "path": "currencies", "type": "array", "minLen": 1 },
+        { "path": "limit", "equals": 50 },
+        { "path": "offset", "equals": 0 },
+        { "path": "total", "type": "number", "min": 1 }
+      ]
+    },
+    {
+      "name": "LIST: a caller that omits keys entirely, not just blanks them",
+      "note": "An unbound parameter is a MISSING Groovy variable, not a null one. Without binding.hasVariable this is `No such property` — an engine error, not a business outcome.",
+      "payload": { "action": "LIST" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "success", "equals": true }
+      ]
+    },
+    {
+      "name": "LIST: paging window is echoed back",
+      "payload": { "action": "LIST", "limit": "2", "offset": "1" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "limit", "equals": 2 },
+        { "path": "offset", "equals": 1 },
+        { "path": "people", "type": "array", "maxLen": 2 },
+        { "path": "hasMore", "type": "boolean" }
+      ]
+    },
+    {
+      "name": "LIST: limit is clamped to 200, not obeyed",
+      "payload": { "action": "LIST", "limit": "9999" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "limit", "equals": 200 }
+      ]
+    },
+    {
+      "name": "LIST: a search matching nothing is OK, not an error",
+      "payload": { "action": "LIST", "search": "zzz-no-such-person-zzz" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "success", "equals": true },
+        { "path": "total", "equals": 0 },
+        { "path": "people", "type": "array", "maxLen": 0 }
+      ]
+    },
+    {
+      "name": "FILTER: status EQUAL ACTIVE translates to properties.status",
+      "payload": {
+        "action": "LIST",
+        "filter": "{\"op\":\"AND\",\"values\":[{\"field\":\"status\",\"op\":\"EQUAL\",\"values\":[\"ACTIVE\"]}]}"
+      },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "total", "type": "number", "min": 1 }
+      ]
+    },
+    {
+      "name": "FILTER: OR at the root",
+      "payload": {
+        "action": "LIST",
+        "filter": "{\"op\":\"OR\",\"values\":[{\"field\":\"status\",\"op\":\"EQUAL\",\"values\":[\"ACTIVE\"]},{\"field\":\"status\",\"op\":\"EQUAL\",\"values\":[\"TERMINATED\"]}]}"
+      },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "total", "type": "number", "min": 1 }
+      ]
+    },
+    {
+      "name": "FILTER: MISSING takes no value",
+      "payload": {
+        "action": "LIST",
+        "filter": "{\"op\":\"AND\",\"values\":[{\"field\":\"region\",\"op\":\"MISSING\",\"values\":[]}]}"
+      },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "success", "equals": true }
+      ]
+    },
+    {
+      "name": "FILTER: an empty group is dropped, not refused",
+      "note": "A filter the user started and did not finish. The screen already shows every row unfiltered, so dropping it is what the reader sees anyway.",
+      "payload": {
+        "action": "LIST",
+        "filter": "{\"op\":\"AND\",\"values\":[{\"op\":\"OR\",\"values\":[]}]}"
+      },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "total", "type": "number", "min": 1 }
+      ]
+    },
+    {
+      "name": "FILTER: every problem is collected into ONE refusal",
+      "note": "An unknown field AND an unsupported two-value operator. A caller fixing three mistakes one refusal at a time is the experience this avoids.",
+      "payload": {
+        "action": "LIST",
+        "filter": "{\"op\":\"AND\",\"values\":[{\"field\":\"nosuchfield\",\"op\":\"EQUAL\",\"values\":[\"x\"]},{\"field\":\"hireDate\",\"op\":\"BETWEEN\",\"values\":[\"1\",\"2\"]}]}"
+      },
+      "checks": [
+        { "path": "status", "equals": "INVALID_INPUT" },
+        { "path": "success", "equals": false },
+        { "path": "message", "type": "string", "minLen": 20 }
+      ]
+    },
+    {
+      "name": "INVALID: unknown action",
+      "payload": { "action": "DESTROY" },
+      "checks": [
+        { "path": "status", "equals": "INVALID_INPUT" },
+        { "path": "success", "equals": false }
+      ]
+    },
+    {
+      "name": "INVALID: non-numeric paging",
+      "payload": { "action": "LIST", "limit": "ten" },
+      "checks": [
+        { "path": "status", "equals": "INVALID_INPUT" },
+        { "path": "success", "equals": false }
+      ]
+    },
+    {
+      "name": "INVALID: non-numeric salary is refused BEFORE any write",
+      "payload": {
+        "action": "CREATE", "employeeId": "KITFIX-NEVER-WRITTEN", "firstName": "Nope",
+        "currencyId": "x", "salary": "lots"
+      },
+      "checks": [
+        { "path": "status", "equals": "INVALID_INPUT" },
+        { "path": "success", "equals": false }
+      ]
+    },
+    {
+      "name": "INVALID: CREATE missing every required field names all of them",
+      "payload": { "action": "CREATE" },
+      "checks": [
+        { "path": "status", "equals": "INVALID_INPUT" },
+        { "path": "success", "equals": false },
+        { "path": "message", "type": "string", "minLen": 30 }
+      ]
+    },
+    {
+      "name": "INVALID: UPDATE without an id",
+      "payload": { "action": "UPDATE", "firstName": "Nobody" },
+      "checks": [
+        { "path": "status", "equals": "INVALID_INPUT" },
+        { "path": "success", "equals": false }
+      ]
+    },
+    {
+      "name": "NOT_FOUND: UPDATE against a stale id",
+      "payload": { "action": "UPDATE", "payeeId": "e_000000000000000000000000", "firstName": "Ghost" },
+      "checks": [
+        { "path": "status", "equals": "NOT_FOUND" },
+        { "path": "success", "equals": false }
+      ]
+    },
+
+    {
+      "name": "fixture: a currency to point at",
+      "entityFind": { "entityType": "Currency", "filters": { "code": "USD" } }
+    },
+
+    {
+      "name": "CREATE: a person, with the name composed from first + last",
+      "payload": {
+        "action": "CREATE",
+        "employeeId": "KITFIX-E-SUITE-01",
+        "firstName": "KITFIX",
+        "lastName": "Suiteperson",
+        "email": "kitfix.suite01@example.invalid",
+        "currencyId": "{{case:fixture: a currency to point at:id}}",
+        "region": "KITFIX-Region",
+        "team": "KITFIX-Team",
+        "hireDate": "1767225600000",
+        "salary": "123456",
+        "personalTarget": "200000",
+        "status": ""
+      },
+      "checks": [
+        { "path": "status", "equals": "CREATED" },
+        { "path": "success", "equals": true },
+        { "path": "total", "equals": 1 },
+        { "path": "person.employeeId", "equals": "KITFIX-E-SUITE-01" },
+        { "path": "person.name", "equals": "KITFIX Suiteperson" },
+        { "path": "person.status", "equals": "ACTIVE" },
+        { "path": "person.payeeId", "type": "string", "minLen": 5 }
+      ]
+    },
+    {
+      "name": "CREATE: the SAME payload again is a status, never an engine error",
+      "note": "The double-click case the shared contract requires. A unique-key hit at write time is a raw Mongo E11000 that kills the run, so it is pre-checked.",
+      "payload": {
+        "action": "CREATE",
+        "employeeId": "KITFIX-E-SUITE-01",
+        "firstName": "KITFIX",
+        "lastName": "Suiteperson",
+        "currencyId": "{{case:fixture: a currency to point at:id}}"
+      },
+      "checks": [
+        { "path": "status", "equals": "DUPLICATE_EMPLOYEE_ID" },
+        { "path": "success", "equals": false }
+      ]
+    },
+    {
+      "name": "UPDATE: a blank OPTIONAL string clears it",
+      "payload": {
+        "action": "UPDATE",
+        "payeeId": "{{case:CREATE: a person, with the name composed from first + last:person.payeeId}}",
+        "employeeId": "KITFIX-E-SUITE-01",
+        "firstName": "KITFIX",
+        "lastName": "Suiteperson",
+        "currencyId": "{{case:fixture: a currency to point at:id}}",
+        "region": "",
+        "team": "KITFIX-Team-Renamed",
+        "status": "ON_LEAVE"
+      },
+      "checks": [
+        { "path": "status", "equals": "UPDATED" },
+        { "path": "success", "equals": true },
+        { "path": "person.region", "equals": "" },
+        { "path": "person.team", "equals": "KITFIX-Team-Renamed" },
+        { "path": "person.status", "equals": "ON_LEAVE" }
+      ]
+    },
+    {
+      "name": "UPDATE: a blank REQUIRED field does NOT blank the unique key",
+      "payload": {
+        "action": "UPDATE",
+        "payeeId": "{{case:CREATE: a person, with the name composed from first + last:person.payeeId}}",
+        "employeeId": "",
+        "firstName": "KITFIX",
+        "lastName": "Suiteperson",
+        "currencyId": ""
+      },
+      "checks": [
+        { "path": "status", "equals": "UPDATED" },
+        { "path": "person.employeeId", "equals": "KITFIX-E-SUITE-01" },
+        { "path": "person.currencyId", "type": "string", "minLen": 5 }
+      ]
+    },
+
+    {
+      "name": "fixture: a legacy person - a name, and NO firstName/lastName",
+      "note": "Exactly the shape of the rows written before 2026-09-10. This is what the BACKFILL guard exists for.",
+      "entityCreate": {
+        "entityType": "Payee",
+        "properties": {
+          "employeeId": "KITFIX-E-SUITE-LEGACY",
+          "name": "KITFIX Legacyperson",
+          "status": "ACTIVE",
+          "currencyId": "{{case:fixture: a currency to point at:id}}"
+        }
+      }
+    },
+    {
+      "name": "BACKFILL: editing a name-only record with both name boxes blank KEEPS the name",
+      "note": "Without the guard this composes '' from two blank boxes and blanks the required nameField of a real person.",
+      "payload": {
+        "action": "UPDATE",
+        "payeeId": "{{case:fixture: a legacy person - a name, and NO firstName/lastName:id}}",
+        "firstName": "",
+        "lastName": "",
+        "team": "KITFIX-Backfilled"
+      },
+      "checks": [
+        { "path": "status", "equals": "UPDATED" },
+        { "path": "success", "equals": true },
+        { "path": "person.name", "equals": "KITFIX Legacyperson" },
+        { "path": "person.firstName", "equals": "KITFIX" },
+        { "path": "person.lastName", "equals": "Legacyperson" },
+        { "path": "person.team", "equals": "KITFIX-Backfilled" }
+      ]
+    },
+
+    {
+      "name": "cleanup: the created person",
+      "entityDelete": { "entityType": "Payee", "filters": { "employeeId": "KITFIX-E-SUITE-01" } }
+    },
+    {
+      "name": "cleanup: the legacy person",
+      "entityDelete": { "entityType": "Payee", "filters": { "employeeId": "KITFIX-E-SUITE-LEGACY" } }
+    }
+  ]
+}

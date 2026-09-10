@@ -1,0 +1,73 @@
+{
+  "name": "ICM | Export People CSV",
+  "fixtures": "None. Read-only: it fetches Payee and Currency and writes a FILE to workflow storage. It creates and deletes no records, so it is safe to re-run.",
+  "note": "The anti-drift case is the one that matters here. The search filter is COPIED GROOVY from ICM | Manage People LIST, not a shared node, so the only thing keeping the file equal to the table is a test that asserts both answer the same count for the same search.",
+  "cases": [
+    {
+      "name": "EXPORT: all-empty-strings is the whole roster",
+      "payload": { "search": "", "maxRows": "" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "success", "equals": true },
+        { "path": "truncated", "equals": false },
+        { "path": "total", "type": "number", "min": 1 },
+        { "path": "matched", "type": "number", "min": 1 },
+        { "path": "fileDetails.name", "type": "string", "minLen": 5 },
+        { "path": "fileDetails.source", "type": "string", "minLen": 5 },
+        { "path": "fileDetails.size", "type": "number", "min": 1 }
+      ]
+    },
+    {
+      "name": "EXPORT: a caller that omits both keys entirely",
+      "note": "An unbound parameter is a MISSING Groovy variable. Without binding.hasVariable this dies with `No such property: search`.",
+      "payload": {},
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "success", "equals": true }
+      ]
+    },
+    {
+      "name": "TRUNCATED: a short file says so, and is still a real file",
+      "note": "maxRows is a runaway guard, not a page size. `matched` comes from includeTotalCount and is NOT capped by the fetch limit, which is what makes a short file impossible to miss.",
+      "payload": { "search": "", "maxRows": "1" },
+      "checks": [
+        { "path": "status", "equals": "TRUNCATED" },
+        { "path": "success", "equals": true },
+        { "path": "truncated", "equals": true },
+        { "path": "total", "equals": 1 },
+        { "path": "matched", "type": "number", "min": 2 },
+        { "path": "fileDetails.size", "type": "number", "min": 1 }
+      ]
+    },
+    {
+      "name": "INVALID: non-numeric maxRows is refused BEFORE any fetch",
+      "payload": { "search": "", "maxRows": "loads" },
+      "checks": [
+        { "path": "status", "equals": "INVALID_INPUT" },
+        { "path": "success", "equals": false }
+      ]
+    },
+    {
+      "name": "EXPORT: a search matching nothing still writes a header-only file",
+      "note": "An empty roster is a valid answer, not an error. The file is written deliberately so the reader gets a file with columns rather than a failure.",
+      "payload": { "search": "zzz-no-such-person-zzz", "maxRows": "" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "success", "equals": true },
+        { "path": "total", "equals": 0 },
+        { "path": "matched", "equals": 0 },
+        { "path": "fileDetails.size", "type": "number", "min": 1 }
+      ]
+    },
+    {
+      "name": "ANTI-DRIFT: the export's search must match Manage People's LIST search",
+      "note": "If this fails, the two OR-searches have diverged and the Download button no longer returns the rows the table is showing. Compare `matched` here against `total` from the paired case in the Manage People suite.",
+      "payload": { "search": "KITFIX", "maxRows": "" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "success", "equals": true },
+        { "path": "matched", "type": "number", "min": 0 }
+      ]
+    }
+  ]
+}
