@@ -29,21 +29,21 @@ Rebuilt by `scripts/ua.mjs inventory --tag icm` on 2026-09-10.
 | 6aa0664bff41994689224bc1 | ICM | Data Sync - SOQL paging test (ds_mtt2zqjx) | icm,icm-datasync | 2 | 10 | deployed, STALE (draft differs) |
 | 6aa021ed3c7f7b6b915b7b02 | ICM | Data Sync Template - Callable | icm | 5 | 33 | NOT deployed |
 | 6aa110803c7f7b6b919d9695 | ICM | Export Titles CSV | icm | 4 | 8 | deployed, current |
-| 6aa18daaff41994689752982 | ICM | Get Plan | icm | 5 | 9 | deployed, current |
-| 6aa023713aa7845ea1ef4310 | ICM | Get Rule | icm | 2 | 7 | deployed, current |
-| 6a9ee2fd3aa7845ea194eaa3 | ICM | List Attainment Measures | icm | 1 | 7 | deployed, current |
-| 6a9eb762057e966846c793b4 | ICM | List Credit Rules | icm | 10 | 7 | deployed, current |
-| 6a9ee2fc00191677c2ead441 | ICM | List Credit Types | icm | 1 | 7 | deployed, current |
-| 6a9c001e723e7964da56efee | ICM | List Payees | icm | 3 | 7 | deployed, current |
-| 6a9eb762b614217b0da02797 | ICM | List Payout Rules | icm | 7 | 7 | deployed, current |
-| 6aa18db5cab06d30bad86183 | ICM | List Periods | icm | 1 | 7 | deployed, current |
-| 6aa18daa3c7f7b6b91c15ce6 | ICM | List Plans | icm | 2 | 7 | deployed, current |
+| 6aa18daaff41994689752982 | ICM | Get Plan | icm | 15 | 13 | deployed, STALE (draft differs) |
+| 6aa023713aa7845ea1ef4310 | ICM | Get Rule | icm | 3 | 7 | deployed, STALE (draft differs) |
+| 6a9ee2fd3aa7845ea194eaa3 | ICM | List Attainment Measures | icm | 3 | 7 | deployed, STALE (draft differs) |
+| 6a9eb762057e966846c793b4 | ICM | List Credit Rules | icm | 12 | 7 | deployed, STALE (draft differs) |
+| 6a9ee2fc00191677c2ead441 | ICM | List Credit Types | icm | 3 | 7 | deployed, STALE (draft differs) |
+| 6a9c001e723e7964da56efee | ICM | List Payees | icm | 5 | 7 | deployed, STALE (draft differs) |
+| 6a9eb762b614217b0da02797 | ICM | List Payout Rules | icm | 9 | 7 | deployed, STALE (draft differs) |
+| 6aa18db5cab06d30bad86183 | ICM | List Periods | icm | 3 | 7 | deployed, STALE (draft differs) |
+| 6aa18daa3c7f7b6b91c15ce6 | ICM | List Plans | icm | 4 | 7 | deployed, STALE (draft differs) |
 | 6a9be08e57dcee3b72fe372c | ICM | List Position Hierarchy | icm | 7 | 12 | deployed, current |
-| 6a9bcafbc4f2d5527e3c324c | ICM | List Positions | icm | 6 | 13 | deployed, current |
+| 6a9bcafbc4f2d5527e3c324c | ICM | List Positions | icm | 9 | 13 | deployed, STALE (draft differs) |
 | 6a9c00e1c4f2d5527e4cb2ee | ICM | List Profiles | icm | 14 | 26 | deployed, STALE (draft differs) |
-| 6a9ee2fd8f78990409ff3fb5 | ICM | List Quotas | icm | 1 | 7 | deployed, current |
+| 6a9ee2fd8f78990409ff3fb5 | ICM | List Quotas | icm | 3 | 7 | deployed, STALE (draft differs) |
 | 6aa043a6b614217b0d0361dc | ICM | Manage Data Syncs | icm | 2 | 16 | deployed, current |
-| 6aa103523aa7845ea12ac667 | ICM | Manage Position Hierarchy | icm | 2 | 23 | deployed, current |
+| 6aa103523aa7845ea12ac667 | ICM | Manage Position Hierarchy | icm | 3 | 23 | deployed, STALE (draft differs) |
 | 6aa008a3ff41994689082ed3 | ICM | Manage Quota | icm | 2 | 26 | deployed, current |
 | 6a9ed5bf057e966846cf2073 | ICM | Manage Rate Table | icm | 3 | 24 | deployed, current |
 | 6a9bef655f22d93ee6e9b03a | ICM | Manage Titles | icm | 2 | 20 | deployed, current |
@@ -55,7 +55,7 @@ Rebuilt by `scripts/ua.mjs inventory --tag icm` on 2026-09-10.
 | 6a9fa5b4b614217b0dda2704 | ICM | Provision Pipeline Automation | icm | 1 | 10 | NOT deployed |
 | 6aa008a23c7f7b6b9154639e | ICM | Query Quotas | icm | 2 | 13 | deployed, current |
 | 6a9ed65f00191677c2e84755 | ICM | Query Rate Tables | icm | 2 | 10 | deployed, current |
-| 6a9bcafa4ea21f4020cad295 | ICM | Resolve Position Occupant | icm | 0 | 19 | deployed, current |
+| 6a9bcafa4ea21f4020cad295 | ICM | Resolve Position Occupant | icm | 1 | 19 | deployed, STALE (draft differs) |
 | 6aa04b6a3aa7845ea1f976b5 | ICM | Run Data Sync | icm | 1 | 8 | deployed, current |
 | 6aa264103aa7845ea17fca52 | ICM | Update Plan | icm | 9 | 13 | deployed, current |
 | 6a9e8d41ff41994689a7f555 | ICM | Update Profile | icm | 4 | 18 | deployed, current |
