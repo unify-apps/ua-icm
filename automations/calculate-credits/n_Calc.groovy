@@ -8,6 +8,19 @@ def rows(v) { return (v instanceof List) ? v : [] }
 def p(row, String k) { return ((Map) row?.properties)?.get(k) }
 def truthy(v) { return v instanceof Boolean ? v : String.valueOf(v) == 'true' }
 
+/** Union several fetches into one list, de-duplicated by RECORD id.
+ *
+ *  Needed because the reads are now STAGED: the reporting line arrives as four hops,
+ *  the occupants as the crediting seats plus the ancestor seats, and the plan
+ *  assignments as three structured fetches instead of one undrawable OR. Overlap
+ *  between them is normal - one manager is the parent of many seats - so de-duplicating
+ *  by id is what stops the same row being counted twice in the fold. */
+def merge(List... parts) {
+    Map byId = [:]
+    for (part in parts) for (r in rows(part)) if (r?.id != null) byId[r.id] = r
+    return new ArrayList(byId.values())
+}
+
 def group(List src, String byField, Closure shape) {
     Map out = [:]
     for (r in src) {
@@ -25,19 +38,42 @@ def group(List src, String byField, Closure shape) {
 // prefix. Pagination is the fix; this is what makes its absence loud meanwhile.
 List truncated = []
 def bound = { String label, v -> if (truthy(v)) truncated << label }
-bound('Transaction', txnMore); bound('PositionAttribute', attrMore)
-bound('PayeePositionAssignment', occMore); bound('PositionHierarchy', hierMore)
-bound('PlanAssignment', asgMore); bound('Plan', planMore); bound('Rule', ruleMore)
-bound('Payee', payeeMore); bound('Title', titleMore); bound('Territory', terrMore)
-bound('Currency', ccyMore); bound('Position', posMore); bound('CreditType', ctMore)
+bound('Transaction', txnMore); bound('Payee', payeeMore)
+bound('PayeePositionAssignment (seats)', occMore)
+bound('PayeePositionAssignment (managers)', occUpMore)
+bound('PositionAttribute', attrMore); bound('Position', posMore)
+bound('PositionHierarchy hop 1', hier1More); bound('PositionHierarchy hop 2', hier2More)
+bound('PositionHierarchy hop 3', hier3More); bound('PositionHierarchy hop 4', hier4More)
+bound('PlanAssignment by targetId', asgTMore); bound('PlanAssignment by positionId', asgPMore)
+bound('PlanAssignment by titleId', asgLMore)
+bound('Plan', planMore); bound('Rule', ruleMore); bound('Title', titleMore)
+bound('Territory', terrMore); bound('Currency', ccyMore); bound('CreditType', ctMore)
+
+def refuseRun = { String status, String message ->
+    return [status: status, message: message, runId: runId, dryRun: truthy(dryRun),
+            periodName: periodName, windowStart: 0, windowEnd: 0,
+            credits: [], exceptions: [], stats: [:], expected: 0]
+}
 
 if (!truncated.isEmpty()) {
-    return [status: 'FETCH_TRUNCATED',
-            message: ("these objects returned more rows than one page held, so any answer would be "
-                      + "computed on a prefix: " + truncated.join(', ')
-                      + ". Raise pageLimit or narrow the period.").toString(),
-            runId: runId, dryRun: truthy(dryRun), periodName: periodName,
-            windowStart: 0, windowEnd: 0, credits: [], exceptions: [], stats: [:], expected: 0]
+    return refuseRun('FETCH_TRUNCATED',
+        ("these objects returned more rows than one page held, so any answer would be computed "
+         + "on a prefix: " + truncated.join(', ') + ". Raise pageLimit or narrow the period.").toString())
+}
+
+// The staged reads are only as good as the key sets that drive them. Both guards below
+// exist because the honest failure of a set-based design is a set that got too big or a
+// walk that did not finish - and either one, unreported, quietly underpays somebody.
+if (truthy(nameOverflow) || truthy(seatOverflow)) {
+    return refuseRun('KEY_SET_TOO_LARGE',
+        ("this period touches more distinct " + (truthy(nameOverflow) ? "payees" : "seats")
+         + " than one filter should carry. The fix is to calculate it in chunks, not to send a "
+         + "larger IN list.").toString())
+}
+if (truthy(hierDeeper)) {
+    return refuseRun('HIERARCHY_TOO_DEEP',
+        ("the reporting line is still climbing after four hops, so the top of the tree was not "
+         + "read and rollup would be short. Add hops rather than accept a partial walk.").toString())
 }
 
 // --- reference codes ---------------------------------------------------------
@@ -91,23 +127,31 @@ for (r in rows(ruleRows)) {
                                          activeEnd: p(r, 'activeEnd')]
 }
 
-List assignments = rows(asgRows).collect {
+List assignments = merge(rows(asgTRows), rows(asgPRows), rows(asgLRows)).collect {
     [planKey: p(it, 'planId'), targetType: p(it, 'targetType'), targetId: p(it, 'targetId'),
      titleId: p(it, 'titleId'), positionId: p(it, 'positionId'),
      startDate: p(it, 'startDate'), endDate: p(it, 'endDate')]
 }
 
+// A rep's own seats come from the payee-keyed fetch; a MANAGER's occupant comes from the
+// ancestor-keyed one. `seatsByPayee` must see only the first - a manager is not a payee
+// this period unless they closed something - while `occupantByPosition` must see both, or
+// the rollup finds every manager seat vacant.
+List seatRows = rows(occRows)
+List allOccupants = merge(rows(occRows), rows(occUpRows))
+List hierAll = merge(rows(hier1Rows), rows(hier2Rows), rows(hier3Rows), rows(hier4Rows))
+
 Map ctx = [
     seed              : ((Number) startedAt).longValue(),
     payeeIdsByName    : payeeIdsByName,
     payeeById         : payeeById,
-    seatsByPayee      : group(rows(occRows), 'payeeId', { [positionId: p(it, 'positionId'),
+    seatsByPayee      : group(seatRows, 'payeeId', { [positionId: p(it, 'positionId'),
                                                           effectiveStart: p(it, 'effectiveStart'), effectiveEnd: p(it, 'effectiveEnd')] }),
-    occupantByPosition: group(rows(occRows), 'positionId', { [payeeId: p(it, 'payeeId'),
+    occupantByPosition: group(allOccupants, 'positionId', { [payeeId: p(it, 'payeeId'),
                                                           effectiveStart: p(it, 'effectiveStart'), effectiveEnd: p(it, 'effectiveEnd')] }),
     attrByPosition    : group(rows(attrRows), 'positionId', { [titleId: p(it, 'titleId'), territoryId: p(it, 'territoryId'),
                                                           effectiveStart: p(it, 'effectiveStart'), effectiveEnd: p(it, 'effectiveEnd')] }),
-    parentByPosition  : group(rows(hierRows), 'positionId', { [parentPositionId: p(it, 'parentPositionId'),
+    parentByPosition  : group(hierAll, 'positionId', { [parentPositionId: p(it, 'parentPositionId'),
                                                           effectiveStart: p(it, 'effectiveStart'), effectiveEnd: p(it, 'effectiveEnd')] }),
     titleCodeById     : titleCodeById,
     territoryCodeById : territoryCodeById,
@@ -179,6 +223,13 @@ List credits = ordered.collect {
 Map stats = new LinkedHashMap((Map) out.stats)
 stats.put('outOfWindow', outOfWindow.size())
 stats.put('scanned', rows(txnRows).size())
+// The point of the redesign, in numbers: how many rows the period actually pulled. On a
+// real org these are the difference between a bounded read and a whole-table one.
+stats.put('rowsRead', [transactions: rows(txnRows).size(), payees: rows(payeeRows).size(),
+                       assignments: allOccupants.size(), attributes: rows(attrRows).size(),
+                       hierarchy: hierAll.size(), positions: rows(posRows).size(),
+                       planAssignments: assignments.size(), plans: rows(planRows).size(),
+                       rules: rows(ruleRows).size()])
 
 return [status: 'OK', message: '', runId: runId, dryRun: truthy(dryRun),
         periodName: periodName, windowStart: winStart, windowEnd: winEnd,

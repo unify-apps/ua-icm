@@ -54,6 +54,10 @@ function fetchNode({ id, object, title, why, fields, filter }) {
 const EQ = (property, value) => ({ property, filter: { operator: "EQUAL", value } });
 const LTE = (property, value) => ({ property, filter: { operator: "LTE", value } });
 const GTE = (property, value) => ({ property, filter: { operator: "GTE", value } });
+/** The whole redesign in one helper: each read is keyed on what the PREVIOUS stage
+ *  proved it needs. An empty IN matches nothing rather than everything, and the
+ *  extractors send a `['__none__']` sentinel so the shape stays fixed and drawable. */
+const IN = (property, value) => ({ property, filter: { operator: "IN", value } });
 
 /** A Groovy node. `parameters` is what BINDS; `input` is only what the builder draws
  *  the Parameters form from. They drift the moment one is edited without the other,
@@ -113,55 +117,208 @@ const S = (n) => `{{ n_Shape.outputs.result.${n} }}`;
 const N = (n) => `{{ n_Norm.outputs.result.${n} }}`;
 const C = (n) => `{{ n_Calc.outputs.result.${n} }}`;
 
-// One row per fetch that feeds the fold. `rows`/`more` are the two things n_Calc needs
-// from each: what came back, and whether the page held all of it.
-const FETCHES = [
-  { id: "n_FtTxn",   object: "Transaction",             branch: 1, param: "txn",   why: "Deals whose incentive date lands in the period",
+// ---------------------------------------------------------------- the staged chain
+//
+// WHY THIS IS A CHAIN AND NOT TWELVE PARALLEL READS.
+//
+// The first build fetched every Payee, Position, PositionAttribute, assignment and
+// hierarchy row in the org, whether the period touched them or not. That is wrong in the
+// way that matters: the cost grew with HEADCOUNT rather than with the work. A month that
+// credits 300 reps out of an org of 5,000 read 25,000 rows to use 1,500 of them, and past
+// one page it stopped being slow and started being WRONG.
+//
+// So each org-scale read is now keyed on the previous stage's actual keys:
+//
+//   Transaction (period window)
+//     -> distinct payee NAMES        -> Payee            by name IN
+//     -> payee ids                   -> assignments      by payeeId IN
+//     -> the SEATS they held         -> attributes       by positionId IN
+//                                    -> hierarchy        by positionId IN, four hops
+//     -> seats + ancestors           -> Position         by id IN
+//                                    -> managers' seats  by positionId IN
+//     -> title ids                   -> Title            by id IN
+//     -> ids AND codes               -> PlanAssignment   three structured IN fetches
+//     -> plan ids                    -> Plan             by id IN
+//     -> rule business keys          -> Rule             by ruleId IN
+//
+// WHAT IT IS NOT: a fetch per payee, or per transaction. That was the shape suggested,
+// and at 2,917 NA rows in one month it is ~12,000 round trips inside one run - the
+// N+1 that "no API call inside a per-item loop" exists to forbid. The dependency is real
+// and it is honoured; it is expressed one SET at a time instead of one ROW at a time.
+//
+// CONFIG-SCALE OBJECTS STAY WHOLE-TABLE, on a parallel lane: Territory, Currency and
+// CreditType are single-digit reference tables that do not grow with headcount, and
+// making them dependent would add serial hops to save nothing. The `hasMore` guard still
+// covers them, so if one ever does grow the run refuses instead of computing on a prefix.
+//
+// COST OF THE TRADE, stated rather than hidden: the chain is serial, so a small period is
+// slower in wall-clock than twelve parallel reads. A real one reads a fraction of the
+// rows and cannot silently truncate. That is the right way round.
+const KEY = (node, field) => `{{ ${node}.outputs.result.${field} }}`;
+
+// Each entry is one fetch. `after` names the node it depends on, which is what makes the
+// graph a chain rather than a fan-out - and the builder draws it in that order.
+const CHAIN = [
+  { id: "n_FtTxn", object: "Transaction", param: "txn", after: "n_Br@1",
+    why: "Deals whose incentive date lands in the period - the only unfiltered-by-key read, because it IS the scope",
     fields: ["transactionId", "sourceId", "positionId", "closeDate", "incentiveDate", "amount", "product", "customer", "attrs"],
     filter: [GTE("properties.incentiveDate", S("windowStart")), LTE("properties.incentiveDate", S("windowEnd"))] },
 
-  { id: "n_FtAttr",  object: "PositionAttribute",       branch: 2, param: "attr",  why: "What each seat WAS - title and territory, over a date range",
-    fields: ["positionId", "titleId", "territoryId", "effectiveStart", "effectiveEnd"],
-    filter: [LTE("properties.effectiveStart", S("windowEnd"))] },
-  { id: "n_FtOcc",   object: "PayeePositionAssignment", branch: 2, param: "occ",   why: "Who held which seat - read both ways, by payee and by seat",
+  { id: "n_FtPayee", object: "Payee", param: "payee", after: "n_KName",
+    why: "Only the people this period's deals name - not the directory",
+    fields: ["employeeId", "name", "currencyId", "hireDate", "terminationDate", "status"],
+    filter: [IN("properties.name", KEY("n_KName", "names"))] },
+
+  { id: "n_FtOcc", object: "PayeePositionAssignment", param: "occ", after: "n_KPayee",
+    why: "The seats THOSE payees held, in force on or before the window end",
     fields: ["payeeId", "positionId", "effectiveStart", "effectiveEnd"],
-    filter: [LTE("properties.effectiveStart", S("windowEnd"))] },
-  { id: "n_FtHier",  object: "PositionHierarchy",       branch: 2, param: "hier",  why: "The reporting line rollup credits climb",
+    filter: [IN("properties.payeeId", KEY("n_KPayee", "payeeIds")), LTE("properties.effectiveStart", S("windowEnd"))] },
+
+  { id: "n_FtAttr", object: "PositionAttribute", param: "attr", after: "n_KSeat",
+    why: "What those seats WERE - title and territory - over a date range",
+    fields: ["positionId", "titleId", "territoryId", "effectiveStart", "effectiveEnd"],
+    filter: [IN("properties.positionId", KEY("n_KSeat", "positionIds")), LTE("properties.effectiveStart", S("windowEnd"))] },
+
+  { id: "n_FtHier1", object: "PositionHierarchy", param: "hier1", after: "n_FtAttr",
+    why: "Hop 1 up the reporting line, from the crediting seats",
     fields: ["positionId", "parentPositionId", "effectiveStart", "effectiveEnd"],
-    filter: [LTE("properties.effectiveStart", S("windowEnd"))] },
+    filter: [IN("properties.positionId", KEY("n_KSeat", "positionIds")), LTE("properties.effectiveStart", S("windowEnd"))] },
+  { id: "n_FtHier2", object: "PositionHierarchy", param: "hier2", after: "n_KUp1",
+    why: "Hop 2 - only the seats hop 1 newly revealed",
+    fields: ["positionId", "parentPositionId", "effectiveStart", "effectiveEnd"],
+    filter: [IN("properties.positionId", KEY("n_KUp1", "frontier")), LTE("properties.effectiveStart", S("windowEnd"))] },
+  { id: "n_FtHier3", object: "PositionHierarchy", param: "hier3", after: "n_KUp2",
+    why: "Hop 3",
+    fields: ["positionId", "parentPositionId", "effectiveStart", "effectiveEnd"],
+    filter: [IN("properties.positionId", KEY("n_KUp2", "frontier")), LTE("properties.effectiveStart", S("windowEnd"))] },
+  { id: "n_FtHier4", object: "PositionHierarchy", param: "hier4", after: "n_KUp3",
+    why: "Hop 4 - a fifth level is REFUSED, never truncated",
+    fields: ["positionId", "parentPositionId", "effectiveStart", "effectiveEnd"],
+    filter: [IN("properties.positionId", KEY("n_KUp3", "frontier")), LTE("properties.effectiveStart", S("windowEnd"))] },
 
-  { id: "n_FtAsg",   object: "PlanAssignment",          branch: 3, param: "asg",   why: "Which plan reaches which seat or title",
+  { id: "n_FtPos", object: "Position", param: "pos", after: "n_KUp4",
+    why: "Position CODES for the seats AND their ancestors - plan assignments name seats both ways",
+    fields: ["positionCode", "name", "active"],
+    filter: [IN("id", KEY("n_KUp4", "allPositions"))] },
+
+  { id: "n_FtOccUp", object: "PayeePositionAssignment", param: "occUp", after: "n_FtPos",
+    why: "Who holds the MANAGER seats - without this every rollup finds a vacant parent",
+    fields: ["payeeId", "positionId", "effectiveStart", "effectiveEnd"],
+    filter: [IN("properties.positionId", KEY("n_KUp4", "ancestors")), LTE("properties.effectiveStart", S("windowEnd"))] },
+
+  { id: "n_FtTitle", object: "Title", param: "title", after: "n_KTitle",
+    why: "Title CODES - a rule stores T-AE, the seat stores a record id",
+    fields: ["titleCode", "name"],
+    filter: [IN("id", KEY("n_KTitle", "titleIds"))] },
+
+  { id: "n_FtAsgT", object: "PlanAssignment", param: "asgT", after: "n_KAsg",
+    why: "Assignments naming this seat or title in `targetId`",
     fields: ["planId", "targetType", "targetId", "titleId", "positionId", "startDate", "endDate"],
-    filter: [LTE("properties.startDate", S("windowEnd"))] },
-  { id: "n_FtPlan",  object: "Plan",                    branch: 3, param: "plan",  why: "Every plan - status is judged in the fold, not filtered here",
-    fields: ["planId", "name", "status", "startDate", "endDate", "creditRules"] },
-  { id: "n_FtRule",  object: "Rule",                    branch: 3, param: "rule",  why: "Credit rules only - the payout pass reads the others",
-    fields: ["ruleId", "stage", "name", "conditions", "result", "activeStart", "activeEnd"],
-    filter: [EQ("properties.stage", "credit")] },
+    filter: [IN("properties.targetId", KEY("n_KAsg", "allKeys")), LTE("properties.startDate", S("windowEnd"))] },
+  { id: "n_FtAsgP", object: "PlanAssignment", param: "asgP", after: "n_FtAsgT",
+    why: "...or in `positionId`, which the live data also uses, sometimes with a CODE",
+    fields: ["planId", "targetType", "targetId", "titleId", "positionId", "startDate", "endDate"],
+    filter: [IN("properties.positionId", KEY("n_KAsg", "positionKeys")), LTE("properties.startDate", S("windowEnd"))] },
+  { id: "n_FtAsgL", object: "PlanAssignment", param: "asgL", after: "n_FtAsgP",
+    why: "...or in `titleId`. Three drawable fetches beat one OR that hides its index warnings",
+    fields: ["planId", "targetType", "targetId", "titleId", "positionId", "startDate", "endDate"],
+    filter: [IN("properties.titleId", KEY("n_KAsg", "titleKeys")), LTE("properties.startDate", S("windowEnd"))] },
 
-  { id: "n_FtPayee", object: "Payee",                   branch: 4, param: "payee", why: "Every payee - a name on a deal is resolved against these",
-    fields: ["employeeId", "name", "currencyId", "hireDate", "terminationDate", "status"] },
-  { id: "n_FtTitle", object: "Title",                   branch: 4, param: "title", why: "Title CODES - a rule stores T-AE, the seat stores a record id",
-    fields: ["titleCode", "name"] },
-  { id: "n_FtTerr",  object: "Territory",               branch: 4, param: "terr",  why: "Territory codes, for position.territory",
-    fields: ["territoryCode", "name"] },
-  { id: "n_FtCcy",   object: "Currency",                branch: 4, param: "ccy",   why: "Currency codes, for payee.currency",
-    fields: ["code", "name", "minorUnits"] },
-  { id: "n_FtPos",   object: "Position",                branch: 4, param: "pos",   why: "Position codes - plan assignments name seats both ways",
-    fields: ["positionCode", "name", "active"] },
-  { id: "n_FtCT",    object: "CreditType",              branch: 4, param: "ct",    why: "Credit type codes - a rule authors NEW_BOOKING, the column wants an id",
-    fields: ["creditTypeCode", "name", "active"] },
+  { id: "n_FtPlan", object: "Plan", param: "plan", after: "n_KPlan",
+    why: "Only the plans those assignments point at - status is judged in the fold, not filtered here",
+    fields: ["planId", "name", "status", "startDate", "endDate", "creditRules"],
+    filter: [IN("id", KEY("n_KPlan", "planIds"))] },
+
+  { id: "n_FtRule", object: "Rule", param: "rule", after: "n_KRule",
+    why: "Only the credit rules those plans list - by ruleId, which already carries an index",
+    fields: ["ruleId", "stage", "name", "conditions", "result", "activeStart", "activeEnd"],
+    filter: [IN("properties.ruleId", KEY("n_KRule", "ruleIds")), EQ("properties.stage", "credit")] },
 ];
 
+// Reference data: single-digit tables that do not grow with headcount. Whole-table on a
+// parallel lane, still covered by the truncation guard.
+const REFERENCE = [
+  { id: "n_FtTerr", object: "Territory", param: "terr", after: "n_Br@2",
+    why: "Territory codes, for position.territory", fields: ["territoryCode", "name"] },
+  { id: "n_FtCcy", object: "Currency", param: "ccy", after: "n_FtTerr",
+    why: "Currency codes, for payee.currency", fields: ["code", "name", "minorUnits"] },
+  { id: "n_FtCT", object: "CreditType", param: "ct", after: "n_FtCcy",
+    why: "Credit type codes - a rule authors NEW_BOOKING, the column wants an id", fields: ["creditTypeCode", "name", "active"] },
+];
+
+const FETCHES = [...CHAIN, ...REFERENCE];
+
+// The key extractors that sit between the reads. Each is the reviewable copy of one
+// stage's join, and every one of them is PURE - no I/O, so the chain's only round trips
+// are the fetches themselves.
+const EXTRACTORS = [
+  { id: "n_KName", file: "keys-names.groovy", after: "n_FtTxn", title: "Whose deals are these",
+    why: "Distinct payee names in the period - the key set every later read is filtered by",
+    params: { txnRows: { rows: "n_FtTxn" }, keyCap: { int: N("keyCap") } },
+    output: { names: { type: "array", items: { type: "string" } }, count: { type: "integer" },
+      noName: { type: "integer" }, overflow: { type: "boolean" } } },
+
+  { id: "n_KPayee", file: "keys-payee.groovy", after: "n_FtPayee", title: "Payee ids",
+    why: "The record ids those names resolved to. A name that resolved to nothing is a per-ROW verdict, not a run failure",
+    params: { payeeRows: { rows: "n_FtPayee" } },
+    output: { payeeIds: { type: "array", items: { type: "string" } }, count: { type: "integer" } } },
+
+  { id: "n_KSeat", file: "keys-seat.groovy", after: "n_FtOcc", title: "The seats in play",
+    why: "Only the seats those payees held - not every seat in the org",
+    params: { occRows: { rows: "n_FtOcc" }, keyCap: { int: N("keyCap") } },
+    output: { positionIds: { type: "array", items: { type: "string" } }, count: { type: "integer" }, overflow: { type: "boolean" } } },
+
+  ...[1, 2, 3, 4].map((n) => ({
+    id: `n_KUp${n}`, file: "keys-up.groovy", after: `n_FtHier${n}`, title: `Reporting line, hop ${n}`,
+    why: n === 4 ? "The last hop. Anything still above us is REFUSED, not dropped" : `Seats hop ${n} newly revealed - the frontier for hop ${n + 1}`,
+    params: Object.assign({ seatIds: { rows: "__inline__" } },
+      ...Array.from({ length: n }, (_, i) => ({ [`hier${i + 1}`]: { rows: `n_FtHier${i + 1}` } }))),
+    output: { frontier: { type: "array", items: { type: "string" } }, deeper: { type: "boolean" },
+      ancestors: { type: "array", items: { type: "string" } },
+      allPositions: { type: "array", items: { type: "string" } }, count: { type: "integer" } },
+    inlineSeat: true,
+  })),
+
+  { id: "n_KTitle", file: "keys-title.groovy", after: "n_FtOccUp", title: "Title ids those seats carried",
+    why: "Titles are fetched by id because the CODE is load-bearing - a rule stores T-AE, the seat stores a record id",
+    params: { attrRows: { rows: "n_FtAttr" } },
+    output: { titleIds: { type: "array", items: { type: "string" } },
+      territoryIds: { type: "array", items: { type: "string" } }, count: { type: "integer" } } },
+
+  { id: "n_KAsg", file: "keys-asg.groovy", after: "n_FtTitle", title: "Every key an assignment might use",
+    why: "Ids AND codes, because the live data names targets both ways in three different columns",
+    params: { positionIds: { rows: "__inlineKeySeat__" }, titleIds: { rows: "__inlineKeyTitle__" },
+      posRows: { rows: "n_FtPos" }, titleRows: { rows: "n_FtTitle" } },
+    output: { positionKeys: { type: "array", items: { type: "string" } },
+      titleKeys: { type: "array", items: { type: "string" } },
+      allKeys: { type: "array", items: { type: "string" } }, count: { type: "integer" } } },
+
+  { id: "n_KPlan", file: "keys-plan.groovy", after: "n_FtAsgL", title: "Plan ids",
+    why: "The union of the three assignment fetches, de-duplicated",
+    params: { asgT: { rows: "n_FtAsgT" }, asgP: { rows: "n_FtAsgP" }, asgL: { rows: "n_FtAsgL" } },
+    output: { planIds: { type: "array", items: { type: "string" } }, count: { type: "integer" } } },
+
+  { id: "n_KRule", file: "keys-rule.groovy", after: "n_FtPlan", title: "Rule keys those plans list",
+    why: "Plan.creditRules holds BUSINESS keys, so the Rule fetch filters on properties.ruleId",
+    params: { planRows: { rows: "n_FtPlan" } },
+    output: { ruleIds: { type: "array", items: { type: "string" } }, count: { type: "integer" } } },
+];
+
+// Two lanes, not four. Lane 1 is the dependency chain and is serial BY NATURE - each
+// read needs the previous one's keys. Lane 2 is the reference data, which needs nothing,
+// so it runs alongside instead of adding hops to the chain.
 const BRANCHES = [
-  { id: "1", name: "Deals" },
-  { id: "2", name: "Seat facts" },
-  { id: "3", name: "Plan config" },
-  { id: "4", name: "Reference data" },
+  { id: "1", name: "Resolve and read" },
+  { id: "2", name: "Reference data" },
 ];
 
 const calcParams = { runId: N("runId"), startedAt: N("startedAt"), dryRun: { bool: N("dryRun") },
-  periodName: S("periodName"), windowStart: { int: S("windowStart") }, windowEnd: { int: S("windowEnd") } };
+  periodName: S("periodName"), windowStart: { int: S("windowStart") }, windowEnd: { int: S("windowEnd") },
+  // The three ways a staged read can be wrong rather than slow: a key set too big for one
+  // filter, and a reporting line the four hops did not finish.
+  nameOverflow: { bool: KEY("n_KName", "overflow") },
+  seatOverflow: { bool: KEY("n_KSeat", "overflow") },
+  hierDeeper: { bool: KEY("n_KUp4", "deeper") } };
 for (const f of FETCHES) {
   calcParams[`${f.param}Rows`] = { rows: f.id };
   calcParams[`${f.param}More`] = { bool: `{{ ${f.id}.outputs.hasMore }}` };
@@ -202,6 +359,7 @@ const nodes = [
         periodId: { type: "string", title: "Period Id" },
         dryRun: { type: "boolean", title: "Dry Run" },
         pageLimit: { type: "integer", title: "Page Limit" },
+        keyCap: { type: "integer", title: "Key Cap" },
       } },
     },
     skip: false, subTitle: "Callable - one period in, its credits out", title: "Trigger via automation",
@@ -209,9 +367,11 @@ const nodes = [
 
   groovyNode({ id: "n_Norm", title: "Normalise the request", why: "Defaults, a sentinel for an unusable period, and the run id",
     code: src("n_Norm.groovy"),
-    params: { periodId: "{{ n_Start.outputs.periodId }}", dryRun: "{{ n_Start.outputs.dryRun }}", pageLimit: "{{ n_Start.outputs.pageLimit }}" },
+    params: { periodId: "{{ n_Start.outputs.periodId }}", dryRun: "{{ n_Start.outputs.dryRun }}",
+      pageLimit: "{{ n_Start.outputs.pageLimit }}", keyCap: "{{ n_Start.outputs.keyCap }}" },
     output: titled({ periodId: { type: "string" }, inputOk: { type: "boolean" }, dryRun: { type: "boolean" },
-      pageLimit: { type: "integer" }, runId: { type: "string" }, startedAt: { type: "integer" } }) }),
+      pageLimit: { type: "integer" }, keyCap: { type: "integer" }, runId: { type: "string" },
+      startedAt: { type: "integer" } }) }),
 
   fetchNode({ id: "n_FtPeriod", object: "Period", title: "Fetch Period", why: "The one period this run is scoped to",
     fields: ["name", "periodType", "status", "startDate", "endDate"], filter: [EQ("id", N("periodId"))] }),
@@ -239,6 +399,9 @@ const nodes = [
   })),
 
   ...FETCHES.map((f) => fetchNode({ ...f, title: `Fetch ${f.object}` })),
+
+  ...EXTRACTORS.map((e) => groovyNode({ id: e.id, title: e.title, why: e.why,
+    code: src(e.file), params: e.params, output: titled(e.output) })),
 
   groovyNode({ id: "n_Calc", title: "Calculate credits", why: "Name to seat to plan to rule to credit - the whole fold, no I/O",
     code: [src("ConditionMatcher.groovy"), src("CreditPass.groovy"), src("n_Calc.groovy")].join("\n\n"),
@@ -303,6 +466,19 @@ const nodes = [
 {
   const stamp = nodes.find((n) => n.id === "n_Stamp");
   stamp.inputs.parameters.credits = { "ua:type": "mappedArray", source: C("credits"), items: `{{ n_Calc.outputs.result.credits[0] }}` };
+
+  // Key lists are arrays produced by another Groovy node's `result`, not a fetch node's
+  // `objects`, so they take the same mapped-array shape with a different source. A bare
+  // pill on an array-typed property works at runtime and renders as UNSET, which is how
+  // a reader ends up believing a node has no inputs.
+  const keyArray = (node, field) => ({ "ua:type": "mappedArray",
+    source: `{{ ${node}.outputs.result.${field} }}`, items: `{{ ${node}.outputs.result.${field}[0] }}` });
+  for (const n of [1, 2, 3, 4]) {
+    nodes.find((x) => x.id === `n_KUp${n}`).inputs.parameters.seatIds = keyArray("n_KSeat", "positionIds");
+  }
+  const kasg = nodes.find((n) => n.id === "n_KAsg").inputs.parameters;
+  kasg.positionIds = keyArray("n_KSeat", "positionIds");
+  kasg.titleIds = keyArray("n_KTitle", "titleIds");
 }
 
 const byIdType = Object.fromEntries(nodes.map((n) => [n.id, n.type]));
@@ -316,11 +492,12 @@ const edges = [
   ["next", "n_IfPer", "n_Br"],
   ...BRANCHES.map((b) => ["branch", "n_Br", `n_Br@${b.id}`, b.id]),
   ["branch", "n_Br", "n_Calc", "default"],
-  ...BRANCHES.flatMap((b) => {
-    const lane = FETCHES.filter((f) => String(f.branch) === b.id);
-    const chain = [`n_Br@${b.id}`, ...lane.map((f) => f.id), "n_Calc"];
-    return chain.slice(0, -1).map((from, i) => ["next", from, chain[i + 1]]);
-  }),
+  // Every node in a lane declares what it comes AFTER, so the chain is derived from the
+  // dependencies rather than from a hand-kept list that can silently reorder.
+  ...[...FETCHES, ...EXTRACTORS].map((n) => ["next", n.after, n.id]),
+  // The two lanes end at the join.
+  ["next", "n_FtRule", "n_Calc"],
+  ["next", "n_FtCT", "n_Calc"],
   ["next", "n_Calc", "n_IfCalc"],
   ["if", "n_IfCalc", "n_RespCalc"],
   ["next", "n_IfCalc", "n_IfDry"],

@@ -1346,3 +1346,38 @@ Two things this costs, both worth knowing before leaning on it:
 The `in` operator earns its keep here: `txn.attrs.recordType in "Channel and Direct, NA
 Direct, NA Channel"` is one condition instead of three rules, and it splits on commas
 after trimming, so multi-word values are fine as long as none contains a comma.
+
+## Fixture rows can vanish between two runs, and only some objects (ICM, 2026-09-10)
+
+Mid-session, every `PositionHierarchy` row this session had seeded — 19 `TEST-NA-*` and 3
+`TEST-POS-*` — was gone from tool, along with the 3 pre-existing `KITBULK-*` rows and one
+2028-dated row. The table went from 20 rows to 16 while 22 were being added to it.
+
+What makes it worth recording is how NARROW it was. Every sibling object survived intact:
+
+```
+Position                 TEST-NA 20   ok
+PositionAttribute        TEST-NA 20   ok
+PayeePositionAssignment  TEST-NA 20   ok
+PositionHierarchy        TEST-NA  0   GONE
+```
+
+So it was not a fixture reset and not a failed seed — the seed demonstrably ran, because
+its other four objects are all present with the right counts. Something deleted rows from
+that one object. `ICM | Manage Position Hierarchy` is deployed and a "manage the whole
+set" callable that replaces rather than merges would have exactly this signature, but
+nothing was proven, so this is **recorded as unexplained rather than diagnosed**.
+
+**How it presented, which is the expensive part.** It surfaced as a redesigned read chain
+producing 28 credits where the old one had produced 39 — every rollup missing. That reads
+as "the change broke rollup", and chasing it as a code bug is the wrong afternoon. What
+settled it in two queries:
+
+- the sibling objects still held their rows, so the seeder had not failed;
+- a whole-table read of `PositionHierarchy` returned zero rows for those seats, so the
+  OLD design would have produced zero rollups too, right then.
+
+**Assume nothing about data you seeded earlier in the same session.** When output changes
+after a change, check the INPUTS still exist before reading the diff as a regression —
+and keep seeders idempotent by business key so restoring is one command. Both seeders
+here re-created exactly the missing rows and nothing else.

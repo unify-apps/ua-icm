@@ -30,8 +30,11 @@ Sales-Commission-Management repo.
 in    periodId    required. The Period RECORD id to calculate.
       dryRun      default TRUE. Compute and report, write nothing.
       pageLimit   default 1000, clamped 1..5000. One page per object.
+      keyCap      default 5000, clamped 1..20000. Max distinct keys one staged read's
+                  IN filter may carry - the bound on the JOIN, not on the page.
 out   status      OK | OK_DRY_RUN | INVALID_INPUT | PERIOD_NOT_FOUND | PERIOD_NOT_OPEN
-                  | PERIOD_NOT_USABLE | FETCH_TRUNCATED | CREDIT_WRITE_INCOMPLETE
+                  | PERIOD_NOT_USABLE | FETCH_TRUNCATED | KEY_SET_TOO_LARGE
+                  | HIERARCHY_TOO_DEEP | CREDIT_WRITE_INCOMPLETE
       message     caller-actionable, empty on success
       runId       the run this computed, whether or not it was written
       periodName, windowStart, windowEnd
@@ -159,7 +162,7 @@ payout-stage question. Checking it here silently drops manager attainment.
 
 ## Node plan
 
-35 nodes. `groupId` is DERIVED by walking the edges in `build-calculate-credits.mjs` and
+52 nodes. `groupId` is DERIVED by walking the edges in `build-calculate-credits.mjs` and
 never typed — the builder draws its branch tree from those groups, and given wrong ones
 it silently drops the nodes it cannot place (`ICM | Create Position` went 16 -> 5).
 
@@ -169,11 +172,14 @@ n_Norm       defaults; a SENTINEL periodId when the input is unusable; mints the
 n_FtPeriod   Period by id
 n_Shape      may this period be calculated, and over what window
 n_IfPer  y-> n_RespPer     INVALID_INPUT / PERIOD_NOT_FOUND / PERIOD_NOT_OPEN
-         n-> n_Br          BRANCH - four lanes, no conditions, all fire in parallel
-              @1 Deals          n_FtTxn
-              @2 Seat facts     n_FtAttr -> n_FtOcc -> n_FtHier
-              @3 Plan config    n_FtAsg -> n_FtPlan -> n_FtRule
-              @4 Reference      n_FtPayee -> n_FtTitle -> n_FtTerr -> n_FtCcy -> n_FtPos -> n_FtCT
+         n-> n_Br          BRANCH - two lanes, no conditions, both fire in parallel
+              @1 Resolve and read   the dependency chain, serial by nature:
+                 n_FtTxn -> n_KName -> n_FtPayee -> n_KPayee -> n_FtOcc -> n_KSeat
+                 -> n_FtAttr -> n_FtHier1 -> n_KUp1 -> ... -> n_FtHier4 -> n_KUp4
+                 -> n_FtPos -> n_FtOccUp -> n_KTitle -> n_FtTitle -> n_KAsg
+                 -> n_FtAsgT -> n_FtAsgP -> n_FtAsgL -> n_KPlan -> n_FtPlan
+                 -> n_KRule -> n_FtRule
+              @2 Reference data     n_FtTerr -> n_FtCcy -> n_FtCT
               default ------------------------------------------------> n_Calc  (the join)
 n_Calc       ConditionMatcher + CreditPass + the adapter. Pure fold, no I/O
 n_IfCalc y-> n_RespCalc    FETCH_TRUNCATED
@@ -185,11 +191,69 @@ n_IfDry  y-> n_RespDry     OK_DRY_RUN - nothing written
                        n-> n_RespOk    OK
 ```
 
-**Why a BRANCH.** Twelve independent reads chained sequentially pay twelve times the
-latency for nothing. `AND`-split branches start in parallel, and every child's node
-outputs are copied back to the parent on join, so `n_Calc` reads all twelve. Nothing
-else in this repo had used one — the shape was taken from a platform-authored workflow,
-not guessed.
+**Why the reads are a CHAIN, not a fan-out.** The first build fetched every `Payee`,
+`Position`, `PositionAttribute`, assignment and hierarchy row in the org whether the
+period touched them or not. That is wrong in the way that matters: the cost grew with
+**headcount** rather than with the work. A month crediting 300 reps out of an org of
+5,000 read ~25,000 rows to use ~1,500 of them, and past one page it stopped being slow
+and started being **wrong**.
+
+Each org-scale read is now keyed on the previous stage's actual keys:
+
+```
+Transaction (period window)
+  -> distinct payee NAMES   -> Payee              by name IN
+  -> payee ids              -> assignments        by payeeId IN
+  -> the SEATS they held    -> attributes         by positionId IN
+                            -> hierarchy          by positionId IN, four hops
+  -> seats + ancestors      -> Position           by id IN
+                            -> managers' seats    by positionId IN
+  -> title ids              -> Title              by id IN
+  -> ids AND codes          -> PlanAssignment     three structured IN fetches
+  -> plan ids               -> Plan               by id IN
+  -> rule business keys     -> Rule               by ruleId IN
+```
+
+**What it is deliberately NOT: a fetch per payee, or per transaction.** At 2,917 NA rows
+in one month that is roughly 12,000 round trips inside a single run — the N+1 that "no
+API call inside a per-item loop" exists to forbid. The dependency is real and it is
+honoured; it is expressed one **set** at a time instead of one **row** at a time.
+
+Of 20 fetches, **15 are keyed by the previous stage**. The three that are not —
+`Territory`, `Currency`, `CreditType` — are single-digit reference tables that do not
+grow with headcount, and making them dependent would add serial hops to save nothing;
+they sit on a parallel lane and the `hasMore` guard still covers them.
+
+**Cost of the trade, stated rather than hidden:** the chain is serial, so a small period
+is slower in wall-clock than a twelve-way fan-out. A real one reads a fraction of the
+rows and cannot silently truncate. That is the right way round.
+
+**Why hops and not one hierarchy read.** Rollup climbs an unknown number of levels and
+the seats above a rep are not knowable from the rep's own row, so each level has to be
+asked for. Four hops covers five levels of org (AE → RSM → RVP → SVP → CRO); a deeper
+one is **refused** as `HIERARCHY_TOO_DEEP`, never truncated. One file, `keys-up.groovy`,
+serves all four nodes by reading its optional bindings through `binding.hasVariable`.
+
+**Why three PlanAssignment fetches.** `startDate <= end AND (targetId IN … OR positionId
+IN … OR titleId IN …)` is expressible, but only by building the whole filter in Groovy
+and passing it as one pill — and a whole-value template filter does not render in the
+builder **and** silently suppresses every missing-index warning for that node. These
+filters will need an index. Three structured fetches keep both the drawing and the
+warning; the fold unions and de-duplicates them by record id.
+
+**Two new guards, because the honest failures of a set-based design are a set that got
+too big and a walk that did not finish.** `KEY_SET_TOO_LARGE` refuses a period touching
+more distinct payees or seats than `keyCap` (default 5000) — the fix is chunking, not a
+bigger `IN`. `HIERARCHY_TOO_DEEP` refuses a reporting line still climbing after hop four.
+
+**Proven output-identical.** The staged chain and the old fan-out produce
+**byte-for-byte identical** credits on the real NA period: 39 credits, 11 rolled,
+USD 626,741.48, one `UNRESOLVED_PAYEE` — same amounts, same splits, same types. Rows read
+dropped to what the period actually touches: 29 transactions, 18 payees, 20 assignments,
+18 attributes, 19 hierarchy, 20 positions, 1 plan assignment, 1 plan, 3 rules.
+
+`stats.rowsRead` now reports that per object on every run, so the bound is visible instead
+of assumed.
 
 **Why the fetches are bounded, not limited.** No node carries a hard-coded page size:
 `page.limit` comes from the caller's `pageLimit`, and every fetch carries `hasMore` into

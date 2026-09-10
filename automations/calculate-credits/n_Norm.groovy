@@ -33,6 +33,18 @@ if (!pl.isEmpty()) {
 if (limit < 1) limit = 1
 if (limit > 5000) limit = 5000
 
+// How many distinct keys one staged read's IN filter may carry. The reads are keyed on
+// the previous stage's output, so this is the bound on the JOIN rather than on the page:
+// a period touching more distinct payees than this needs calculating in chunks, and the
+// fold refuses with KEY_SET_TOO_LARGE rather than sending a filter nobody sized.
+int cap = 5000
+String kc = opt('keyCap') == null ? '' : String.valueOf(opt('keyCap')).trim()
+if (!kc.isEmpty()) {
+    try { cap = Integer.parseInt(kc) } catch (Exception e) { cap = 5000 }
+}
+if (cap < 1) cap = 1
+if (cap > 20000) cap = 20000
+
 // The engine mints the run id; the caller cannot supply one. That is what makes the
 // UNIQUE key on CalculationRun.runId un-hittable without a pre-check fetch, and the
 // reason there is no pre-check node in this flow.
@@ -44,6 +56,7 @@ return [
     inputOk  : inputOk,
     dryRun   : dry,
     pageLimit: limit,
+    keyCap   : cap,
     runId    : runId,
     startedAt: now,
 ]
