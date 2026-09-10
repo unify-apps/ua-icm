@@ -2,15 +2,15 @@
   "appsUsed": [],
   "createdTime": 1788972458687,
   "deleted": false,
-  "deployedVersion": 1,
+  "deployedVersion": 2,
   "deploymentState": {
-    "deployedAt": 1789028652649,
+    "deployedAt": 1789030225209,
     "deployedBy": 435691,
-    "deployedDefinitionId": "6aa2692c8f78990409edbc01",
-    "deploymentNotes": "Plans: list, get, create, update",
+    "deployedDefinitionId": "6aa26f518f78990409ef3826",
+    "deploymentNotes": "PlanAssignment: real lookups to Title and Position",
     "status": "DEPLOYED",
-    "version": 1,
-    "workflowVersion": 4
+    "version": 2,
+    "workflowVersion": 7
   },
   "description": "Creates a plan and, in the same run, the PlanAssignment row for every title and position it is attached to. Every check runs before the first write, so a refusal never leaves a half-made plan.",
   "edges": [
@@ -120,9 +120,9 @@
   "id": "6aa18daacab06d30bad86124",
   "lastModifiedBy": 435691,
   "lastPlatformUpdateBy": 435691,
-  "lastPlatformUpdateOn": 1789029893578,
+  "lastPlatformUpdateOn": 1789031521969,
   "lcName": "icm | create plan",
-  "modifiedTime": 1789029893578,
+  "modifiedTime": 1789031521969,
   "name": "ICM | Create Plan",
   "nodes": [
     {
@@ -335,7 +335,7 @@
           }
         },
         "compile_static": false,
-        "code": "\ndef opt = { String k -> if (!binding.hasVariable(k)) return ''\n                        def v = binding.getVariable(k); return (v == null) ? '' : v.toString().trim() }\ndef raw = { String k -> binding.hasVariable(k) ? binding.getVariable(k) : null }\ndef nm = opt('name'); def desc = opt('description')\ndef per = opt('periodId'); def stat = opt('status')\ndef cr = raw('creditRuleIds'); def pr = raw('payoutRuleIds'); def asg = raw('assignments')\n\nboolean valid = true; String reason = ''\n// Plan.status is a single-select of exactly these three, title-cased. Passing a\n// caller's string straight through fails the entity validator at WRITE time with\n// \"oneOf fail\", which is a late and unhelpful place to learn it.\ndef STATUSES = ['Draft','Active','Retired']\nString statSel = 'Draft'\nif (!stat.isEmpty()) {\n    def hit = STATUSES.find { it.equalsIgnoreCase(stat) }\n    if (hit == null) { valid = false; reason = 'status must be Draft, Active or Retired, got: ' + stat }\n    else statSel = hit\n}\nif (nm.isEmpty()) { valid = false; reason = 'name is required' }\nelse if (per.isEmpty()) { valid = false; reason = 'periodId is required - a plan without a period has no window to pay in' }\n\ndef ids = { v -> (v instanceof List) ? v.collect { String.valueOf(it).trim() }.findAll { !it.isEmpty() } : [] }\ndef crIds = ids(cr); def prIds = ids(pr)\n\n// A date arrives as YYYY-MM-DD or epoch millis, and null means open-ended - the\n// payload uses it for a position with no end date, which is a real state, not a gap.\ndef parseDate = { v, String where ->\n    if (v == null) return null\n    def t = String.valueOf(v).trim()\n    if (t.isEmpty()) return null\n    if (t ==~ /^\\d+$/) return Long.valueOf(t)\n    try { return java.time.LocalDate.parse(t).toEpochDay() * 86400000L }\n    catch (Exception e) { valid = false; reason = where + ': not a date: ' + t; return null }\n}\n\n// One PlanAssignment row per target. targetType is the only thing separating a title\n// assignment from a position one, so it is set here rather than inferred later.\ndef rows = []\ndef take = { List src, String kind, String idKey ->\n    src.eachWithIndex { a, i ->\n        if (!(a instanceof Map)) { valid = false; reason = kind + '[' + i + ']: must be an object'; return }\n        def tid = String.valueOf(a.get(idKey) ?: '').trim()\n        if (tid.isEmpty()) { valid = false; reason = kind + '[' + i + ']: ' + idKey + ' is required'; return }\n        def sEp = parseDate(a.get('effectiveStart'), kind + '[' + i + '].effectiveStart')\n        def eEp = parseDate(a.get('effectiveEnd'),   kind + '[' + i + '].effectiveEnd')\n        if (sEp != null && eEp != null && eEp < sEp) { valid = false; reason = kind + '[' + i + ']: effectiveEnd is before effectiveStart' }\n        // PlanAssignment.targetType is a single-select of exactly 'Title' and\n        // 'Position'. Uppercase fails the entity validator at WRITE time.\n        def tt = kind.substring(0,1).toUpperCase() + kind.substring(1)\n        rows << [targetType: tt, targetId: tid, startDate: sEp, endDate: eEp]\n    }\n}\ndef titlesIn    = (asg instanceof Map && asg.get('titles')    instanceof List) ? asg.get('titles')    : []\ndef positionsIn = (asg instanceof Map && asg.get('positions') instanceof List) ? asg.get('positions') : []\ntake(titlesIn, 'title', 'titleId')\ntake(positionsIn, 'position', 'positionId')\n\ndef pid = 'PLAN-' + System.currentTimeMillis() + '-' + new Random().nextInt(9000).plus(1000)\n\n// The assignment payload carries the planId that does not exist yet - it is minted\n// here and the same value is written on both records, so the rows are linked without\n// a second read.\n// planId on PlanAssignment is a FOREIGN KEY to Plan, so it holds the plan's RECORD\n// id, not the business key. That id does not exist yet, so the rows are built here\n// without it and stamped in by n_AsgPay once the plan has been written.\ndef asgRows = rows.collect { r ->\n    [assignmentId: pid + '-' + r.targetType + '-' + r.targetId,\n     targetType: r.targetType, targetId: r.targetId,\n     startDate: r.startDate, endDate: r.endDate]\n}\n\n// A bare ARRAY in a json property is dropped on write, so every ordered list goes in\n// under 'items'.\nreturn [valid: valid, reason: reason, planId: pid, nm: nm, desc: desc, per: per,\n        stat: statSel,\n        creditRuleIds: [items: crIds], payoutRuleIds: [items: prIds],\n        asgRows: asgRows, expectedAssignments: asgRows.size(),\n        titleCount: titlesIn.size(), positionCount: positionsIn.size(),\n        dupFilter: [operator:'AND', filters:[[property:'properties.planId', filter:[operator:'EQUAL', value: pid]]]]]\n",
+        "code": "\ndef opt = { String k -> if (!binding.hasVariable(k)) return ''\n                        def v = binding.getVariable(k); return (v == null) ? '' : v.toString().trim() }\ndef raw = { String k -> binding.hasVariable(k) ? binding.getVariable(k) : null }\ndef nm = opt('name'); def desc = opt('description')\ndef per = opt('periodId'); def stat = opt('status')\ndef cr = raw('creditRuleIds'); def pr = raw('payoutRuleIds'); def asg = raw('assignments')\n\nboolean valid = true; String reason = ''\n// Plan.status is a single-select of exactly these three, title-cased. Passing a\n// caller's string straight through fails the entity validator at WRITE time with\n// \"oneOf fail\", which is a late and unhelpful place to learn it.\ndef STATUSES = ['Draft','Active','Retired']\nString statSel = 'Draft'\nif (!stat.isEmpty()) {\n    def hit = STATUSES.find { it.equalsIgnoreCase(stat) }\n    if (hit == null) { valid = false; reason = 'status must be Draft, Active or Retired, got: ' + stat }\n    else statSel = hit\n}\nif (nm.isEmpty()) { valid = false; reason = 'name is required' }\nelse if (per.isEmpty()) { valid = false; reason = 'periodId is required - a plan without a period has no window to pay in' }\n\ndef ids = { v -> (v instanceof List) ? v.collect { String.valueOf(it).trim() }.findAll { !it.isEmpty() } : [] }\ndef crIds = ids(cr); def prIds = ids(pr)\n\n// A date arrives as YYYY-MM-DD or epoch millis, and null means open-ended - the\n// payload uses it for a position with no end date, which is a real state, not a gap.\ndef parseDate = { v, String where ->\n    if (v == null) return null\n    def t = String.valueOf(v).trim()\n    if (t.isEmpty()) return null\n    if (t ==~ /^\\d+$/) return Long.valueOf(t)\n    try { return java.time.LocalDate.parse(t).toEpochDay() * 86400000L }\n    catch (Exception e) { valid = false; reason = where + ': not a date: ' + t; return null }\n}\n\n// One PlanAssignment row per target. targetType is the only thing separating a title\n// assignment from a position one, so it is set here rather than inferred later.\ndef rows = []\ndef take = { List src, String kind, String idKey ->\n    src.eachWithIndex { a, i ->\n        if (!(a instanceof Map)) { valid = false; reason = kind + '[' + i + ']: must be an object'; return }\n        def tid = String.valueOf(a.get(idKey) ?: '').trim()\n        if (tid.isEmpty()) { valid = false; reason = kind + '[' + i + ']: ' + idKey + ' is required'; return }\n        def sEp = parseDate(a.get('effectiveStart'), kind + '[' + i + '].effectiveStart')\n        def eEp = parseDate(a.get('effectiveEnd'),   kind + '[' + i + '].effectiveEnd')\n        if (sEp != null && eEp != null && eEp < sEp) { valid = false; reason = kind + '[' + i + ']: effectiveEnd is before effectiveStart' }\n        // PlanAssignment.targetType is a single-select of exactly 'Title' and\n        // 'Position'. Uppercase fails the entity validator at WRITE time.\n        def tt = kind.substring(0,1).toUpperCase() + kind.substring(1)\n        rows << [targetType: tt, targetId: tid, startDate: sEp, endDate: eEp]\n    }\n}\ndef titlesIn    = (asg instanceof Map && asg.get('titles')    instanceof List) ? asg.get('titles')    : []\ndef positionsIn = (asg instanceof Map && asg.get('positions') instanceof List) ? asg.get('positions') : []\ntake(titlesIn, 'title', 'titleId')\ntake(positionsIn, 'position', 'positionId')\n\ndef pid = 'PLAN-' + System.currentTimeMillis() + '-' + new Random().nextInt(9000).plus(1000)\n\n// The assignment payload carries the planId that does not exist yet - it is minted\n// here and the same value is written on both records, so the rows are linked without\n// a second read.\n// planId on PlanAssignment is a FOREIGN KEY to Plan, so it holds the plan's RECORD\n// id, not the business key. That id does not exist yet, so the rows are built here\n// without it and stamped in by n_AsgPay once the plan has been written.\ndef asgRows = rows.collect { r ->\n    [assignmentId: pid + '-' + r.targetType + '-' + r.targetId,\n     targetType: r.targetType, targetId: r.targetId,\n     startDate: r.startDate, endDate: r.endDate]\n}\n\n// A bare ARRAY in a json property is dropped on write, so every ordered list goes in\n// under 'items'.\nreturn [valid: valid, reason: reason, planId: pid, nm: nm, desc: desc, per: per,\n        stat: statSel,\n        creditRules: crIds, payoutRules: prIds,\n        asgRows: asgRows, expectedAssignments: asgRows.size(),\n        titleCount: titlesIn.size(), positionCount: positionsIn.size(),\n        dupFilter: [operator:'AND', filters:[[property:'properties.planId', filter:[operator:'EQUAL', value: pid]]]]]\n",
         "captureStdOutput": false,
         "parameters": {
           "name": "{{ n_sTaRt.outputs.name }}",
@@ -522,8 +522,8 @@
           "description": "{{ n_Norm.outputs.result.desc }}",
           "periodId": "{{ n_Norm.outputs.result.per }}",
           "status": "{{ n_Norm.outputs.result.stat }}",
-          "creditRuleIds": "{{ n_Norm.outputs.result.creditRuleIds }}",
-          "payoutRuleIds": "{{ n_Norm.outputs.result.payoutRuleIds }}"
+          "creditRules": "{{ n_Norm.outputs.result.creditRules }}",
+          "payoutRules": "{{ n_Norm.outputs.result.payoutRules }}"
         }
       },
       "options": {
@@ -792,5 +792,5 @@
   "tags": [
     "icm"
   ],
-  "version": 7
+  "version": 9
 }

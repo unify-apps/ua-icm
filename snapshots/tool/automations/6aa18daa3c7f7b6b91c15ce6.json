@@ -68,9 +68,9 @@
   "id": "6aa18daa3c7f7b6b91c15ce6",
   "lastModifiedBy": 435691,
   "lastPlatformUpdateBy": 435691,
-  "lastPlatformUpdateOn": 1789028547845,
+  "lastPlatformUpdateOn": 1789031499042,
   "lcName": "icm | list plans",
-  "modifiedTime": 1789028547845,
+  "modifiedTime": 1789031499042,
   "name": "ICM | List Plans",
   "nodes": [
     {
@@ -282,8 +282,8 @@
           "properties.version",
           "properties.startDate",
           "properties.endDate",
-          "properties.creditRuleIds",
-          "properties.payoutRuleIds"
+          "properties.creditRules",
+          "properties.payoutRules"
         ]
       },
       "options": {
@@ -353,7 +353,7 @@
           }
         },
         "compile_static": false,
-        "code": "\n// Rule ids are stored under {items:[...]} because a bare array is dropped on write.\n// The list returns COUNTS, not the ids - a page of 200 plans would otherwise carry\n// 200 rule lists to render a table that shows neither.\ndef out = []\nif (rows != null) rows.each { r ->\n    def p = r.properties\n    def cr = (p?.creditRuleIds instanceof Map) ? (p.creditRuleIds.get('items') ?: []) : []\n    def pr = (p?.payoutRuleIds instanceof Map) ? (p.payoutRuleIds.get('items') ?: []) : []\n    out << [planId: p?.planId ?: '', recordId: String.valueOf(r.id),\n            name: p?.name ?: '', description: p?.description ?: '',\n            periodId: p?.periodId ?: '', status: p?.status ?: '',\n            version: p?.version, startDate: p?.startDate, endDate: p?.endDate,\n            creditRuleCount: cr.size(), payoutRuleCount: pr.size()]\n}\nint tot = (total == null) ? out.size() : Integer.valueOf(String.valueOf(total))\nreturn [plans: out, total: tot, hasMore: (pageOffset + out.size()) < tot,\n        message: out.size() + ' plan' + (out.size() == 1 ? '' : 's') + ' on this page']\n",
+        "code": "\n// Rule ids are stored under {items:[...]} because a bare array is dropped on write.\n// The list returns COUNTS, not the ids - a page of 200 plans would otherwise carry\n// 200 rule lists to render a table that shows neither.\ndef out = []\nif (rows != null) rows.each { r ->\n    def p = r.properties\n    def cr = (p?.creditRules instanceof List) ? p.creditRules : []\n    def pr = (p?.payoutRules instanceof List) ? p.payoutRules : []\n    out << [planId: p?.planId ?: '', recordId: String.valueOf(r.id),\n            name: p?.name ?: '', description: p?.description ?: '',\n            periodId: p?.periodId ?: '', status: p?.status ?: '',\n            version: p?.version, startDate: p?.startDate, endDate: p?.endDate,\n            creditRuleCount: cr.size(), payoutRuleCount: pr.size()]\n}\nint tot = (total == null) ? out.size() : Integer.valueOf(String.valueOf(total))\nreturn [plans: out, total: tot, hasMore: (pageOffset + out.size()) < tot,\n        message: out.size() + ' plan' + (out.size() == 1 ? '' : 's') + ' on this page']\n",
         "captureStdOutput": false,
         "parameters": {
           "rows": "{{ n_Ft.outputs.objects }}",
@@ -469,5 +469,5 @@
   "tags": [
     "icm"
   ],
-  "version": 1
+  "version": 2
 }

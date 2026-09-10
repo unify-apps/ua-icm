@@ -2,15 +2,15 @@
   "appsUsed": [],
   "createdTime": 1789027344868,
   "deleted": false,
-  "deployedVersion": 1,
+  "deployedVersion": 2,
   "deploymentState": {
-    "deployedAt": 1789028717387,
+    "deployedAt": 1789030290047,
     "deployedBy": 435691,
-    "deployedDefinitionId": "6aa2696db614217b0d8fa307",
-    "deploymentNotes": "Plans: list, get, create, update",
+    "deployedDefinitionId": "6aa26f91ff41994689a452bf",
+    "deploymentNotes": "PlanAssignment: real lookups to Title and Position",
     "status": "DEPLOYED",
-    "version": 1,
-    "workflowVersion": 6
+    "version": 2,
+    "workflowVersion": 7
   },
   "description": "Edits a plan and REPLACES its assignment rows. A plan has a handful of targets, and a diff that gets it wrong leaves a seat attached to a plan nobody can see - delete-then-write cannot half-apply.",
   "edges": [
@@ -118,9 +118,9 @@
   "id": "6aa264103aa7845ea17fca52",
   "lastModifiedBy": 435691,
   "lastPlatformUpdateBy": 435691,
-  "lastPlatformUpdateOn": 1789029894335,
+  "lastPlatformUpdateOn": 1789031522666,
   "lcName": "icm | update plan",
-  "modifiedTime": 1789029894335,
+  "modifiedTime": 1789031522666,
   "name": "ICM | Update Plan",
   "nodes": [
     {
@@ -338,7 +338,7 @@
           }
         },
         "compile_static": false,
-        "code": "\ndef opt = { String k -> if (!binding.hasVariable(k)) return ''\n                        def v = binding.getVariable(k); return (v == null) ? '' : v.toString().trim() }\ndef raw = { String k -> binding.hasVariable(k) ? binding.getVariable(k) : null }\ndef pid0 = opt('planId')\ndef nm = opt('name'); def desc = opt('description')\ndef per = opt('periodId'); def stat = opt('status')\ndef cr = raw('creditRuleIds'); def pr = raw('payoutRuleIds'); def asg = raw('assignments')\n\nboolean valid = true; String reason = ''\n// Plan.status is a single-select of exactly these three, title-cased. Passing a\n// caller's string straight through fails the entity validator at WRITE time with\n// \"oneOf fail\", which is a late and unhelpful place to learn it.\ndef STATUSES = ['Draft','Active','Retired']\nString statSel = 'Draft'\nif (!stat.isEmpty()) {\n    def hit = STATUSES.find { it.equalsIgnoreCase(stat) }\n    if (hit == null) { valid = false; reason = 'status must be Draft, Active or Retired, got: ' + stat }\n    else statSel = hit\n}\nif (pid0.isEmpty()) { valid = false; reason = 'planId is required' }\nelse if (nm.isEmpty()) { valid = false; reason = 'name is required' }\nelse if (per.isEmpty()) { valid = false; reason = 'periodId is required - a plan without a period has no window to pay in' }\n\ndef ids = { v -> (v instanceof List) ? v.collect { String.valueOf(it).trim() }.findAll { !it.isEmpty() } : [] }\ndef crIds = ids(cr); def prIds = ids(pr)\n\n// A date arrives as YYYY-MM-DD or epoch millis, and null means open-ended - the\n// payload uses it for a position with no end date, which is a real state, not a gap.\ndef parseDate = { v, String where ->\n    if (v == null) return null\n    def t = String.valueOf(v).trim()\n    if (t.isEmpty()) return null\n    if (t ==~ /^\\d+$/) return Long.valueOf(t)\n    try { return java.time.LocalDate.parse(t).toEpochDay() * 86400000L }\n    catch (Exception e) { valid = false; reason = where + ': not a date: ' + t; return null }\n}\n\n// One PlanAssignment row per target. targetType is the only thing separating a title\n// assignment from a position one, so it is set here rather than inferred later.\ndef rows = []\ndef take = { List src, String kind, String idKey ->\n    src.eachWithIndex { a, i ->\n        if (!(a instanceof Map)) { valid = false; reason = kind + '[' + i + ']: must be an object'; return }\n        def tid = String.valueOf(a.get(idKey) ?: '').trim()\n        if (tid.isEmpty()) { valid = false; reason = kind + '[' + i + ']: ' + idKey + ' is required'; return }\n        def sEp = parseDate(a.get('effectiveStart'), kind + '[' + i + '].effectiveStart')\n        def eEp = parseDate(a.get('effectiveEnd'),   kind + '[' + i + '].effectiveEnd')\n        if (sEp != null && eEp != null && eEp < sEp) { valid = false; reason = kind + '[' + i + ']: effectiveEnd is before effectiveStart' }\n        def tt = kind.substring(0,1).toUpperCase() + kind.substring(1)\n        rows << [targetType: tt, targetId: tid, startDate: sEp, endDate: eEp]\n    }\n}\ndef titlesIn    = (asg instanceof Map && asg.get('titles')    instanceof List) ? asg.get('titles')    : []\ndef positionsIn = (asg instanceof Map && asg.get('positions') instanceof List) ? asg.get('positions') : []\ntake(titlesIn, 'title', 'titleId')\ntake(positionsIn, 'position', 'positionId')\n\n// The id is the caller's - this edits an existing plan rather than minting one.\ndef pid = pid0\n\n// The assignment payload carries the planId that does not exist yet - it is minted\n// here and the same value is written on both records, so the rows are linked without\n// a second read.\ndef asgPayload = rows.collect { r ->\n    [assignmentId: pid + '-' + r.targetType + '-' + r.targetId,\n     planId: pid, targetType: r.targetType, targetId: r.targetId,\n     startDate: r.startDate, endDate: r.endDate]\n}\n\n// A bare ARRAY in a json property is dropped on write, so every ordered list goes in\n// under 'items'.\nreturn [valid: valid, reason: reason, planId: pid, nm: nm, desc: desc, per: per,\n        stat: statSel,\n        creditRuleIds: [items: crIds], payoutRuleIds: [items: prIds],\n        asgPayload: asgPayload, hasAssignments: !asgPayload.isEmpty(),\n        titleCount: titlesIn.size(), positionCount: positionsIn.size(),\n        planFilter: [operator:'AND', filters:[[property:'properties.planId', filter:[operator:'EQUAL', value: (valid ? pid : '__invalid_input__')]]]],\n        asgFilter: [operator:'AND', filters:[[property:'properties.planId', filter:[operator:'EQUAL', value: (valid ? pid : '__invalid_input__')]]]]]\n",
+        "code": "\ndef opt = { String k -> if (!binding.hasVariable(k)) return ''\n                        def v = binding.getVariable(k); return (v == null) ? '' : v.toString().trim() }\ndef raw = { String k -> binding.hasVariable(k) ? binding.getVariable(k) : null }\ndef pid0 = opt('planId')\ndef nm = opt('name'); def desc = opt('description')\ndef per = opt('periodId'); def stat = opt('status')\ndef cr = raw('creditRuleIds'); def pr = raw('payoutRuleIds'); def asg = raw('assignments')\n\nboolean valid = true; String reason = ''\n// Plan.status is a single-select of exactly these three, title-cased. Passing a\n// caller's string straight through fails the entity validator at WRITE time with\n// \"oneOf fail\", which is a late and unhelpful place to learn it.\ndef STATUSES = ['Draft','Active','Retired']\nString statSel = 'Draft'\nif (!stat.isEmpty()) {\n    def hit = STATUSES.find { it.equalsIgnoreCase(stat) }\n    if (hit == null) { valid = false; reason = 'status must be Draft, Active or Retired, got: ' + stat }\n    else statSel = hit\n}\nif (pid0.isEmpty()) { valid = false; reason = 'planId is required' }\nelse if (nm.isEmpty()) { valid = false; reason = 'name is required' }\nelse if (per.isEmpty()) { valid = false; reason = 'periodId is required - a plan without a period has no window to pay in' }\n\ndef ids = { v -> (v instanceof List) ? v.collect { String.valueOf(it).trim() }.findAll { !it.isEmpty() } : [] }\ndef crIds = ids(cr); def prIds = ids(pr)\n\n// A date arrives as YYYY-MM-DD or epoch millis, and null means open-ended - the\n// payload uses it for a position with no end date, which is a real state, not a gap.\ndef parseDate = { v, String where ->\n    if (v == null) return null\n    def t = String.valueOf(v).trim()\n    if (t.isEmpty()) return null\n    if (t ==~ /^\\d+$/) return Long.valueOf(t)\n    try { return java.time.LocalDate.parse(t).toEpochDay() * 86400000L }\n    catch (Exception e) { valid = false; reason = where + ': not a date: ' + t; return null }\n}\n\n// One PlanAssignment row per target. targetType is the only thing separating a title\n// assignment from a position one, so it is set here rather than inferred later.\ndef rows = []\ndef take = { List src, String kind, String idKey ->\n    src.eachWithIndex { a, i ->\n        if (!(a instanceof Map)) { valid = false; reason = kind + '[' + i + ']: must be an object'; return }\n        def tid = String.valueOf(a.get(idKey) ?: '').trim()\n        if (tid.isEmpty()) { valid = false; reason = kind + '[' + i + ']: ' + idKey + ' is required'; return }\n        def sEp = parseDate(a.get('effectiveStart'), kind + '[' + i + '].effectiveStart')\n        def eEp = parseDate(a.get('effectiveEnd'),   kind + '[' + i + '].effectiveEnd')\n        if (sEp != null && eEp != null && eEp < sEp) { valid = false; reason = kind + '[' + i + ']: effectiveEnd is before effectiveStart' }\n        def tt = kind.substring(0,1).toUpperCase() + kind.substring(1)\n        rows << [targetType: tt, targetId: tid, startDate: sEp, endDate: eEp]\n    }\n}\ndef titlesIn    = (asg instanceof Map && asg.get('titles')    instanceof List) ? asg.get('titles')    : []\ndef positionsIn = (asg instanceof Map && asg.get('positions') instanceof List) ? asg.get('positions') : []\ntake(titlesIn, 'title', 'titleId')\ntake(positionsIn, 'position', 'positionId')\n\n// The id is the caller's - this edits an existing plan rather than minting one.\ndef pid = pid0\n\n// The assignment payload carries the planId that does not exist yet - it is minted\n// here and the same value is written on both records, so the rows are linked without\n// a second read.\ndef asgPayload = rows.collect { r ->\n    [assignmentId: pid + '-' + r.targetType + '-' + r.targetId,\n     planId: pid, targetType: r.targetType, targetId: r.targetId,\n     startDate: r.startDate, endDate: r.endDate]\n}\n\n// A bare ARRAY in a json property is dropped on write, so every ordered list goes in\n// under 'items'.\nreturn [valid: valid, reason: reason, planId: pid, nm: nm, desc: desc, per: per,\n        stat: statSel,\n        creditRules: crIds, payoutRules: prIds,\n        asgPayload: asgPayload, hasAssignments: !asgPayload.isEmpty(),\n        titleCount: titlesIn.size(), positionCount: positionsIn.size(),\n        planFilter: [operator:'AND', filters:[[property:'properties.planId', filter:[operator:'EQUAL', value: (valid ? pid : '__invalid_input__')]]]],\n        asgFilter: [operator:'AND', filters:[[property:'properties.planId', filter:[operator:'EQUAL', value: (valid ? pid : '__invalid_input__')]]]]]\n",
         "captureStdOutput": false,
         "parameters": {
           "name": "{{ n_sTaRt.outputs.name }}",
@@ -446,8 +446,8 @@
           "properties.version",
           "properties.startDate",
           "properties.endDate",
-          "properties.creditRuleIds",
-          "properties.payoutRuleIds"
+          "properties.creditRules",
+          "properties.payoutRules"
         ]
       },
       "options": {
@@ -625,7 +625,7 @@
           }
         },
         "compile_static": false,
-        "code": "\n// update_record_by_id with useRawPayload REPLACES the record's properties - it does\n// not merge. Sending only the changed fields wiped planId, and the plan then could\n// not be found by the key it is looked up by. So the existing property set is read\n// first and the changes are laid over it.\ndef cur = (rows == null || rows.isEmpty()) ? [:] : (rows[0].properties ?: [:])\ndef out = [:]\ncur.each { k, v -> out[k] = v }\nout['name'] = String.valueOf(nm)\nout['description'] = String.valueOf(desc)\nout['periodId'] = String.valueOf(per)\nout['status'] = String.valueOf(stat)\nout['creditRuleIds'] = crIds\nout['payoutRuleIds'] = prIds\nreturn [payload: out]\n",
+        "code": "\n// update_record_by_id with useRawPayload REPLACES the record's properties - it does\n// not merge. Sending only the changed fields wiped planId, and the plan then could\n// not be found by the key it is looked up by. So the existing property set is read\n// first and the changes are laid over it.\ndef cur = (rows == null || rows.isEmpty()) ? [:] : (rows[0].properties ?: [:])\ndef out = [:]\ncur.each { k, v -> out[k] = v }\nout['name'] = String.valueOf(nm)\nout['description'] = String.valueOf(desc)\nout['periodId'] = String.valueOf(per)\nout['status'] = String.valueOf(stat)\nout['creditRules'] = crIds\nout['payoutRules'] = prIds\nreturn [payload: out]\n",
         "captureStdOutput": false,
         "parameters": {
           "rows": "{{ n_FtDup.outputs.objects }}",
@@ -633,8 +633,8 @@
           "desc": "{{ n_Norm.outputs.result.desc }}",
           "per": "{{ n_Norm.outputs.result.per }}",
           "stat": "{{ n_Norm.outputs.result.stat }}",
-          "crIds": "{{ n_Norm.outputs.result.creditRuleIds }}",
-          "prIds": "{{ n_Norm.outputs.result.payoutRuleIds }}"
+          "crIds": "{{ n_Norm.outputs.result.creditRules }}",
+          "prIds": "{{ n_Norm.outputs.result.payoutRules }}"
         }
       },
       "skip": false,
@@ -918,5 +918,5 @@
   "tags": [
     "icm"
   ],
-  "version": 7
+  "version": 9
 }

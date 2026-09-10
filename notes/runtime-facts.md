@@ -1568,25 +1568,39 @@ branch on the difference; a count parsed from the INPUT proves nothing about the
 output. The Create Plan suite asserted `titleCount: 1` and passed while every row was
 being rejected, because that count came from parsing the request.
 
-## Storage drops an ARRAY even when the property is typed `array` (ICM, 2026-09-10)
+## An array column works — but a field's STORAGE TYPE is fixed at creation (ICM, 2026-09-10)
 
-An earlier note said a bare array in a **json** property is dropped. The limit is
-broader than that: declaring the property as an array does not help.
-
-`Plan.creditRuleIds` was retyped from `{type:'object', additionalProperties:true}` to
-`{type:'array', items:{type:'string'}}`. The schema update took, and re-reading the
-entity type confirmed it. Writing `["a","b","c"]` then stored `{}`:
+An earlier version of this entry said "storage drops arrays even when the property is
+typed array". **That was wrong.** Arrays store fine. What does not work is turning an
+existing field into one.
 
 ```
-via /api/entity/create-update-or-delete/hierarchical  -> {}
-via storage_by_unifyapps create_record (automation)   -> {}
+created as an array                        ["a","b","c"] -> ["a","b","c"]
+retyped object -> array                    ["a","b","c"] -> {}
+deleted from the schema, re-added as
+  array under the SAME name                ["a","b","c"] -> {}
+same, after clearing the old values first  ["a","b","c"] -> {}
+a name that never existed, as array        ["a","b","c"] -> ["a","b","c"]
 ```
 
-Two independent write paths, no error either time.
+`/api/entity-type/update` edits the SCHEMA. The underlying column is keyed by field
+NAME and survives removal from that schema — so re-adding `creditRuleIds` reused the
+object column it was born with, and every array written into it was coerced to `{}`
+while the schema reported `"type":"array"` throughout. The working and broken
+definitions were identical apart from their titles; nothing in either hints at the
+mismatch.
 
-So `{items:[...]}` is the way to store an ordered list, whatever the declared type,
-and the type should stay `object` to match what is actually in there. A property
-typed `array` holding `{items:[...]}` lies to every reader of the object — including
-the generated types and the knowledge docs.
+There is **no per-field delete API**: `EntityTypeRestAPI` has `/delete/{id}`, which
+drops the whole entity type. So a field with the wrong storage type cannot be fixed
+in place — give the replacement a NEW NAME, copy the values across, and drop the old
+one from the schema.
 
-Unwrap on READ instead, in the callable, so the app never sees the wrapper.
+`Plan.creditRuleIds` / `payoutRuleIds` became `creditRules` / `payoutRules` for that
+reason. The callables kept `creditRuleIds` as their INPUT and RESPONSE names, so the
+app's contract did not move; only storage did.
+
+**How the wrong conclusion happened**, which is the part worth remembering: I retyped
+one field, saw `{}`, tried a second write path, saw `{}` again, and generalised to
+"storage drops arrays". Two paths, one field — and the field was the variable that
+mattered. Varying the input while holding the suspect fixed proves nothing about the
+suspect.

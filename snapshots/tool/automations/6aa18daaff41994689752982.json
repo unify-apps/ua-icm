@@ -2,15 +2,15 @@
   "appsUsed": [],
   "createdTime": 1788972458578,
   "deleted": false,
-  "deployedVersion": 1,
+  "deployedVersion": 2,
   "deploymentState": {
-    "deployedAt": 1789028592651,
+    "deployedAt": 1789030333835,
     "deployedBy": 435691,
-    "deployedDefinitionId": "6aa268f0b614217b0d8f91b0",
-    "deploymentNotes": "Plans: list, get, create, update",
+    "deployedDefinitionId": "6aa26fbd3c7f7b6b91ffe286",
+    "deploymentNotes": "PlanAssignment: real lookups to Title and Position",
     "status": "DEPLOYED",
-    "version": 1,
-    "workflowVersion": 3
+    "version": 2,
+    "workflowVersion": 4
   },
   "description": "One plan in full, by planId: every field, the rule id lists, and its title and position assignments. The list returns counts; this is what the edit form reads.",
   "edges": [
@@ -84,9 +84,9 @@
   "id": "6aa18daaff41994689752982",
   "lastModifiedBy": 435691,
   "lastPlatformUpdateBy": 435691,
-  "lastPlatformUpdateOn": 1789029913741,
+  "lastPlatformUpdateOn": 1789031498273,
   "lcName": "icm | get plan",
-  "modifiedTime": 1789029913741,
+  "modifiedTime": 1789031498273,
   "name": "ICM | Get Plan",
   "nodes": [
     {
@@ -256,8 +256,8 @@
           "properties.version",
           "properties.startDate",
           "properties.endDate",
-          "properties.creditRuleIds",
-          "properties.payoutRuleIds"
+          "properties.creditRules",
+          "properties.payoutRules"
         ]
       },
       "options": {
@@ -446,7 +446,7 @@
           }
         },
         "compile_static": false,
-        "code": "\n// A missing planId and a planId that matches nothing are DIFFERENT answers. Both\n// return no rows, so validity has to be read here rather than inferred from emptiness.\nboolean ok = (wasValid == null) ? true : Boolean.valueOf(String.valueOf(wasValid))\ndef r = (rows == null || rows.isEmpty()) ? null : rows[0]\nif (!ok) return [status:'INVALID_INPUT', found:false, plan:null, message:String.valueOf(reason)]\nif (r == null) return [status:'NOT_FOUND', found:false, plan:null, message:'no plan with that id']\ndef p = r.properties\ndef cr = (p?.creditRuleIds instanceof Map) ? (p.creditRuleIds.get('items') ?: []) : []\ndef pr = (p?.payoutRuleIds instanceof Map) ? (p.payoutRuleIds.get('items') ?: []) : []\n\n// One PlanAssignment row per title or position, split back into the two lists the\n// form edits. targetType is what separates them; nothing else does.\ndef titles = []; def positions = []\nif (asgRows != null) asgRows.each { a ->\n    def ap = a.properties\n    // titleId and positionId are separate lookup columns now; only one is set per\n    // row. `targetId` is still returned so the page can treat both kinds alike -\n    // it is derived here rather than stored twice.\n    def tid = ap?.titleId ?: ''\n    def pid2 = ap?.positionId ?: ''\n    def row = [assignmentId: ap?.assignmentId ?: '', recordId: String.valueOf(a.id),\n               titleId: tid, positionId: pid2,\n               targetId: (tid ?: pid2), effectiveStart: ap?.startDate, effectiveEnd: ap?.endDate]\n    def t = String.valueOf(ap?.targetType ?: '').toUpperCase()\n    if (t == 'TITLE') titles << row else if (t == 'POSITION') positions << row\n}\ndef plan = [planId: p?.planId ?: '', recordId: String.valueOf(r.id),\n            name: p?.name ?: '', description: p?.description ?: '',\n            periodId: p?.periodId ?: '', status: p?.status ?: '',\n            version: p?.version, startDate: p?.startDate, endDate: p?.endDate,\n            creditRuleIds: cr, payoutRuleIds: pr,\n            assignments: [titles: titles, positions: positions]]\nreturn [status:'OK', found:true, plan: plan, message:'plan ' + plan.planId]\n",
+        "code": "\n// A missing planId and a planId that matches nothing are DIFFERENT answers. Both\n// return no rows, so validity has to be read here rather than inferred from emptiness.\nboolean ok = (wasValid == null) ? true : Boolean.valueOf(String.valueOf(wasValid))\ndef r = (rows == null || rows.isEmpty()) ? null : rows[0]\nif (!ok) return [status:'INVALID_INPUT', found:false, plan:null, message:String.valueOf(reason)]\nif (r == null) return [status:'NOT_FOUND', found:false, plan:null, message:'no plan with that id']\ndef p = r.properties\ndef cr = (p?.creditRules instanceof List) ? p.creditRules : []\ndef pr = (p?.payoutRules instanceof List) ? p.payoutRules : []\n\n// One PlanAssignment row per title or position, split back into the two lists the\n// form edits. targetType is what separates them; nothing else does.\ndef titles = []; def positions = []\nif (asgRows != null) asgRows.each { a ->\n    def ap = a.properties\n    // titleId and positionId are separate lookup columns now; only one is set per\n    // row. `targetId` is still returned so the page can treat both kinds alike -\n    // it is derived here rather than stored twice.\n    def tid = ap?.titleId ?: ''\n    def pid2 = ap?.positionId ?: ''\n    def row = [assignmentId: ap?.assignmentId ?: '', recordId: String.valueOf(a.id),\n               titleId: tid, positionId: pid2,\n               targetId: (tid ?: pid2), effectiveStart: ap?.startDate, effectiveEnd: ap?.endDate]\n    def t = String.valueOf(ap?.targetType ?: '').toUpperCase()\n    if (t == 'TITLE') titles << row else if (t == 'POSITION') positions << row\n}\ndef plan = [planId: p?.planId ?: '', recordId: String.valueOf(r.id),\n            name: p?.name ?: '', description: p?.description ?: '',\n            periodId: p?.periodId ?: '', status: p?.status ?: '',\n            version: p?.version, startDate: p?.startDate, endDate: p?.endDate,\n            creditRuleIds: cr, payoutRuleIds: pr,\n            assignments: [titles: titles, positions: positions]]\nreturn [status:'OK', found:true, plan: plan, message:'plan ' + plan.planId]\n",
         "captureStdOutput": false,
         "parameters": {
           "rows": "{{ n_Ft.outputs.objects }}",
@@ -553,5 +553,5 @@
   "tags": [
     "icm"
   ],
-  "version": 4
+  "version": 5
 }

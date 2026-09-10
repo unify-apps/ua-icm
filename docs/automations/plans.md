@@ -16,18 +16,22 @@ title, read again (status and description changed, positions gone), then list.
 
 ## Storage
 
-**`Plan` gained four fields** — `description`, `periodId`, `creditRuleIds`,
-`payoutRuleIds`. The two id lists are `json` and are stored under `{items:[...]}`.
+**`Plan` gained four fields** — `description`, `periodId`, `creditRules`,
+`payoutRules`. The two rule lists are genuine `array` columns holding plain arrays of
+rule ids; there is no `{items:[...]}` wrapper.
 
-That wrapper is a platform limitation, not a preference, and it was re-tested rather
-than assumed: both fields were retyped to `{type:'array', items:{type:'string'}}`, the
-schema accepted it, and a bare `["a","b","c"]` then stored as `{}` — through the entity
-API *and* through the automation's own write path. So the schema was put back to
-`object`, because a field typed `array` while holding `{items:[...]}` misdescribes
-itself to everyone who reads the object.
+**They are named `creditRules` / `payoutRules` and not `...Ids`, and that is not a
+style choice.** They were first created as json objects. A field's STORAGE TYPE is
+fixed when the column is created: retyping the schema to `array` does not migrate it,
+deleting the field from the schema does not drop the column (it is keyed by name),
+and re-adding the same name reuses the original object column — so every array
+written into `creditRuleIds` came back as `{}` while the schema reported
+`"type":"array"`. There is no per-field delete API. The only way to get an array
+column is a name that has never been used. See `notes/runtime-facts.md`.
 
-The app never sees the wrapper: the read callables unwrap `.items`, so
-`PlanDetail.creditRuleIds` is a plain `string[]`.
+**The callables kept `creditRuleIds` / `payoutRuleIds` as their INPUT and RESPONSE
+names**, so the app's contract never moved — only storage did. Worth knowing when
+reading a graph: the parameter and the column are deliberately named differently.
 
 **`periodId` holds the period's NAME**, e.g. `YEAR-2026`. That is not a shortcut:
 `Period.name` is that object's own unique key, so the plan is storing the business
