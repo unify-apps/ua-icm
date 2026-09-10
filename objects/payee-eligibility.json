@@ -1,0 +1,14 @@
+{
+  "id": "PayeeEligibility",
+  "pluralName": "PayeeEligibilities",
+  "nameField": "name",
+  "description": "Whether a person was on a variable plan, over a date range. Effective-dated on purpose: 'was she commission-eligible in March?' is one of the two questions a payout dispute always asks, and a single overwritable boolean on Payee cannot answer it in April. Not the same as being employed - an active person can be off-plan (fixed-pay role, moved to ops, pulled off plan during a dispute), which is why `reason` is here and why unassigning their plan is the wrong way to express it: that loses the reason and rewrites history. Exactly one row should match any given date for a payee; two matches is a data bug the calculation raises rather than picks between, the same rule PositionAttribute carries. LEAVE IS NOT THIS - a leave of absence has its own object, `Leave`, with its own guarantee dates.",
+  "properties": {
+    "name": { "type": "string" },
+    "payeeId": { "type": "fk:Payee" },
+    "isCommissionEligible": { "type": "boolean" },
+    "effectiveStart": { "type": "date" },
+    "effectiveEnd": { "type": "date" },
+    "reason": { "type": "string" }
+  }
+}

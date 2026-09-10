@@ -1,0 +1,195 @@
+{
+  "appsUsed": [],
+  "createdTime": 1789033616206,
+  "deleted": false,
+  "description": "Runs engine/condition-cases.json through engine/ConditionMatcher.groovy on the platform's own Groovy. Pure: reads nothing, writes nothing.",
+  "edges": [
+    {
+      "fromNodeId": "n_sTaRt",
+      "id": "next@n_sTaRt@n_Match",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Match",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Match",
+      "id": "next@n_Match@n_St",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_St",
+      "type": "next"
+    }
+  ],
+  "id": "6aa27c908f78990409f2b9ea",
+  "lastModifiedBy": 372563,
+  "lastPlatformUpdateBy": 372563,
+  "lastPlatformUpdateOn": 1789033660201,
+  "lcName": "icm | probe condition matcher (kit test - safe to delete)",
+  "modifiedTime": 1789033660201,
+  "name": "ICM | Probe Condition Matcher (KIT TEST - safe to delete)",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_sTaRt",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status"
+          ],
+          "properties": {
+            "status": {
+              "type": "string"
+            },
+            "total": {
+              "type": "integer"
+            },
+            "passed": {
+              "type": "integer"
+            },
+            "failed": {
+              "type": "integer"
+            },
+            "failures": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "lines": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {}
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable — takes nothing, the cases are the input",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Match",
+      "index": 2,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "total": {
+              "type": "integer",
+              "title": "Total"
+            },
+            "passed": {
+              "type": "integer",
+              "title": "Passed"
+            },
+            "failed": {
+              "type": "integer",
+              "title": "Failed"
+            },
+            "failures": {
+              "type": "array",
+              "title": "Failures",
+              "items": {
+                "type": "string"
+              }
+            },
+            "lines": {
+              "type": "array",
+              "title": "Lines",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {}
+        },
+        "code": "import java.math.BigDecimal\nimport groovy.json.JsonSlurper\n\nclass ConditionMatcher {\n\n    /** The complete operator set. Anything else is reported, never evaluated. */\n    static final List OPERATORS = ['==', '!=', '>', '>=', '<', '<=', 'in']\n\n    /**\n     * Subject -> kind, mirrored from condition-namespace.ts. A subject that is not\n     * here cannot be evaluated: it would read as nothing and match nothing, which\n     * is the silent failure this map exists to turn into a reported one.\n     *\n     * `txn.attrs.<key>` is the one open-ended subject (the form types the key\n     * beside the picker), so it is matched by prefix rather than listed.\n     */\n    static final Map KINDS = [\n        // credit stage — reads the incoming deal, the seat, the person\n        'txn.amount'         : 'number',\n        'txn.product'        : 'string',\n        'txn.customer'       : 'string',\n        'txn.close_date'     : 'date',\n        // payout stage — reads what the credit stage produced\n        'credit.amount'      : 'number',\n        'credit.credit_type' : 'string',\n        'credit.close_date'  : 'date',\n        'credit.is_rollup'   : 'boolean',\n        'credit.product'     : 'string',\n        'credit.customer'    : 'string',\n        'attainment.pct'     : 'number',\n        'attainment.measure' : 'string',\n        'period.type'        : 'enum',\n        // both stages\n        'position.title'     : 'string',\n        'position.territory' : 'string',\n        'payee.currency'     : 'string',\n        'payee.hire_date'    : 'date',\n    ]\n\n    static String kindOf(String subject) {\n        if (subject == null) return null\n        if (KINDS.containsKey(subject)) return KINDS[subject]\n        if (subject.startsWith('txn.attrs.') && subject.length() > 'txn.attrs.'.length()) return 'string'\n        return null\n    }\n\n    /** Which operators are meaningful on a kind. `>` on a boolean is not a filter anyone meant. */\n    static List operatorsFor(String kind) {\n        if (kind == 'number' || kind == 'date') return ['==', '!=', '>', '>=', '<', '<=']\n        if (kind == 'boolean') return ['==', '!=']\n        return ['==', '!=', 'in']\n    }\n\n    /**\n     * Money and any other number. Never Double: a storage `number` comes back as\n     * BigDecimal below 10^7 and Double at or above it, and Groovy promotes\n     * BigDecimal + Double to Double — so one large row silently poisons the rest.\n     * See docs/model/money-and-time.md.\n     */\n    static BigDecimal dec(v) {\n        if (v == null) return null\n        if (v instanceof BigDecimal) return v\n        try { return new BigDecimal(String.valueOf(v).trim()) } catch (Exception e) { return null }\n    }\n\n    /** Epoch millis from a number, a numeric string, or a bare YYYY-MM-DD (midnight UTC). */\n    static Long epoch(v) {\n        if (v == null) return null\n        if (v instanceof Number) return ((Number) v).longValue()\n        String s = String.valueOf(v).trim()\n        if (s ==~ /^-?\\d+$/) return Long.parseLong(s)\n        if (s ==~ /^\\d{4}-\\d{2}-\\d{2}$/) {\n            return java.time.LocalDate.parse(s).atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli()\n        }\n        return null\n    }\n\n    /**\n     * Compare one actual against one authored string, in the subject's kind.\n     * Returns an Integer (-1/0/1), or null when either side will not coerce —\n     * null is \"cannot answer\", and the caller turns it into a reported error\n     * rather than a false.\n     */\n    static Integer compareIn(String kind, actual, String expected) {\n        if (kind == 'number') {\n            BigDecimal a = dec(actual), b = dec(expected)\n            return (a == null || b == null) ? null : Integer.valueOf(a.compareTo(b))\n        }\n        if (kind == 'date') {\n            Long a = epoch(actual), b = epoch(expected)\n            return (a == null || b == null) ? null : Integer.valueOf(a.compareTo(b))\n        }\n        if (kind == 'boolean') {\n            String a = String.valueOf(actual).trim().toLowerCase()\n            String b = expected.trim().toLowerCase()\n            if (!(a in ['true', 'false']) || !(b in ['true', 'false'])) return null\n            return Integer.valueOf(a == b ? 0 : 1)   // only == / != reach here\n        }\n        // string and enum: exact, case-sensitive, on purpose (see the spec)\n        return Integer.valueOf(String.valueOf(actual).compareTo(expected))\n    }\n\n    /** `in` splits on commas; on a number subject the parts compare numerically. */\n    static Boolean isIn(String kind, actual, String expected) {\n        for (String part : expected.split(',', -1)) {\n            Integer c = compareIn(kind, actual, part.trim())\n            if (c == null) return null\n            if (c == 0) return Boolean.TRUE\n        }\n        return Boolean.FALSE\n    }\n\n    /**\n     * Evaluate every row and fold left. No precedence: `A Or B And C` is\n     * `(A Or B) And C`, because the authoring UI has no brackets and inventing\n     * precedence here would make the stored rule mean something the author never saw.\n     *\n     * Never throws. `error != null` means a row could not be evaluated — the\n     * caller records an exception and skips the rule, and MUST NOT read the\n     * false as a clean no-match.\n     */\n    static Map match(Map conditions, Map facts) {\n        List trace = []\n        List items = (conditions == null) ? null : (List) conditions.get('items')\n        if (items == null || items.isEmpty()) {\n            trace << 'no conditions — applies to everything'\n            return [matched: true, error: null, trace: trace]\n        }\n\n        Map bag = (facts == null) ? [:] : facts\n        Boolean acc = null\n\n        for (int i = 0; i < items.size(); i++) {\n            Map row = (Map) items[i]\n            String subject   = row?.get('subject')\n            String operator  = row?.get('operator')\n            String expected  = row?.get('value') == null ? null : String.valueOf(row.get('value'))\n            String connector = row?.get('connector') ?: (i == 0 ? 'If' : 'And')\n            String where     = \"condition ${i + 1}\"\n\n            String kind = kindOf(subject)\n            if (kind == null)\n                return fail(trace, \"${where}: '${subject}' is not a field any rule can read\")\n            if (!OPERATORS.contains(operator))\n                return fail(trace, \"${where}: '${operator}' is not a supported operator\")\n            if (!operatorsFor(kind).contains(operator))\n                return fail(trace, \"${where}: ${operator} cannot be used on ${subject} (${kind})\")\n            if (expected == null || expected.trim().isEmpty())\n                return fail(trace, \"${where}: ${subject} ${operator} has no value to compare against\")\n\n            // A fact that is absent or null is UNKNOWN, not false. Returning false\n            // here would read as \"this rule does not apply\", which nobody\n            // investigates — and the person is quietly underpaid.\n            if (!bag.containsKey(subject) || bag.get(subject) == null)\n                return fail(trace, \"${where}: no value supplied for '${subject}'\")\n\n            def actual = bag.get(subject)\n            Boolean r\n\n            if (operator == 'in') {\n                r = isIn(kind, actual, expected)\n            } else {\n                Integer c = compareIn(kind, actual, expected)\n                if (c == null) r = null\n                else if (operator == '==') r = (c == 0)\n                else if (operator == '!=') r = (c != 0)\n                else if (operator == '>')  r = (c > 0)\n                else if (operator == '>=') r = (c >= 0)\n                else if (operator == '<')  r = (c < 0)\n                else r = (c <= 0)\n            }\n\n            if (r == null)\n                return fail(trace, \"${where}: cannot compare ${subject} (${kind}) against '${expected}' — actual was '${actual}'\")\n\n            trace << \"${connector} ${subject} ${operator} '${expected}' -> ${r} (actual '${actual}')\".toString()\n\n            if (acc == null) acc = (connector == 'Not') ? !r : r\n            else if (connector == 'Or')  acc = acc || r\n            else if (connector == 'Not') acc = acc && !r\n            else acc = acc && r\n        }\n\n        return [matched: acc.booleanValue(), error: null, trace: trace]\n    }\n\n    private static Map fail(List trace, String message) {\n        trace << (\"REFUSED: \" + message).toString()\n        return [matched: false, error: message, trace: trace]\n    }\n}\n\n\n// ---- the case table, verbatim from engine/condition-cases.json ----\ndef CASES_JSON = '''{\n  \"note\": [\n    \"The case table for ConditionMatcher.groovy. Runs in one code node against the\",\n    \"platform's own Groovy — see docs/model/condition-grammar.md.\",\n    \"\",\n    \"`expect` is one of: true, false, or 'error'. 'error' means the matcher must\",\n    \"REFUSE (error != null), which is a different outcome from false and the whole\",\n    \"reason this table has an error section: a matcher that returns false for a\",\n    \"missing fact passes every positive test and quietly underpays people.\"\n  ],\n  \"cases\": [\n\n    { \"name\": \"string == matches\", \"expect\": true,\n      \"facts\": { \"position.title\": \"T-AE\" },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"position.title\", \"operator\": \"==\", \"value\": \"T-AE\" }] },\n\n    { \"name\": \"string == is case-sensitive\", \"expect\": false,\n      \"facts\": { \"position.title\": \"t-ae\" },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"position.title\", \"operator\": \"==\", \"value\": \"T-AE\" }] },\n\n    { \"name\": \"string == does not prefix-match (T-AE vs T-AE-EU)\", \"expect\": false,\n      \"facts\": { \"position.title\": \"T-AE-EU\" },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"position.title\", \"operator\": \"==\", \"value\": \"T-AE\" }] },\n\n    { \"name\": \"string !=\", \"expect\": true,\n      \"facts\": { \"position.title\": \"T-VP\" },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"position.title\", \"operator\": \"!=\", \"value\": \"T-AE\" }] },\n\n    { \"name\": \"string in, hit\", \"expect\": true,\n      \"facts\": { \"position.title\": \"T-ENT-AE\" },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"position.title\", \"operator\": \"in\", \"value\": \"T-AE, T-ENT-AE, T-VP\" }] },\n\n    { \"name\": \"string in, miss\", \"expect\": false,\n      \"facts\": { \"position.title\": \"T-SDR\" },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"position.title\", \"operator\": \"in\", \"value\": \"T-AE, T-ENT-AE\" }] },\n\n    { \"name\": \"number > as BigDecimal\", \"expect\": true,\n      \"facts\": { \"txn.amount\": 100000 },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"txn.amount\", \"operator\": \">\", \"value\": \"50000\" }] },\n\n    { \"name\": \"number >= at the boundary\", \"expect\": true,\n      \"facts\": { \"txn.amount\": 50000 },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"txn.amount\", \"operator\": \">=\", \"value\": \"50000\" }] },\n\n    { \"name\": \"number > at the boundary is false\", \"expect\": false,\n      \"facts\": { \"txn.amount\": 50000 },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"txn.amount\", \"operator\": \">\", \"value\": \"50000\" }] },\n\n    { \"name\": \"number above the Double cliff (10^7) stays exact\", \"expect\": true,\n      \"facts\": { \"txn.amount\": 10000000.01 },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"txn.amount\", \"operator\": \">\", \"value\": \"10000000\" }] },\n\n    { \"name\": \"ERROR: in is not offered on a number subject\", \"expect\": \"error\",\n      \"facts\": { \"txn.amount\": 100 },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"txn.amount\", \"operator\": \"in\", \"value\": \"100.00, 200\" }] },\n\n    { \"name\": \"date > with epoch millis\", \"expect\": true,\n      \"facts\": { \"txn.close_date\": 1788566400000 },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"txn.close_date\", \"operator\": \">\", \"value\": \"2026-09-01\" }] },\n\n    { \"name\": \"date == accepts YYYY-MM-DD on both sides\", \"expect\": true,\n      \"facts\": { \"txn.close_date\": \"2026-09-05\" },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"txn.close_date\", \"operator\": \"==\", \"value\": \"2026-09-05\" }] },\n\n    { \"name\": \"boolean ==\", \"expect\": true,\n      \"facts\": { \"credit.is_rollup\": true },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"credit.is_rollup\", \"operator\": \"==\", \"value\": \"true\" }] },\n\n    { \"name\": \"boolean != on a string 'false'\", \"expect\": true,\n      \"facts\": { \"credit.is_rollup\": \"false\" },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"credit.is_rollup\", \"operator\": \"!=\", \"value\": \"true\" }] },\n\n    { \"name\": \"txn.attrs.<key> wildcard resolves\", \"expect\": true,\n      \"facts\": { \"txn.attrs.region\": \"APAC\" },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"txn.attrs.region\", \"operator\": \"==\", \"value\": \"APAC\" }] },\n\n    { \"name\": \"empty items match everything\", \"expect\": true,\n      \"facts\": {}, \"items\": [] },\n\n    { \"name\": \"And: both true\", \"expect\": true,\n      \"facts\": { \"position.title\": \"T-AE\", \"txn.amount\": 100000 },\n      \"items\": [\n        { \"connector\": \"If\",  \"subject\": \"position.title\", \"operator\": \"==\", \"value\": \"T-AE\" },\n        { \"connector\": \"And\", \"subject\": \"txn.amount\",     \"operator\": \">\",  \"value\": \"50000\" }] },\n\n    { \"name\": \"And: second false sinks it\", \"expect\": false,\n      \"facts\": { \"position.title\": \"T-AE\", \"txn.amount\": 10 },\n      \"items\": [\n        { \"connector\": \"If\",  \"subject\": \"position.title\", \"operator\": \"==\", \"value\": \"T-AE\" },\n        { \"connector\": \"And\", \"subject\": \"txn.amount\",     \"operator\": \">\",  \"value\": \"50000\" }] },\n\n    { \"name\": \"Or: first false second true\", \"expect\": true,\n      \"facts\": { \"position.title\": \"T-VP\", \"txn.amount\": 100000 },\n      \"items\": [\n        { \"connector\": \"If\", \"subject\": \"position.title\", \"operator\": \"==\", \"value\": \"T-AE\" },\n        { \"connector\": \"Or\", \"subject\": \"txn.amount\",     \"operator\": \">\",  \"value\": \"50000\" }] },\n\n    { \"name\": \"Not negates its own row\", \"expect\": true,\n      \"facts\": { \"position.title\": \"T-AE\", \"credit.is_rollup\": false },\n      \"items\": [\n        { \"connector\": \"If\",  \"subject\": \"position.title\",   \"operator\": \"==\", \"value\": \"T-AE\" },\n        { \"connector\": \"Not\", \"subject\": \"credit.is_rollup\", \"operator\": \"==\", \"value\": \"true\" }] },\n\n    { \"name\": \"left fold, no precedence: (A Or B) And C\", \"expect\": false,\n      \"facts\": { \"position.title\": \"T-VP\", \"txn.amount\": 100000, \"txn.product\": \"Widget\" },\n      \"items\": [\n        { \"connector\": \"If\",  \"subject\": \"position.title\", \"operator\": \"==\", \"value\": \"T-AE\" },\n        { \"connector\": \"Or\",  \"subject\": \"txn.amount\",     \"operator\": \">\",  \"value\": \"50000\" },\n        { \"connector\": \"And\", \"subject\": \"txn.product\",    \"operator\": \"==\", \"value\": \"Gadget\" }] },\n\n    { \"name\": \"ERROR: fact absent is not false\", \"expect\": \"error\",\n      \"facts\": {},\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"position.title\", \"operator\": \"==\", \"value\": \"T-AE\" }] },\n\n    { \"name\": \"ERROR: fact present but null is not false\", \"expect\": \"error\",\n      \"facts\": { \"position.title\": null },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"position.title\", \"operator\": \"==\", \"value\": \"T-AE\" }] },\n\n    { \"name\": \"ERROR: subject outside the namespace\", \"expect\": \"error\",\n      \"facts\": { \"txn.colour\": \"red\" },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"txn.colour\", \"operator\": \"==\", \"value\": \"red\" }] },\n\n    { \"name\": \"ERROR: unsupported operator\", \"expect\": \"error\",\n      \"facts\": { \"position.title\": \"T-AE\" },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"position.title\", \"operator\": \"=~\", \"value\": \"T-AE\" }] },\n\n    { \"name\": \"ERROR: operator not valid for the kind (> on boolean)\", \"expect\": \"error\",\n      \"facts\": { \"credit.is_rollup\": true },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"credit.is_rollup\", \"operator\": \">\", \"value\": \"true\" }] },\n\n    { \"name\": \"ERROR: number subject compared against non-numeric text\", \"expect\": \"error\",\n      \"facts\": { \"txn.amount\": 100000 },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"txn.amount\", \"operator\": \">\", \"value\": \"lots\" }] },\n\n    { \"name\": \"ERROR: empty value\", \"expect\": \"error\",\n      \"facts\": { \"position.title\": \"T-AE\" },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"position.title\", \"operator\": \"==\", \"value\": \"  \" }] },\n\n    { \"name\": \"ERROR: a later row refuses even though the first matched\", \"expect\": \"error\",\n      \"facts\": { \"position.title\": \"T-AE\" },\n      \"items\": [\n        { \"connector\": \"If\",  \"subject\": \"position.title\", \"operator\": \"==\", \"value\": \"T-AE\" },\n        { \"connector\": \"And\", \"subject\": \"txn.amount\",     \"operator\": \">\",  \"value\": \"50000\" }] },\n\n    { \"name\": \"the live smoke rule against POS-AP-AE-01\", \"expect\": true,\n      \"facts\": { \"position.title\": \"T-AE\" },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"position.title\", \"operator\": \"==\", \"value\": \"T-AE\" }] },\n\n    { \"name\": \"the live smoke rule against POS-EU-AE-05 (must not fire)\", \"expect\": false,\n      \"facts\": { \"position.title\": \"T-AE-EU\" },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"position.title\", \"operator\": \"==\", \"value\": \"T-AE\" }] },\n\n    { \"name\": \"the live payout rule against a NEW_BOOKING credit\", \"expect\": true,\n      \"facts\": { \"credit.credit_type\": \"NEW_BOOKING\" },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"credit.credit_type\", \"operator\": \"==\", \"value\": \"NEW_BOOKING\" }] },\n\n    { \"name\": \"the live payout rule must not pay a rollup credit\", \"expect\": false,\n      \"facts\": { \"credit.credit_type\": \"MGR_ROLLUP\" },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"credit.credit_type\", \"operator\": \"==\", \"value\": \"NEW_BOOKING\" }] },\n\n    { \"name\": \"the ORIGINAL authored credit rule, which matches nothing real\", \"expect\": false,\n      \"facts\": { \"position.title\": \"T-AE\" },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"position.title\", \"operator\": \"==\", \"value\": \"AP\" }] },\n\n    { \"name\": \"the ORIGINAL authored payout rule, which matches nothing real\", \"expect\": false,\n      \"facts\": { \"credit.credit_type\": \"NEW_BOOKING\" },\n      \"items\": [{ \"connector\": \"If\", \"subject\": \"credit.credit_type\", \"operator\": \"==\", \"value\": \"Booked\" }] }\n  ]\n}\n'''\n\ndef cases = new JsonSlurper().parseText(CASES_JSON).cases\nint passed = 0\nint failed = 0\nList failures = []\nList lines = []\n\nfor (c in cases) {\n    Map conds = [items: c.items]\n    Map r = ConditionMatcher.match(conds, c.facts)\n    def expect = c.expect\n    boolean ok\n    if (expect == 'error') {\n        ok = (r.error != null)\n    } else {\n        ok = (r.error == null && r.matched == expect)\n    }\n    if (ok) {\n        passed++\n    } else {\n        failed++\n        failures << (\"FAIL: \" + c.name + \" | expected \" + expect + \" | got matched=\" + r.matched + \" error=\" + r.error).toString()\n    }\n    lines << ((ok ? \"ok   \" : \"FAIL \") + c.name).toString()\n}\n\nreturn [total: cases.size(), passed: passed, failed: failed, failures: failures, lines: lines]\n",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {}
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Prove the rule-resolution core against its case table",
+      "title": "Run the condition matcher cases",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_St",
+      "index": 3,
+      "inputs": {
+        "result": {
+          "status": "OK",
+          "total": "{{ n_Match.outputs.total }}",
+          "passed": "{{ n_Match.outputs.passed }}",
+          "failed": "{{ n_Match.outputs.failed }}",
+          "failures": "{{ n_Match.outputs.failures }}",
+          "lines": "{{ n_Match.outputs.lines }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Hand back the pass/fail tally and every failure line",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 372563,
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true
+  },
+  "standard": false,
+  "version": 1
+}

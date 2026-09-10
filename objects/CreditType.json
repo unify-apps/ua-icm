@@ -1,0 +1,14 @@
+{
+  "id": "CreditType",
+  "name": "Credit Type",
+  "pluralName": "CreditTypes",
+  "description": "The controlled list of credit buckets - NEW_BOOKING, RENEWAL, MGR_ROLLUP. Table 2b of the design walkthrough. A registry, not free text: a rule writes a creditType and a measure reads one, so `NEW_BOOKING` and `NEW_BOOKINGS` as free strings are two different buckets and nothing complains. The rule fires, credits are written, no measure sums them, and the rep's attainment is quietly low until quarter end. That failure has no error and no zero - just credits nobody reads.",
+  "nameField": "name",
+  "uniqueKeyFields": ["creditTypeCode"],
+  "properties": {
+    "creditTypeCode": { "type": "string", "required": true, "uniqueKey": true, "searchable": true, "title": "Credit Type Code" },
+    "name":           { "type": "string", "required": true, "searchable": true },
+    "description":    { "type": "string", "title": "Description" },
+    "active":         { "type": "boolean", "title": "Active" }
+  }
+}

@@ -268,7 +268,16 @@ platform property, shared by the two above. Not a command.
 
 `scripts/fixtures.mjs` — seeds and resets the loudly-named (`KITFIX-`) record
 families the suites run against. This is the mechanism behind the ICM rule
-about never testing on real pay data.
+about never testing on real pay data. Orbit only, no `--env`, permanently.
+
+`scripts/ua-records.mjs` — seeds the REAL records a product needs to exist at
+all: the currencies, the fiscal calendar, the org. The twin of `fixtures.mjs`
+and deliberately weaker: it **can never delete or update anything**. No reset,
+no `--force`, no upsert. A row whose business key already exists is reported and
+skipped, so re-running is safe and a half-finished seed resumes. Correcting a
+record that is already wrong is a deliberate act through the builder or an
+automation, never a rerun of this. Record sets live in `records/`; the file
+format is the fixture format, including `$ref` / `@ref` for foreign keys.
 
 `scripts/graph.mjs` — regenerates `docs/architecture.html` from snapshots,
 specs and suites. `--check` fails when it is stale; `--json <path>` dumps the

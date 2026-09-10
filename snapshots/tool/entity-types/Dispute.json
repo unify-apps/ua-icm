@@ -1,0 +1,442 @@
+{
+  "columnCounts": 12,
+  "createdTime": 1788769612732,
+  "deleted": false,
+  "description": "",
+  "id": "Dispute",
+  "input": {
+    "type": "SCHEMA_AND_LAYOUT",
+    "dynamic": false,
+    "layout": {
+      "creditId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:Credit",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "resolvedByRunId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:CalculationRun",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "ui:order": [
+        "disputeId",
+        "employeeId",
+        "earningId",
+        "creditId",
+        "transactionId",
+        "reason",
+        "status",
+        "assignee",
+        "resolution",
+        "resolvedByRunId",
+        "createdAt",
+        "resolvedAt"
+      ],
+      "employeeId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:Payee",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "earningId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:Earning",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "transactionId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:Transaction",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      }
+    },
+    "schema": {
+      "type": "object",
+      "properties": {
+        "disputeId": {
+          "type": "string",
+          "title": "Dispute Id",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true,
+          "uniqueKey": true,
+          "nameField": true
+        },
+        "employeeId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Employee Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Payee"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "earningId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Earning Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Earning"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "creditId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Credit Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Credit"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "transactionId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Transaction Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Transaction"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "reason": {
+          "type": "string",
+          "title": "Reason",
+          "filterable": true,
+          "sortable": true
+        },
+        "status": {
+          "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "Open",
+              "title": "Open"
+            },
+            {
+              "const": "InReview",
+              "title": "InReview"
+            },
+            {
+              "const": "Resolved",
+              "title": "Resolved"
+            },
+            {
+              "const": "Rejected",
+              "title": "Rejected"
+            },
+            {
+              "const": "Reopened",
+              "title": "Reopened"
+            }
+          ],
+          "title": "Status",
+          "filterable": true,
+          "sortable": true
+        },
+        "assignee": {
+          "type": "string",
+          "title": "Assignee",
+          "filterable": true,
+          "sortable": true
+        },
+        "resolution": {
+          "type": "string",
+          "title": "Resolution",
+          "filterable": true,
+          "sortable": true
+        },
+        "resolvedByRunId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Resolved By Run Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:CalculationRun"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "createdAt": {
+          "type": "integer",
+          "format": "date-time",
+          "dateFormat": "epoch",
+          "title": "Created At",
+          "filterable": true,
+          "sortable": true
+        },
+        "resolvedAt": {
+          "type": "integer",
+          "format": "date-time",
+          "dateFormat": "epoch",
+          "title": "Resolved At",
+          "filterable": true,
+          "sortable": true
+        }
+      }
+    }
+  },
+  "lastModifiedBy": 435691,
+  "lastPlatformUpdateBy": 435691,
+  "lastPlatformUpdateOn": 1788769612735,
+  "lcName": "dispute",
+  "metadata": {
+    "auditable": true,
+    "autoGeneratedFields": [],
+    "cacheable": false,
+    "captureActivity": true,
+    "captureReferences": false,
+    "captureReporting": true,
+    "dateFields": [
+      "createdAt",
+      "resolvedAt"
+    ],
+    "deployable": false,
+    "encryptedFields": [],
+    "external": false,
+    "filterableFields": [
+      "disputeId",
+      "employeeId",
+      "earningId",
+      "creditId",
+      "transactionId",
+      "reason",
+      "status",
+      "assignee",
+      "resolution",
+      "resolvedByRunId",
+      "createdAt",
+      "resolvedAt"
+    ],
+    "graphType": "LEGACY_MDM",
+    "hasTimeSeriesRecords": true,
+    "hashedFields": [],
+    "inaccessibleFromUI": false,
+    "includeInDependency": false,
+    "nameField": "disputeId",
+    "partFields": [],
+    "piiFields": [],
+    "primaryKeyField": "",
+    "referenceKeys": [
+      {
+        "key": "properties.employeeId",
+        "referenceType": "Payee"
+      },
+      {
+        "key": "properties.earningId",
+        "referenceType": "Earning"
+      },
+      {
+        "key": "properties.creditId",
+        "referenceType": "Credit"
+      },
+      {
+        "key": "properties.transactionId",
+        "referenceType": "Transaction"
+      },
+      {
+        "key": "properties.resolvedByRunId",
+        "referenceType": "CalculationRun"
+      }
+    ],
+    "scdType2Enabled": false,
+    "schemaValidationEnabled": true,
+    "searchableFields": [
+      "disputeId",
+      "disputeId"
+    ],
+    "sessionBackedStorageEnabled": false,
+    "skipConfigSyncIfModified": false,
+    "skipDeletedEntityBackup": false,
+    "skipFetchBeforeUpdate": false,
+    "skipIndexLimitValidation": false,
+    "skipPermissionCheckForAggregation": false,
+    "skipPermissionsFilter": false,
+    "skipReportingEventsOrdering": false,
+    "skipRoutineLoad": false,
+    "skipTotalHitsInAggregation": false,
+    "skipVersionIncrementOnUpdate": false,
+    "storeDetails": {
+      "store": "MONGO",
+      "uniqueKeySupported": true
+    },
+    "supportsDistinctValues": false,
+    "supportsWebhook": false,
+    "syncFromSourceCustomer": false,
+    "translationsEnabled": false,
+    "uniqueKeyFields": [
+      "disputeId"
+    ],
+    "urlValidationEnabledFields": [],
+    "useCachedEntityStoreForAutomations": false,
+    "userLevelEncryption": false,
+    "vectorFields": [],
+    "versioningEnabled": true
+  },
+  "modifiedTime": 1788769612735,
+  "name": "Dispute",
+  "ownerUserId": 435691,
+  "packaged": false,
+  "pluralName": "Disputes",
+  "schema": {
+    "type": "SCHEMA",
+    "dynamic": false,
+    "schema": {
+      "type": "object",
+      "properties": {
+        "disputeId": {
+          "type": "string",
+          "title": "Dispute Id",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true,
+          "uniqueKey": true,
+          "nameField": true
+        },
+        "employeeId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Employee Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Payee"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "earningId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Earning Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Earning"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "creditId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Credit Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Credit"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "transactionId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Transaction Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Transaction"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "reason": {
+          "type": "string",
+          "title": "Reason",
+          "filterable": true,
+          "sortable": true
+        },
+        "status": {
+          "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "Open",
+              "title": "Open"
+            },
+            {
+              "const": "InReview",
+              "title": "InReview"
+            },
+            {
+              "const": "Resolved",
+              "title": "Resolved"
+            },
+            {
+              "const": "Rejected",
+              "title": "Rejected"
+            },
+            {
+              "const": "Reopened",
+              "title": "Reopened"
+            }
+          ],
+          "title": "Status",
+          "filterable": true,
+          "sortable": true
+        },
+        "assignee": {
+          "type": "string",
+          "title": "Assignee",
+          "filterable": true,
+          "sortable": true
+        },
+        "resolution": {
+          "type": "string",
+          "title": "Resolution",
+          "filterable": true,
+          "sortable": true
+        },
+        "resolvedByRunId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Resolved By Run Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:CalculationRun"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "createdAt": {
+          "type": "integer",
+          "format": "date-time",
+          "dateFormat": "epoch",
+          "title": "Created At",
+          "filterable": true,
+          "sortable": true
+        },
+        "resolvedAt": {
+          "type": "integer",
+          "format": "date-time",
+          "dateFormat": "epoch",
+          "title": "Resolved At",
+          "filterable": true,
+          "sortable": true
+        }
+      }
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 0
+}
