@@ -1,0 +1,212 @@
+{
+  "set": "engine-smoke-test",
+  "note": [
+    "A SELF-CONTAINED, LOUDLY-NAMED test bed for the calculation engine, seeded on",
+    "tool prod because that is the only environment where Plan, Rule, Transaction",
+    "and the org data all exist together (2026-09-10).",
+    "",
+    "Everything here is prefixed TEST- and every transaction carries",
+    "batchId TEST-ENGINE-SMOKE, so the whole family is findable and removable by",
+    "hand. ua-records can never update or delete, so re-running this is a no-op.",
+    "",
+    "WHY A NEW PLAN INSTEAD OF REUSING 'Testing'. The two authored rules can never",
+    "fire: CR-1788881151375-8609 tests `position.title == \"AP\"` and no such title",
+    "exists, PR-1788863954836-1714 tests `credit.credit_type == \"Booked\"` and the",
+    "credit types are NEW_BOOKING/RENEWAL/EXPANSION/MGR_ROLLUP/SPIF. Rather than",
+    "edit records somebody authored, this set stands up a parallel plan whose",
+    "conditions name values that are actually in the data.",
+    "",
+    "THE CHAIN THIS EXERCISES, all of it live on 5 Sep 2026:",
+    "  POS-AP-AE-01  Priya Nair    T-AE    -> parent POS-AP-RSM-01 (Kenji Watanabe)",
+    "                                      -> grandparent POS-GBL-VP-01 (Diane Whitlock)",
+    "so rollupLevels=2 has two real ancestors to walk and MGR_ROLLUP credits to write.",
+    "",
+    "THE FIVE TRANSACTIONS ARE THREE POSITIVE AND TWO NEGATIVE ON PURPOSE. A run",
+    "that credits all five is as wrong as one that credits none, and only the",
+    "negatives can tell those apart:",
+    "  TEST-TXN-001  POS-AP-AE-01  T-AE      MATCH   + rollup 2 levels",
+    "  TEST-TXN-002  POS-AP-AE-01  T-AE      MATCH   + rollup, second deal same seat",
+    "  TEST-TXN-003  POS-AE-34     T-AE      MATCH   but NO parent in the hierarchy,",
+    "                                        so the rollup walk must end quietly",
+    "                                        rather than fail the run",
+    "  TEST-TXN-004  POS-EU-AE-05  T-AE-EU   NO MATCH - title is close but not equal",
+    "  TEST-TXN-005  POS-W-AE-04   T-ENT-AE  NO MATCH - title is close but not equal",
+    "",
+    "Expected: 3 direct credits + 4 rollup credits = 7 Credit rows, and payout at",
+    "500bps of each NEW_BOOKING credit. Anything else is a finding.",
+    "",
+    "PERIOD. Close dates sit in Sep 2026; SEP-2026 and Q3-2026 are both OPEN, so a",
+    "run against them is legal under the period state machine. Nothing here touches",
+    "JAN-2026 (PAID) or any CLOSED month.",
+    "",
+    "AMOUNTS. Transaction.amount is an `integer` property on the platform, which",
+    "docs/model/money-and-time.md says money must never be - past 2^31 paise the",
+    "runtime type changes underneath. These values are small and safe; the object",
+    "is the bug, and it is recorded, not worked around here."
+  ],
+  "keyField": {
+    "Rule": "ruleId",
+    "Plan": "planId",
+    "PlanAssignment": "assignmentId",
+    "Transaction": "transactionId"
+  },
+  "records": {
+    "Rule": [
+      {
+        "ruleId": "TEST-CR-SMOKE-01",
+        "stage": "credit",
+        "name": "TEST Direct credit to the AE seat (smoke, safe to delete)",
+        "ruleType": "Direct Credit",
+        "description": "Credits the holder of any T-AE seat with the full deal, then rolls a copy two levels up the reporting line.",
+        "activeStart": 1788220800000,
+        "activeEnd": 1790726400000,
+        "rollableOnReporting": true,
+        "multiplier": "",
+        "tags": "TEST",
+        "conditions": {
+          "items": [
+            { "connector": "If", "subject": "position.title", "operator": "==", "value": "T-AE" }
+          ]
+        },
+        "result": {
+          "name": "TEST Direct credit to the AE seat",
+          "rollable": true,
+          "values": {
+            "splitBps": "10000",
+            "creditType": "NEW_BOOKING",
+            "rollup": "true",
+            "rollupLevels": "2",
+            "rollupCreditType": "MGR_ROLLUP",
+            "rollupSplitBps": "10000"
+          }
+        }
+      },
+      {
+        "ruleId": "TEST-PR-SMOKE-01",
+        "stage": "payout",
+        "name": "TEST Commission at 5% of new bookings (smoke, safe to delete)",
+        "ruleType": "Commission",
+        "description": "Flat 5% on every NEW_BOOKING credit, earned on close. Deliberately does NOT pay MGR_ROLLUP, so the run has to distinguish the two credit types.",
+        "activeStart": 1788220800000,
+        "activeEnd": 1790726400000,
+        "rollableOnReporting": false,
+        "multiplier": "",
+        "tags": "TEST",
+        "conditions": {
+          "items": [
+            { "connector": "If", "subject": "credit.credit_type", "operator": "==", "value": "NEW_BOOKING" }
+          ]
+        },
+        "result": {
+          "name": "TEST Commission at 5% of new bookings",
+          "rollable": false,
+          "values": {
+            "rateType": "Flat rate",
+            "rateBps": "500",
+            "payWhen": "On close",
+            "creditTypes": "NEW_BOOKING",
+            "sortOrder": "1"
+          }
+        }
+      }
+    ],
+    "Plan": [
+      {
+        "$ref": "testplan",
+        "planId": "TEST-PLAN-SMOKE-01",
+        "name": "TEST Engine smoke plan (safe to delete)",
+        "version": 1,
+        "status": "Active",
+        "description": "Stands up a credit rule and a payout rule that match real data, so the engine can be run end to end. Parallel to 'Testing', which is left untouched.",
+        "periodId": "Q3-2026",
+        "startDate": "2026-09-01",
+        "endDate": "2026-09-30",
+        "creditRules": ["TEST-CR-SMOKE-01"],
+        "payoutRules": ["TEST-PR-SMOKE-01"]
+      }
+    ],
+    "PlanAssignment": [
+      {
+        "assignmentId": "TEST-PLAN-SMOKE-01-Title-T-AE",
+        "planId": "@testplan",
+        "targetType": "Title",
+        "targetId": "e_6a9bd4b8f684ae77100654ad",
+        "titleId": "e_6a9bd4b8f684ae77100654ad",
+        "startDate": "2026-09-01",
+        "endDate": "2026-09-30"
+      }
+    ],
+    "Transaction": [
+      {
+        "transactionId": "TEST-TXN-001",
+        "sourceId": "TEST-SMOKE-001",
+        "sourceSystem": "TEST-SMOKE",
+        "positionId": "e_6a9bd4baa397f67f706c5d87",
+        "closeDate": 1788566400000,
+        "incentiveDate": 1788566400000,
+        "amount": 100000,
+        "currencyId": "e_6a9bd4b7a397f67f706c5d31",
+        "amountBase": 100000,
+        "product": "TEST Platform License",
+        "customer": "TEST Acme Corp",
+        "batchId": "TEST-ENGINE-SMOKE"
+      },
+      {
+        "transactionId": "TEST-TXN-002",
+        "sourceId": "TEST-SMOKE-002",
+        "sourceSystem": "TEST-SMOKE",
+        "positionId": "e_6a9bd4baa397f67f706c5d87",
+        "closeDate": 1788825600000,
+        "incentiveDate": 1788825600000,
+        "amount": 250000,
+        "currencyId": "e_6a9bd4b7a397f67f706c5d31",
+        "amountBase": 250000,
+        "product": "TEST Platform License",
+        "customer": "TEST Globex Ltd",
+        "batchId": "TEST-ENGINE-SMOKE"
+      },
+      {
+        "transactionId": "TEST-TXN-003",
+        "sourceId": "TEST-SMOKE-003",
+        "sourceSystem": "TEST-SMOKE",
+        "positionId": "e_6a9c32dfa397f67f706db2aa",
+        "closeDate": 1788652800000,
+        "incentiveDate": 1788652800000,
+        "amount": 75000,
+        "currencyId": "e_6a9bd4b7a397f67f706c5d31",
+        "amountBase": 75000,
+        "product": "TEST Support Renewal",
+        "customer": "TEST Initech",
+        "batchId": "TEST-ENGINE-SMOKE"
+      },
+      {
+        "transactionId": "TEST-TXN-004",
+        "sourceId": "TEST-SMOKE-004",
+        "sourceSystem": "TEST-SMOKE",
+        "positionId": "e_6a9bd4b9a397f67f706c5d81",
+        "closeDate": 1788739200000,
+        "incentiveDate": 1788739200000,
+        "amount": 180000,
+        "currencyId": "e_6a9bd4b7a397f67f706c5d31",
+        "amountBase": 180000,
+        "product": "TEST Platform License",
+        "customer": "TEST Umbrella SA",
+        "batchId": "TEST-ENGINE-SMOKE"
+      },
+      {
+        "transactionId": "TEST-TXN-005",
+        "sourceId": "TEST-SMOKE-005",
+        "sourceSystem": "TEST-SMOKE",
+        "positionId": "e_6a9bd4b9a397f67f706c5d77",
+        "closeDate": 1788912000000,
+        "incentiveDate": 1788912000000,
+        "amount": 500000,
+        "currencyId": "e_6a9bd4b7a397f67f706c5d31",
+        "amountBase": 500000,
+        "product": "TEST Enterprise Suite",
+        "customer": "TEST Stark Industries",
+        "batchId": "TEST-ENGINE-SMOKE"
+      }
+    ]
+  }
+}
