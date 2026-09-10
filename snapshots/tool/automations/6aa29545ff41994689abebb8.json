@@ -1,0 +1,522 @@
+{
+  "appsUsed": [],
+  "createdTime": 1789039941035,
+  "deleted": false,
+  "deployedVersion": 2,
+  "deploymentState": {
+    "deployedAt": 1789045628697,
+    "deployedBy": 475503,
+    "deployedDefinitionId": "6aa2ab7ccab06d30ba296102",
+    "deploymentNotes": "Result file fields declared explicitly so the caller receives the download link; an object with additionalProperties false and no properties was stripped to an empty object. Approved by avinash.",
+    "status": "DEPLOYED",
+    "version": 2,
+    "workflowVersion": 8
+  },
+  "description": "Reads an uploaded CSV of reporting-line changes, validates every row against the whole file and the stored structure, then applies them in one write. A bad row is refused and reported; the rest still apply.",
+  "edges": [
+    {
+      "fromNodeId": "n_sTaRt",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtPos",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtPos",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtRows",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtRows",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Loop",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Loop",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Plan",
+      "type": "loop"
+    },
+    {
+      "fromNodeId": "n_Plan",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Ups",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Ups",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Err",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Err",
+      "name": "loopback",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Loop",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Loop",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StDone",
+      "type": "next"
+    }
+  ],
+  "id": "6aa29545ff41994689abebb8",
+  "lastModifiedBy": 475503,
+  "lastPlatformUpdateBy": 475503,
+  "lastPlatformUpdateOn": 1789045628699,
+  "lcName": "icm | bulk manage position hierarchy",
+  "modifiedTime": 1789045628699,
+  "name": "ICM | Bulk Manage Position Hierarchy",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_sTaRt",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "additionalProperties": false,
+          "type": "object",
+          "properties": {
+            "status": {
+              "title": "Status",
+              "type": "string"
+            },
+            "batchId": {
+              "title": "Batch Id",
+              "type": "string"
+            },
+            "applied": {
+              "title": "Applied",
+              "type": "integer"
+            },
+            "written": {
+              "title": "Written",
+              "type": "integer"
+            },
+            "rows": {
+              "title": "Rows",
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            "message": {
+              "title": "Message",
+              "type": "string"
+            },
+            "resultFile": {
+              "title": "Result File",
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "link": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "string"
+                },
+                "size": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "setup": {
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "fileDetails"
+          ],
+          "properties": {
+            "fileDetails": {
+              "title": "File",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {}
+            },
+            "batchId": {
+              "title": "Batch Id",
+              "type": "string"
+            },
+            "dryRun": {
+              "title": "Dry Run",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtPos",
+      "index": 2,
+      "inputs": {
+        "triggerInputCondition": {},
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Position",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 2000,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.name",
+          "properties.positionCode"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Positions, to resolve the code or name",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtRows",
+      "index": 3,
+      "inputs": {
+        "triggerInputCondition": {},
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "PositionHierarchy",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 2000,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.name",
+          "properties.positionId",
+          "properties.parentPositionId",
+          "properties.effectiveStart",
+          "properties.effectiveEnd"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Every reporting row, for the current line, the cycle walk and the overlap check",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "csv_by_unifyapps",
+        "resourceVersion": 27,
+        "resourceName": "csv_by_unifyapps_for_each_row_or_rows",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Loop",
+      "index": 4,
+      "inputs": {
+        "startFromRow": 1,
+        "file": "{{ n_sTaRt.outputs.fileDetails }}",
+        "headerRow": true,
+        "columns": [
+          "position_id",
+          "parent_position_id",
+          "effective_from"
+        ],
+        "batch": true,
+        "batchSize": 5000,
+        "fileType": "csv"
+      },
+      "skip": false,
+      "subTitle": "CSV by UnifyApps",
+      "title": "Read the uploaded CSV, row by row",
+      "type": "LOOP"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Loop@root_id-1@l",
+      "id": "n_Plan",
+      "index": 5,
+      "inputs": {
+        "output": {
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "title": "Status",
+              "type": "string"
+            },
+            "updates": {
+              "title": "Updates",
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            "rows": {
+              "title": "Rows",
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            "applied": {
+              "title": "Applied",
+              "type": "integer"
+            },
+            "written": {
+              "title": "Written",
+              "type": "integer"
+            },
+            "message": {
+              "title": "Message",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "input": {
+          "additionalProperties": false,
+          "properties": {
+            "rows": {
+              "title": "Rows",
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            "positions": {
+              "title": "Positions",
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            "hierRows": {
+              "title": "Hier Rows",
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            "dryRun": {
+              "title": "Dry Run",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "code": "def txt = { v -> (v == null) ? '' : String.valueOf(v).trim() }\ndef asLong = { v -> (v == null || String.valueOf(v).trim().isEmpty()) ? 0L : Long.valueOf(String.valueOf(v)) }\ndef md5hex = { String s -> java.security.MessageDigest.getInstance('MD5').digest(s.getBytes('UTF-8')).encodeHex().toString() }\ndef mint = { String seed -> 'e_' + md5hex(seed).substring(0, 24) }\nfinal long DAY = 86400000L\n// Ten management layers above a rep is bad data, not a tall company. Constant on purpose:\n// a configurable cap only ever gets raised to get past data someone should have fixed.\nfinal int MAX_DEPTH = 10\n\nboolean isDry = (txt(dryRun) == 'true')\n\n// ---- resolve positions by id, code or name -------------------------------\ndef posById = [:], posByCode = [:], posByName = [:]\n(positions ?: []).each { r ->\n    def p = r.properties ?: [:]\n    posById[txt(r.id)] = r\n    if (txt(p.positionCode) != '') posByCode[txt(p.positionCode).toLowerCase()] = r\n    if (txt(p.name) != '') posByName[txt(p.name).toLowerCase()] = r\n}\ndef findPos = { String ref ->\n    if (ref == '') return null\n    return posById[ref] ?: posByCode[ref.toLowerCase()] ?: posByName[ref.toLowerCase()]\n}\ndef codeOf = { String id -> def r = posById[id]; return (r == null) ? '' : txt((r.properties ?: [:]).positionCode) }\n\n// ---- every stored line, by position --------------------------------------\ndef linesByPos = [:]\n(hierRows ?: []).each { r ->\n    def p = r.properties ?: [:]\n    String pid = txt(p.positionId)\n    if (pid == '') return\n    if (linesByPos[pid] == null) linesByPos[pid] = []\n    linesByPos[pid] << [id: txt(r.id), parentId: txt(p.parentPositionId),\n                        start: asLong(p.effectiveStart), end: asLong(p.effectiveEnd),\n                        name: txt(p.name)]\n}\n\ndef parseDay = { String s ->\n    if (!(s ==~ /^\\d{4}-\\d{2}-\\d{2}$/)) return -1L\n    try { return java.time.LocalDate.parse(s).atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli() }\n    catch (Exception e) { return -1L }\n}\ndef isoOf = { long ms -> java.time.Instant.ofEpochMilli(ms).atZone(java.time.ZoneOffset.UTC).toLocalDate().toString() }\n\n// ---- pass 1: validate each row on its own --------------------------------\n// A CSV written for Excel carries a BOM, and the reader hands the first header back\n// mangled - 'position_id' arrives as '__position_id_'. Normalising every key means the\n// template stays Excel-safe without the automation caring how the header was spelled.\ndef cell = { row, String want ->\n    if (row == null) return ''\n    def hit = row.find { k, v -> String.valueOf(k).toLowerCase().replaceAll(/[^a-z_]/, '').replaceAll(/^_+|_+$/, '') == want }\n    return (hit == null) ? '' : txt(hit.value)\n}\n\ndef out = []      // one entry per file row, in file order\ndef seen = [:]    // position ref -> the line that already claimed it\nint line = 1\n(rows ?: []).each { raw ->\n    line += 1\n    String posRef = cell(raw, 'position_id')\n    String parRef = cell(raw, 'parent_position_id')\n    String when = cell(raw, 'effective_from')\n    def problems = []\n\n    if (posRef == '') problems << 'position_id is required.'\n    if (when == '') problems << 'effective_from is required.'\n    long ms = (when == '') ? -1L : parseDay(when)\n    if (when != '' && ms < 0) problems << ('effective_from \"' + when + '\" is not a date in YYYY-MM-DD form.')\n\n    def posRec = findPos(posRef)\n    if (posRef != '' && posRec == null) problems << ('No position \"' + posRef + '\".')\n    def parRec = (parRef == '') ? null : findPos(parRef)\n    if (parRef != '' && parRec == null) problems << ('No parent position \"' + parRef + '\".')\n\n    String posId = (posRec == null) ? '' : txt(posRec.id)\n    String parId = (parRec == null) ? '' : txt(parRec.id)\n    if (posId != '' && posId == parId) problems << 'A position cannot report to itself.'\n\n    // One change per position per file. Two rows for one seat cannot both be right, and\n    // picking a winner would silently do something nobody asked for.\n    if (posRef != '' && seen[posId] != null) problems << ('This position is already changed on line ' + seen[posId] + '.')\n    else if (posId != '') seen[posId] = line\n\n    String outcome = 'changed'\n    def mine = (posId == '') ? [] : (linesByPos[posId] ?: [])\n    String newId = (posId == '' || ms < 0) ? '' : mint('PositionHierarchy#' + posId + '#' + ms)\n\n    if (problems.isEmpty()) {\n        def exact = mine.find { it.start == ms && it.id != newId }\n        def closedCovering = mine.find { it.end > 0L && it.start <= ms && it.end >= ms }\n        def later = mine.find { it.start > ms }\n        def current = mine.find { it.start <= ms && (it.end == 0L || it.end >= ms) }\n\n        if (closedCovering != null) {\n            problems << (when + ' falls inside closed history (' + isoOf(closedCovering.start) + ' to ' + isoOf(closedCovering.end) + '). Retro changes are manual.')\n        } else if (parRef != '' && current != null && current.parentId == parId) {\n            // Already reports to this parent, so there is nothing to do and nothing to refuse.\n            // This has to be tested BEFORE the exact-date rule: the template is pre-filled\n            // with each line's own start date, and those stored rows were not created by this\n            // automation, so their ids are not minted ones. Testing the date first rejected an\n            // unchanged re-upload - the one case that must always be a no-op.\n            outcome = 'unchanged'\n        } else if (exact != null) {\n            problems << ('A line for this position already starts on ' + when + '.')\n        } else if (later != null) {\n            problems << (when + \" is before this position's line of \" + isoOf(later.start) + '. Backdating is manual.')\n        } else if (parRef == '') {\n            outcome = (current == null) ? 'unchanged' : 'closeOnly'\n        }\n    }\n\n    out << [line: line, positionId: posRef, posId: posId, parId: parId, parRef: parRef,\n            rawWhen: when, start: ms, newId: newId,\n            outcome: problems.isEmpty() ? outcome : 'error', reason: problems.join(' ')]\n}\n\n// ---- pass 2: the cycle check, on the graph the file WOULD produce ---------\n// Iterated to a fixpoint. Dropping a row does NOT remove an edge - it reverts that\n// position to its STORED parent, and a restored edge can close a fresh loop with the rows\n// that survived. One pass would miss that and commit a cyclic reporting line.\ndef parentNow = [:]\nlinesByPos.each { pid, ls ->\n    def open = ls.find { it.end == 0L }\n    parentNow[pid] = (open == null) ? '' : open.parentId\n}\nboolean settled = false\nint guard = 0\nwhile (!settled && guard < 25) {\n    guard += 1\n    def graph = [:]\n    parentNow.each { k, v -> graph[k] = v }\n    out.each { r ->\n        if (r.outcome == 'error' || r.outcome == 'unchanged') return\n        graph[r.posId] = (r.outcome == 'closeOnly') ? '' : r.parId\n    }\n    def offenders = [] as Set\n    graph.keySet().each { startNode ->\n        def visited = [] as LinkedHashSet\n        def path = []\n        String cur = startNode\n        int depth = 0\n        while (cur != null && cur != '') {\n            if (!visited.add(cur)) { path.each { offenders << it }; break }\n            path << cur\n            depth += 1\n            if (depth > MAX_DEPTH) { path.each { offenders << it }; break }\n            cur = graph[cur]\n        }\n    }\n    settled = true\n    if (!offenders.isEmpty()) {\n        out.each { r ->\n            if (r.outcome == 'error' || r.outcome == 'unchanged') return\n            if (offenders.contains(r.posId)) {\n                r.outcome = 'error'\n                r.reason = 'These reporting lines would form a loop, so this row was not applied.'\n                settled = false\n            }\n        }\n    }\n}\n\n// ---- pass 3: plan the write ----------------------------------------------\ndef updates = []\ndef usedIds = [] as Set\nout.each { r ->\n    if (r.outcome != 'changed' && r.outcome != 'closeOnly') return\n    def mine = linesByPos[r.posId] ?: []\n    def current = mine.find { it.start <= r.start && (it.end == 0L || it.end >= r.start) }\n    def set = { String f, v -> [fieldName: 'properties.' + f, actionType: 'SET', setValue: v] }\n\n    if (r.outcome == 'closeOnly') {\n        if (current != null) updates << [id: current.id, updateFields: [set('effectiveEnd', r.start - DAY)]]\n        return\n    }\n    // Two rows for one position on one date would mint the same id and appear twice in a\n    // single batch, which the upsert cannot resolve. The duplicate check above makes this\n    // unreachable; it stays because being wrong here writes the wrong parent.\n    if (!usedIds.add(r.newId)) {\n        r.outcome = 'error'\n        r.reason = 'Two rows in this file would write the same record.'\n        return\n    }\n    if (current != null && current.id != r.newId) {\n        updates << [id: current.id, updateFields: [set('effectiveEnd', r.start - DAY)]]\n    }\n    def f = [set('positionId', r.posId), set('parentPositionId', r.parId), set('effectiveStart', r.start),\n             set('name', codeOf(r.posId) + ' -> ' + codeOf(r.parId) + ' from ' + isoOf(r.start))]\n    // Open is NULL, never 0. Zero is a real instant (1970), which reads as long-closed and\n    // drops the position out of every as-of query.\n    f << set('effectiveEnd', null)\n    updates << [id: r.newId, updateFields: f]\n}\n\n// A column missing from the header shows up as that value being blank on EVERY row, which\n// reads as a hundred identical row errors instead of the one thing actually wrong. Say it once.\nif (!out.isEmpty()) {\n    def missing = []\n    if (out.every { txt(it.positionId) == '' }) missing << 'position_id'\n    if (out.every { it.start < 0 }) missing << 'effective_from'\n    if (!missing.isEmpty()) {\n        String msg = 'The file is missing the ' + missing.join(' and ') + ' column' + (missing.size() == 1 ? '' : 's') + '.'\n        out.each { it.outcome = 'error'; it.reason = msg }\n    }\n}\n\nint errors = out.count { it.outcome == 'error' }\nint changed = out.count { it.outcome == 'changed' || it.outcome == 'closeOnly' }\nString status\nif (out.isEmpty()) status = 'INVALID_INPUT'\nelse if (errors == out.size()) status = 'REFUSED'\nelse if (errors > 0) status = 'PARTIAL'\nelse status = 'APPLIED'\n\nif (isDry) updates = []\n\n// Every row comes back, not just the failures: the error file is the user's own file with\n// one column added, so it can be corrected and re-uploaded whole rather than reassembled.\ndef reported = out.collect { [line: it.line,\n                              position_id: it.positionId,\n                              parent_position_id: it.parRef,\n                              effective_from: it.rawWhen,\n                              outcome: (it.outcome == 'closeOnly') ? 'changed' : it.outcome,\n                              error: it.reason] }\n\nreturn [status: status, updates: updates, rows: reported,\n        applied: changed, written: updates.size(),\n        message: isDry ? 'Preview only - nothing was written.' : '']\n",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "rows": "{{ n_Loop.outputs.item }}",
+          "positions": "{{ n_FtPos.outputs.objects }}",
+          "hierRows": "{{ n_FtRows.outputs.objects }}",
+          "dryRun": "{{ n_sTaRt.outputs.dryRun }}"
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Validate the request and read the dates",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_bulk_upsert_records_by_id",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Loop@root_id-1@l",
+      "id": "n_Ups",
+      "index": 6,
+      "inputs": {
+        "object_type": "PositionHierarchy",
+        "skipIfBlank": false,
+        "skipSchemaValidation": true,
+        "updates": "{{ n_Plan.outputs.result.updates }}",
+        "unsetIfNull": false
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Close the old row and open the new one, together",
+      "title": "Bulk upsert records by id",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "csv_by_unifyapps",
+        "resourceVersion": 2,
+        "resourceName": "csv_by_unifyapps_list_to_csv_file",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Loop@root_id-1@l",
+      "id": "n_Err",
+      "index": 7,
+      "inputs": {
+        "fileName": "position-hierarchy-result",
+        "delimiter": ",",
+        "staticHeaders": [
+          {
+            "key": "position_id",
+            "value": "{{ n_Plan.outputs.result.rows[0].position_id }}"
+          },
+          {
+            "key": "parent_position_id",
+            "value": "{{ n_Plan.outputs.result.rows[0].parent_position_id }}"
+          },
+          {
+            "key": "effective_from",
+            "value": "{{ n_Plan.outputs.result.rows[0].effective_from }}"
+          },
+          {
+            "key": "outcome",
+            "value": "{{ n_Plan.outputs.result.rows[0].outcome }}"
+          },
+          {
+            "key": "error",
+            "value": "{{ n_Plan.outputs.result.rows[0].error }}"
+          }
+        ],
+        "skipHeaderRow": false,
+        "headerType": "STATIC",
+        "encoding": "UTF-8",
+        "keepExactFileName": false,
+        "dataSource": "{{ n_Plan.outputs.result.rows }}",
+        "fileType": "csv"
+      },
+      "skip": false,
+      "subTitle": "CSV by UnifyApps",
+      "title": "Write the row-by-row result as a CSV",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_StDone",
+      "index": 8,
+      "inputs": {
+        "result": {
+          "status": "{{ n_Plan.outputs.result.status }}",
+          "batchId": "{{ n_sTaRt.outputs.batchId }}",
+          "applied": "{{ n_Plan.outputs.result.applied }}",
+          "written": "{{ n_Plan.outputs.result.written }}",
+          "rows": "{{ n_Plan.outputs.result.rows }}",
+          "message": "{{ n_Plan.outputs.result.message }}",
+          "resultFile": "{{ n_Err.outputs.fileDetails }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "The reporting line in force",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 475503,
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 8
+}

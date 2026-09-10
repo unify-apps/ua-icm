@@ -1,0 +1,632 @@
+{
+  "appsUsed": [],
+  "createdTime": 1789051002930,
+  "deleted": false,
+  "description": "Bulk create and update people from a CSV. Every row is validated against the whole roster before anything is written, matched on employeeId, with currency CODES resolved to entities and dates read as UTC calendar days. Each row comes back with its own outcome and reason.",
+  "edges": [
+    {
+      "fromNodeId": "n_sTaRt",
+      "id": "next@n_sTaRt@n_FtEx",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtEx",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtEx",
+      "id": "next@n_FtEx@n_FtCur",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtCur",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtCur",
+      "id": "next@n_FtCur@n_Loop",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Loop",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Loop",
+      "id": "loop@n_Loop@n_Plan",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Plan",
+      "type": "loop"
+    },
+    {
+      "fromNodeId": "n_Plan",
+      "id": "next@n_Plan@n_Ups",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Ups",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Ups",
+      "id": "next@n_Ups@n_Err",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Err",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Err",
+      "id": "next@n_Err@n_Loop",
+      "name": "loopback",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Loop",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Loop",
+      "id": "next@n_Loop@n_StDone",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StDone",
+      "type": "next"
+    }
+  ],
+  "id": "6aa2c07a3aa7845ea195a187",
+  "lastModifiedBy": 388282,
+  "lastPlatformUpdateBy": 388282,
+  "lastPlatformUpdateOn": 1789051475796,
+  "lcName": "icm | bulk manage people",
+  "modifiedTime": 1789051475796,
+  "name": "ICM | Bulk Manage People",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_sTaRt",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "batchId",
+            "applied",
+            "rows"
+          ],
+          "properties": {
+            "status": {
+              "type": "string",
+              "title": "Status"
+            },
+            "batchId": {
+              "type": "string",
+              "title": "Batch Id"
+            },
+            "applied": {
+              "type": "integer",
+              "title": "Applied"
+            },
+            "written": {
+              "type": "integer",
+              "title": "Written"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            },
+            "rows": {
+              "type": "array",
+              "title": "Rows",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "line": {
+                    "type": "integer",
+                    "title": "Line"
+                  },
+                  "outcome": {
+                    "type": "string",
+                    "title": "Outcome"
+                  },
+                  "error": {
+                    "type": "string",
+                    "title": "Error"
+                  },
+                  "employee_id": {
+                    "type": "string",
+                    "title": "Employee_id"
+                  },
+                  "first_name": {
+                    "type": "string",
+                    "title": "First_name"
+                  },
+                  "last_name": {
+                    "type": "string",
+                    "title": "Last_name"
+                  },
+                  "email": {
+                    "type": "string",
+                    "title": "Email"
+                  },
+                  "region": {
+                    "type": "string",
+                    "title": "Region"
+                  },
+                  "business_group": {
+                    "type": "string",
+                    "title": "Business_group"
+                  },
+                  "team": {
+                    "type": "string",
+                    "title": "Team"
+                  },
+                  "status": {
+                    "type": "string",
+                    "title": "Status"
+                  },
+                  "hire_date": {
+                    "type": "string",
+                    "title": "Hire_date"
+                  },
+                  "termination_date": {
+                    "type": "string",
+                    "title": "Termination_date"
+                  },
+                  "payment_currency": {
+                    "type": "string",
+                    "title": "Payment_currency"
+                  },
+                  "personal_currency": {
+                    "type": "string",
+                    "title": "Personal_currency"
+                  },
+                  "personal_target": {
+                    "type": "string",
+                    "title": "Personal_target"
+                  },
+                  "salary": {
+                    "type": "string",
+                    "title": "Salary"
+                  }
+                }
+              }
+            },
+            "resultFile": {
+              "type": "object",
+              "title": "Result File"
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "fileDetails": {
+              "title": "File",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {}
+            },
+            "batchId": {
+              "title": "Batch Id",
+              "type": "string"
+            },
+            "dryRun": {
+              "title": "Dry Run",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtEx",
+      "index": 2,
+      "inputs": {
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Payee",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 5000,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.employeeId",
+          "properties.firstName",
+          "properties.lastName",
+          "properties.email",
+          "properties.region",
+          "properties.businessGroup",
+          "properties.team",
+          "properties.status",
+          "properties.hireDate",
+          "properties.terminationDate",
+          "properties.currencyId",
+          "properties.personalCurrencyId",
+          "properties.personalTarget",
+          "properties.salary",
+          "properties.name"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Every Payee already stored, to match rows on the unique key",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtCur",
+      "index": 3,
+      "inputs": {
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Currency",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 200,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.code"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Currency codes, so the file can carry USD rather than an entity id",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "csv_by_unifyapps",
+        "resourceVersion": 27,
+        "resourceName": "csv_by_unifyapps_for_each_row_or_rows",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Loop",
+      "index": 4,
+      "inputs": {
+        "startFromRow": 1,
+        "file": "{{ n_sTaRt.outputs.fileDetails }}",
+        "headerRow": true,
+        "columns": [
+          "employee_id",
+          "first_name",
+          "last_name",
+          "email",
+          "region",
+          "business_group",
+          "team",
+          "status",
+          "hire_date",
+          "termination_date",
+          "payment_currency",
+          "personal_currency",
+          "personal_target",
+          "salary"
+        ],
+        "batch": true,
+        "batchSize": 5000,
+        "fileType": "csv"
+      },
+      "skip": false,
+      "subTitle": "Read the whole file in one batch",
+      "title": "Read the uploaded CSV, row by row",
+      "type": "LOOP"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Loop@root_id-1@l",
+      "id": "n_Plan",
+      "index": 5,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "status": {
+              "type": "string",
+              "title": "Status"
+            },
+            "updates": {
+              "type": "array",
+              "title": "Updates"
+            },
+            "rows": {
+              "type": "array",
+              "title": "Rows"
+            },
+            "applied": {
+              "type": "integer",
+              "title": "Applied"
+            },
+            "written": {
+              "type": "integer",
+              "title": "Written"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rows": {
+              "type": "array",
+              "title": "Rows"
+            },
+            "existing": {
+              "type": "array",
+              "title": "Existing"
+            },
+            "currencies": {
+              "type": "array",
+              "title": "Currencies"
+            },
+            "dryRun": {
+              "type": "string",
+              "title": "Dry Run"
+            }
+          }
+        },
+        "code": "def txt = { v -> (v == null) ? '' : String.valueOf(v).trim() }\ndef md5hex = { String s -> java.security.MessageDigest.getInstance('MD5').digest(s.getBytes('UTF-8')).encodeHex().toString() }\n// A bulk upsert writes BY ID, so a brand-new record needs one before it exists. Minting\n// it from the unique key means the same row uploaded twice targets the same record\n// rather than minting a second one -- the idempotency the whole file depends on.\ndef mint = { String seed -> 'e_' + md5hex(seed).substring(0, 24) }\n\nboolean isDry = (txt(dryRun) == 'true')\n\n// ---- what is already stored, by unique key -------------------------------\ndef byKey = [:]\n(existing ?: []).each { r ->\n    def p = r.properties ?: [:]\n    String k = txt(p.employeeId).toLowerCase()\n    if (k != '') byKey[k] = [id: txt(r.id), props: p]\n}\n\n// ---- currency CODE -> entity id ------------------------------------------\n// The file carries codes because that is what the export writes and what a person can\n// read; the record stores an entity id. Resolved here, once, from one bulk fetch.\ndef curByCode = [:]\n(currencies ?: []).each { c -> def cc = txt((c.properties ?: [:]).code); if (cc != '') curByCode[cc.toLowerCase()] = txt(c.id) }\n\ndef parseDay = { String s ->\n    if (!(s ==~ /^\\d{4}-\\d{2}-\\d{2}$/)) return -1L\n    try { return java.time.LocalDate.parse(s).atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli() }\n    catch (Exception e) { return -1L }\n}\n\n// A CSV written for Excel carries a BOM, and the reader hands the first header back\n// mangled - 'title_code' arrives as '__title_code_'. Normalising every key means the\n// template stays Excel-safe without this automation caring how the header was spelled.\ndef cell = { row, String want ->\n    if (row == null) return ''\n    def hit = row.find { k, v -> String.valueOf(k).toLowerCase().replaceAll(/[^a-z_]/, '').replaceAll(/^_+|_+$/, '') == want }\n    return (hit == null) ? '' : txt(hit.value)\n}\n\ndef COLUMNS = [\"employee_id\",\"first_name\",\"last_name\",\"email\",\"region\",\"business_group\",\"team\",\"status\",\"hire_date\",\"termination_date\",\"payment_currency\",\"personal_currency\",\"personal_target\",\"salary\"]\n\ndef out = []       // one entry per file row, in file order\ndef updates = []   // what actually gets written\ndef seenKey = [:]  // unique key -> the earlier line that already claimed it\nint line = 1\n\n(rows ?: []).each { raw ->\n    line += 1\n    def problems = []\n    def rec = [:]\n    // employee_id\n    def v_employeeId = cell(raw, 'employee_id')\n    if (v_employeeId == '') problems << 'employee_id is required'\n    rec['employeeId'] = v_employeeId\n    // first_name\n    def v_firstName = cell(raw, 'first_name')\n    if (v_firstName == '') problems << 'first_name is required'\n    rec['firstName'] = v_firstName\n    // last_name\n    def v_lastName = cell(raw, 'last_name')\n    rec['lastName'] = v_lastName\n    // email\n    def v_email = cell(raw, 'email')\n    rec['email'] = v_email\n    // region\n    def v_region = cell(raw, 'region')\n    rec['region'] = v_region\n    // business_group\n    def v_businessGroup = cell(raw, 'business_group')\n    rec['businessGroup'] = v_businessGroup\n    // team\n    def v_team = cell(raw, 'team')\n    rec['team'] = v_team\n    // status\n    def v_status = cell(raw, 'status')\n    rec['status'] = v_status\n    // hire_date\n    def v_hireDate = cell(raw, 'hire_date')\n    long ms_hireDate = (v_hireDate == '') ? 0L : parseDay(v_hireDate)\n    if (v_hireDate != '' && ms_hireDate < 0) problems << ('hire_date must be yyyy-MM-dd: ' + v_hireDate)\n    else if (v_hireDate != '') rec['hireDate'] = ms_hireDate\n    // termination_date\n    def v_terminationDate = cell(raw, 'termination_date')\n    long ms_terminationDate = (v_terminationDate == '') ? 0L : parseDay(v_terminationDate)\n    if (v_terminationDate != '' && ms_terminationDate < 0) problems << ('termination_date must be yyyy-MM-dd: ' + v_terminationDate)\n    else if (v_terminationDate != '') rec['terminationDate'] = ms_terminationDate\n    // payment_currency\n    def v_currencyId = cell(raw, 'payment_currency')\n    String cid_currencyId = (v_currencyId == '') ? null : curByCode[v_currencyId.toLowerCase()]\n    if (v_currencyId == '') problems << 'payment_currency is required'\n    if (v_currencyId != '' && cid_currencyId == null) problems << ('payment_currency is not a known currency code: ' + v_currencyId)\n    if (cid_currencyId != null) rec['currencyId'] = cid_currencyId\n    // personal_currency\n    def v_personalCurrencyId = cell(raw, 'personal_currency')\n    String cid_personalCurrencyId = (v_personalCurrencyId == '') ? null : curByCode[v_personalCurrencyId.toLowerCase()]\n    if (v_personalCurrencyId != '' && cid_personalCurrencyId == null) problems << ('personal_currency is not a known currency code: ' + v_personalCurrencyId)\n    if (cid_personalCurrencyId != null) rec['personalCurrencyId'] = cid_personalCurrencyId\n    // personal_target\n    def v_personalTarget = cell(raw, 'personal_target')\n    if (v_personalTarget != '' && v_personalTarget ==~ /^-?\\d+(\\.\\d+)?$/) rec['personalTarget'] = new BigDecimal(v_personalTarget)\n    else if (v_personalTarget != '') problems << ('personal_target is not a number: ' + v_personalTarget)\n    // salary\n    def v_salary = cell(raw, 'salary')\n    if (v_salary != '' && v_salary ==~ /^-?\\d+(\\.\\d+)?$/) rec['salary'] = new BigDecimal(v_salary)\n    else if (v_salary != '') problems << ('salary is not a number: ' + v_salary)\n\n    String key = txt(rec['employeeId'])\n    def prior = seenKey[key.toLowerCase()]\n    if (key != '' && prior != null) {\n        problems << ('the same employee id appears on line ' + prior + ' of this file')\n    } else if (key != '') {\n        seenKey[key.toLowerCase()] = line\n    }\n\n    // `name` is the object's required nameField and is COMPOSED, never a column. Two\n    // writers for one field is how a display name drifts from the boxes producing it.\n    String fn = txt(rec['firstName']), ln = txt(rec['lastName'])\n    String composed = [fn, ln].findAll { it }.join(' ')\n    if (composed != '') rec['name'] = composed\n\n    def hit = (key == '') ? null : byKey[key.toLowerCase()]\n\n    if (!problems.isEmpty()) {\n        out << [line: line, raw: raw, key: key, outcome: 'error', reason: problems.join('; ')]\n        return\n    }\n\n    // UNCHANGED is reported, not written. Re-uploading the template unedited should say\n    // \"nothing to change\" rather than bumping the version of every record in the catalog.\n    if (hit != null) {\n        boolean same = true\n        rec.each { f, v -> if (String.valueOf(hit.props[f] ?: '') != String.valueOf(v ?: '')) same = false }\n        if (same) {\n            out << [line: line, raw: raw, key: key, outcome: 'unchanged', reason: '']\n            return\n        }\n    }\n\n    String id = (hit != null) ? hit.id : mint('Payee|' + key.toLowerCase())\n    // The bulk upsert takes {id, updateFields:[{fieldName, actionType, setValue}]} and\n    // NOT a flat property map. A flat map is accepted silently: the node answers\n    // success:true with successCount:0 and writes nothing, so the caller is told the\n    // file applied and no record moves. Cost one build cycle 2026-09-10.\n    //\n    // Only the file's own columns are SET, which is also what makes a column the file\n    // leaves out keep its stored value: a bulk upload is not a form, so an absent\n    // column means \"not mentioned\", never \"clear it\".\n    def fields = []\n    rec.each { f, v -> fields << [fieldName: 'properties.' + f, actionType: 'SET', setValue: v] }\n    updates << [id: id, updateFields: fields]\n    out << [line: line, raw: raw, key: key, outcome: (hit != null) ? 'updated' : 'created', reason: '']\n}\n\n// A file whose header is wrong produces rows with every required cell empty, which reads\n// as N identical errors. Naming the missing column once is the difference between a user\n// fixing a header and a user re-typing a file.\nif (!(rows ?: []).isEmpty()) {\n    def firstRow = rows[0]\n    def missing = COLUMNS.findAll { c -> (c == 'employee_id') && cell(firstRow, c) == '' && !firstRow.any { k, v -> String.valueOf(k).toLowerCase().replaceAll(/[^a-z_]/, '').replaceAll(/^_+|_+$/, '') == c } }\n    if (!missing.isEmpty()) {\n        String msg = 'The file is missing the ' + missing.join(' and ') + ' column' + (missing.size() == 1 ? '' : 's') + '.'\n        out.each { it.outcome = 'error'; it.reason = msg }\n        updates = []\n    }\n}\n\nint errors = out.count { it.outcome == 'error' }\nint changed = out.count { it.outcome == 'created' || it.outcome == 'updated' }\nString status\nif (out.isEmpty()) status = 'INVALID_INPUT'\nelse if (errors == out.size()) status = 'REFUSED'\nelse if (errors > 0) status = 'PARTIAL'\nelse status = 'APPLIED'\n\nif (isDry) updates = []\n\n// Every row comes back, not just the failures: the result file is the user's own file\n// with two columns added, so it can be corrected and re-uploaded whole rather than\n// reassembled by hand.\ndef reported = out.collect { r ->\n    def m = [line: r.line, outcome: r.outcome, error: r.reason]\n    COLUMNS.each { c -> m[c] = cell(r.raw, c) }\n    return m\n}\n\nreturn [status: status, updates: updates, rows: reported,\n        applied: changed, written: updates.size(),\n        message: isDry ? 'Preview only - nothing was written.' : '']",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "rows": "{{ n_Loop.outputs.item }}",
+          "existing": "{{ n_FtEx.outputs.objects }}",
+          "currencies": "{{ n_FtCur.outputs.objects }}",
+          "dryRun": "{{ n_sTaRt.outputs.dryRun }}"
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Validate every row against the whole catalog and plan the write",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_bulk_upsert_records_by_id",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Loop@root_id-1@l",
+      "id": "n_Ups",
+      "index": 6,
+      "inputs": {
+        "object_type": "Payee",
+        "skipIfBlank": false,
+        "skipSchemaValidation": true,
+        "updates": "{{ n_Plan.outputs.result.updates }}",
+        "unsetIfNull": false
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "One bulk upsert for the whole file - never a write per row",
+      "title": "Bulk upsert records by id",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "csv_by_unifyapps",
+        "resourceVersion": 2,
+        "resourceName": "csv_by_unifyapps_list_to_csv_file",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Loop@root_id-1@l",
+      "id": "n_Err",
+      "index": 7,
+      "inputs": {
+        "fileName": "people-result",
+        "delimiter": ",",
+        "staticHeaders": [
+          {
+            "key": "employee_id",
+            "value": "{{ n_Plan.outputs.result.rows[0].employee_id }}"
+          },
+          {
+            "key": "first_name",
+            "value": "{{ n_Plan.outputs.result.rows[0].first_name }}"
+          },
+          {
+            "key": "last_name",
+            "value": "{{ n_Plan.outputs.result.rows[0].last_name }}"
+          },
+          {
+            "key": "email",
+            "value": "{{ n_Plan.outputs.result.rows[0].email }}"
+          },
+          {
+            "key": "region",
+            "value": "{{ n_Plan.outputs.result.rows[0].region }}"
+          },
+          {
+            "key": "business_group",
+            "value": "{{ n_Plan.outputs.result.rows[0].business_group }}"
+          },
+          {
+            "key": "team",
+            "value": "{{ n_Plan.outputs.result.rows[0].team }}"
+          },
+          {
+            "key": "status",
+            "value": "{{ n_Plan.outputs.result.rows[0].status }}"
+          },
+          {
+            "key": "hire_date",
+            "value": "{{ n_Plan.outputs.result.rows[0].hire_date }}"
+          },
+          {
+            "key": "termination_date",
+            "value": "{{ n_Plan.outputs.result.rows[0].termination_date }}"
+          },
+          {
+            "key": "payment_currency",
+            "value": "{{ n_Plan.outputs.result.rows[0].payment_currency }}"
+          },
+          {
+            "key": "personal_currency",
+            "value": "{{ n_Plan.outputs.result.rows[0].personal_currency }}"
+          },
+          {
+            "key": "personal_target",
+            "value": "{{ n_Plan.outputs.result.rows[0].personal_target }}"
+          },
+          {
+            "key": "salary",
+            "value": "{{ n_Plan.outputs.result.rows[0].salary }}"
+          },
+          {
+            "key": "outcome",
+            "value": "{{ n_Plan.outputs.result.rows[0].outcome }}"
+          },
+          {
+            "key": "error",
+            "value": "{{ n_Plan.outputs.result.rows[0].error }}"
+          }
+        ],
+        "skipHeaderRow": false,
+        "headerType": "STATIC",
+        "encoding": "UTF-8",
+        "keepExactFileName": false,
+        "dataSource": "{{ n_Plan.outputs.result.rows }}",
+        "fileType": "csv"
+      },
+      "skip": false,
+      "subTitle": "The result file: every row with its outcome and reason",
+      "title": "Write the row-by-row result as a CSV",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_StDone",
+      "index": 8,
+      "inputs": {
+        "result": {
+          "status": "{{ n_Plan.outputs.result.status }}",
+          "batchId": "{{ n_sTaRt.outputs.batchId }}",
+          "applied": "{{ n_Plan.outputs.result.applied }}",
+          "written": "{{ n_Plan.outputs.result.written }}",
+          "rows": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Plan.outputs.result.rows }}",
+            "items": "{{ n_Plan.outputs.result.rows[0] }}"
+          },
+          "message": "{{ n_Plan.outputs.result.message }}",
+          "resultFile": "{{ n_Err.outputs.fileDetails }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Every row, with what happened to it",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 388282,
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 3
+}
