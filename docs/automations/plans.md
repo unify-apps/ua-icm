@@ -46,6 +46,25 @@ has to test two columns for emptiness to find out what a row is.
 lookup is set, so the page can render both kinds through a single path without the
 value being stored twice.
 
+**`Get Plan` also resolves the NAMES behind those ids.** The lookups hold record ids,
+and a record id is not something a person recognises, so the read fetches the
+referenced `Title`, `Position` and `Rule` rows and returns:
+
+| field | on | note |
+|---|---|---|
+| `targetName` | each assignment row | the title's or position's `name` |
+| `creditRuleNames`, `payoutRuleNames` | the plan | positionally aligned with the id lists |
+
+Resolution happens in the automation rather than the page because a drawer that
+rendered three more lists to label one table would fire four reads where one will do,
+and every caller of this contract wants the same labels.
+
+A name that does not resolve **falls back to the id**, never to an empty string. A
+dangling reference is a real state — a title someone deleted while a plan still points
+at it — and blanking the cell would hide it. The suite pins both directions: one plan
+seeded with ids nothing owns, one seeded with real fixture records. Without the second
+case a resolver that resolved nothing would pass.
+
 Both lookups hold RECORD ids, which is what the pickers already supply:
 `TitleOption.titleId` and `LivePosition.positionId` are both `String.valueOf(r.id)`.
 The position picker was passing `positionCode` — the business key — and now passes the
