@@ -200,7 +200,7 @@
       "entityDelete": {
         "entityType": "PlanAssignment",
         "filters": {
-          "targetId": "t_two"
+          "titleId": "t_two"
         },
         "allowZero": true
       }

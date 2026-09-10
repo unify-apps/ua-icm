@@ -40,7 +40,7 @@ Rebuilt automatically by `scripts/ua.mjs snap-types`. One JSON per object type.
 | PipelineRun | PipelineRun | icm | 17 |
 | PipelineRunError | PipelineRunError | icm | 10 |
 | Plan | Plan | icm | 10 |
-| PlanAssignment | PlanAssignment | icm | 6 |
+| PlanAssignment | PlanAssignment | icm | 8 |
 | PlanComponent | PlanComponent | icm | 14 |
 | Position | Position | icm | 3 |
 | PositionAttribute | PositionAttribute | icm | 6 |

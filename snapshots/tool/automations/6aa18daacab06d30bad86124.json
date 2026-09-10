@@ -120,9 +120,9 @@
   "id": "6aa18daacab06d30bad86124",
   "lastModifiedBy": 435691,
   "lastPlatformUpdateBy": 435691,
-  "lastPlatformUpdateOn": 1789028652650,
+  "lastPlatformUpdateOn": 1789029893578,
   "lcName": "icm | create plan",
-  "modifiedTime": 1789028652650,
+  "modifiedTime": 1789029893578,
   "name": "ICM | Create Plan",
   "nodes": [
     {
@@ -648,7 +648,7 @@
           }
         },
         "compile_static": false,
-        "code": "\n// The foreign key can only be filled once the plan exists. Doing it here rather than\n// in the normaliser is what keeps PlanAssignment.planId a real reference instead of a\n// business key sitting in a lookup field.\ndef rid = String.valueOf(planRecordId)\ndef out = []\nif (asgRows instanceof List) asgRows.each { r ->\n    out << [assignmentId: r.assignmentId, planId: rid, targetType: r.targetType,\n            targetId: r.targetId, startDate: r.startDate, endDate: r.endDate]\n}\nreturn [payload: out, expected: out.size()]\n",
+        "code": "\n// The plan's record id, and the target's - both are foreign keys, so both hold\n// record ids rather than the business keys a human reads.\ndef rid = String.valueOf(planRecordId)\ndef out = []\nif (asgRows instanceof List) asgRows.each { r ->\n    def row = [assignmentId: r.assignmentId, planId: rid,\n               targetType: r.targetType, startDate: r.startDate, endDate: r.endDate]\n    if (String.valueOf(r.targetType) == 'Title') row['titleId'] = r.targetId\n    else row['positionId'] = r.targetId\n    out << row\n}\nreturn [payload: out, expected: out.size()]\n",
         "captureStdOutput": false,
         "parameters": {
           "asgRows": "{{ n_Norm.outputs.result.asgRows }}",
@@ -792,5 +792,5 @@
   "tags": [
     "icm"
   ],
-  "version": 4
+  "version": 7
 }

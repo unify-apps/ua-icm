@@ -1567,3 +1567,26 @@ runs on and responds success.
 branch on the difference; a count parsed from the INPUT proves nothing about the
 output. The Create Plan suite asserted `titleCount: 1` and passed while every row was
 being rejected, because that count came from parsing the request.
+
+## Storage drops an ARRAY even when the property is typed `array` (ICM, 2026-09-10)
+
+An earlier note said a bare array in a **json** property is dropped. The limit is
+broader than that: declaring the property as an array does not help.
+
+`Plan.creditRuleIds` was retyped from `{type:'object', additionalProperties:true}` to
+`{type:'array', items:{type:'string'}}`. The schema update took, and re-reading the
+entity type confirmed it. Writing `["a","b","c"]` then stored `{}`:
+
+```
+via /api/entity/create-update-or-delete/hierarchical  -> {}
+via storage_by_unifyapps create_record (automation)   -> {}
+```
+
+Two independent write paths, no error either time.
+
+So `{items:[...]}` is the way to store an ordered list, whatever the declared type,
+and the type should stay `object` to match what is actually in there. A property
+typed `array` holding `{items:[...]}` lies to every reader of the object — including
+the generated types and the knowledge docs.
+
+Unwrap on READ instead, in the callable, so the app never sees the wrapper.

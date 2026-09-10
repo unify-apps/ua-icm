@@ -1,53 +1,182 @@
 {
   "name": "ICM | Get Plan",
-  "note": "The detail read. It proves the two things the list cannot carry - the rule id lists and the assignment rows - and that a planId matching nothing answers NOT_FOUND rather than throwing. That last one is not hypothetical: the assignment fetch filters on the plan's RECORD id, and before the guard node a missing plan put a null in that filter and errored the node.",
+  "note": "The detail read. It proves the two things the list cannot carry - the rule id lists and the assignment rows - and that a planId matching nothing answers NOT_FOUND rather than throwing. That last one is not hypothetical: the assignment fetch filters on the plan's RECORD id, and before the guard node a missing plan put a null in that filter and errored the node. The assignment rows now fill titleId or positionId - real lookups to Title and Position - and targetId is derived for the page so both kinds render alike; the suite asserts the stored columns, not only the derived one.",
   "cases": [
-    { "name": "pre-clean", "entityDelete": { "entityType": "Plan", "filters": { "name": "KITFIX-GetPlan" }, "allowZero": true } },
+    {
+      "name": "pre-clean",
+      "entityDelete": {
+        "entityType": "Plan",
+        "filters": {
+          "name": "KITFIX-GetPlan"
+        },
+        "allowZero": true
+      }
+    },
     {
       "name": "seed through the create callable",
       "workflowId": "6aa18daacab06d30bad86124",
-      "payload": { "name": "KITFIX-GetPlan", "description": "full detail", "periodId": "YEAR-2026", "status": "Active",
-        "creditRuleIds": ["cr_a", "cr_b"], "payoutRuleIds": ["pr_a"],
-        "assignments": { "titles": [{ "titleId": "t_get", "effectiveStart": "2026-02-01", "effectiveEnd": "2027-01-31" }],
-                          "positions": [{ "positionId": "p_get", "effectiveStart": "2026-08-01", "effectiveEnd": null }] } },
-      "checks": [{ "path": "status", "equals": "OK" }]
+      "payload": {
+        "name": "KITFIX-GetPlan",
+        "description": "full detail",
+        "periodId": "YEAR-2026",
+        "status": "Active",
+        "creditRuleIds": [
+          "cr_a",
+          "cr_b"
+        ],
+        "payoutRuleIds": [
+          "pr_a"
+        ],
+        "assignments": {
+          "titles": [
+            {
+              "titleId": "t_get",
+              "effectiveStart": "2026-02-01",
+              "effectiveEnd": "2027-01-31"
+            }
+          ],
+          "positions": [
+            {
+              "positionId": "p_get",
+              "effectiveStart": "2026-08-01",
+              "effectiveEnd": null
+            }
+          ]
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        }
+      ]
     },
-    { "name": "let the index catch up", "sleepMs": 15000 },
+    {
+      "name": "let the index catch up",
+      "sleepMs": 15000
+    },
     {
       "name": "OK - the whole plan, rule lists and both assignment kinds",
-      "payload": { "planId": "{{case:seed through the create callable:planId}}" },
+      "payload": {
+        "planId": "{{case:seed through the create callable:planId}}"
+      },
       "checks": [
-        { "path": "status", "equals": "OK" },
-        { "path": "plan.name", "equals": "KITFIX-GetPlan" },
-        { "path": "plan.status", "equals": "Active" },
-        { "path": "plan.periodId", "equals": "YEAR-2026" },
-        { "path": "plan.creditRuleIds.0", "equals": "cr_a" },
-        { "path": "plan.creditRuleIds.1", "equals": "cr_b" },
-        { "path": "plan.payoutRuleIds.0", "equals": "pr_a" },
-        { "path": "plan.assignments.titles.0.targetId", "equals": "t_get" },
-        { "path": "plan.assignments.positions.0.targetId", "equals": "p_get" }
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "plan.name",
+          "equals": "KITFIX-GetPlan"
+        },
+        {
+          "path": "plan.status",
+          "equals": "Active"
+        },
+        {
+          "path": "plan.periodId",
+          "equals": "YEAR-2026"
+        },
+        {
+          "path": "plan.creditRuleIds.0",
+          "equals": "cr_a"
+        },
+        {
+          "path": "plan.creditRuleIds.1",
+          "equals": "cr_b"
+        },
+        {
+          "path": "plan.payoutRuleIds.0",
+          "equals": "pr_a"
+        },
+        {
+          "path": "plan.assignments.titles.0.targetId",
+          "equals": "t_get"
+        },
+        {
+          "path": "plan.assignments.positions.0.targetId",
+          "equals": "p_get"
+        },
+        {
+          "path": "plan.assignments.titles.0.titleId",
+          "equals": "t_get"
+        },
+        {
+          "path": "plan.assignments.positions.0.positionId",
+          "equals": "p_get"
+        }
       ]
     },
     {
       "name": "OK - an open-ended assignment comes back with no end, which is a real state",
-      "payload": { "planId": "{{case:seed through the create callable:planId}}" },
+      "payload": {
+        "planId": "{{case:seed through the create callable:planId}}"
+      },
       "checks": [
-        { "path": "status", "equals": "OK" },
-        { "path": "plan.assignments.positions.0.effectiveEnd", "absent": true }
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "plan.assignments.positions.0.effectiveEnd",
+          "absent": true
+        }
       ]
     },
     {
       "name": "NOT_FOUND - a planId matching nothing, answered rather than thrown",
-      "payload": { "planId": "KITFIX-NO-SUCH-PLAN-AT-ALL" },
-      "checks": [{ "path": "status", "equals": "NOT_FOUND" }, { "path": "success", "equals": false }]
+      "payload": {
+        "planId": "KITFIX-NO-SUCH-PLAN-AT-ALL"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "NOT_FOUND"
+        },
+        {
+          "path": "success",
+          "equals": false
+        }
+      ]
     },
     {
       "name": "INVALID_INPUT - a blank planId is not a missing plan",
-      "payload": { "planId": "" },
-      "checks": [{ "path": "status", "equals": "INVALID_INPUT" }]
+      "payload": {
+        "planId": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        }
+      ]
     },
-    { "name": "clean up plan", "entityDelete": { "entityType": "Plan", "filters": { "name": "KITFIX-GetPlan" } } },
-    { "name": "clean up title row", "entityDelete": { "entityType": "PlanAssignment", "filters": { "targetId": "t_get" } } },
-    { "name": "clean up position row", "entityDelete": { "entityType": "PlanAssignment", "filters": { "targetId": "p_get" } } }
+    {
+      "name": "clean up plan",
+      "entityDelete": {
+        "entityType": "Plan",
+        "filters": {
+          "name": "KITFIX-GetPlan"
+        }
+      }
+    },
+    {
+      "name": "clean up title row",
+      "entityDelete": {
+        "entityType": "PlanAssignment",
+        "filters": {
+          "titleId": "t_get"
+        }
+      }
+    },
+    {
+      "name": "clean up position row",
+      "entityDelete": {
+        "entityType": "PlanAssignment",
+        "filters": {
+          "positionId": "p_get"
+        }
+      }
+    }
   ]
 }

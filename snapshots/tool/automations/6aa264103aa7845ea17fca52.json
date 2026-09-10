@@ -118,9 +118,9 @@
   "id": "6aa264103aa7845ea17fca52",
   "lastModifiedBy": 435691,
   "lastPlatformUpdateBy": 435691,
-  "lastPlatformUpdateOn": 1789028717388,
+  "lastPlatformUpdateOn": 1789029894335,
   "lcName": "icm | update plan",
-  "modifiedTime": 1789028717388,
+  "modifiedTime": 1789029894335,
   "name": "ICM | Update Plan",
   "nodes": [
     {
@@ -831,7 +831,7 @@
           }
         },
         "compile_static": false,
-        "code": "\n// planId on PlanAssignment is a foreign key to Plan, so it holds the record id.\ndef rid = String.valueOf(planRecordId)\ndef out = []\nif (asgRows instanceof List) asgRows.each { r ->\n    out << [assignmentId: r.assignmentId, planId: rid, targetType: r.targetType,\n            targetId: r.targetId, startDate: r.startDate, endDate: r.endDate]\n}\nreturn [payload: out, expected: out.size()]\n",
+        "code": "\n// The plan's record id, and the target's - both are foreign keys, so both hold\n// record ids rather than the business keys a human reads.\ndef rid = String.valueOf(planRecordId)\ndef out = []\nif (asgRows instanceof List) asgRows.each { r ->\n    def row = [assignmentId: r.assignmentId, planId: rid,\n               targetType: r.targetType, startDate: r.startDate, endDate: r.endDate]\n    if (String.valueOf(r.targetType) == 'Title') row['titleId'] = r.targetId\n    else row['positionId'] = r.targetId\n    out << row\n}\nreturn [payload: out, expected: out.size()]\n",
         "captureStdOutput": false,
         "parameters": {
           "asgRows": "{{ n_Norm.outputs.result.asgPayload }}",
@@ -918,5 +918,5 @@
   "tags": [
     "icm"
   ],
-  "version": 6
+  "version": 7
 }

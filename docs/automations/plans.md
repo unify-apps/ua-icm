@@ -17,17 +17,35 @@ title, read again (status and description changed, positions gone), then list.
 ## Storage
 
 **`Plan` gained four fields** — `description`, `periodId`, `creditRuleIds`,
-`payoutRuleIds`. The two id lists are `json` and are stored under `{items:[...]}`,
-because a bare array in a json property is silently dropped on write.
+`payoutRuleIds`. The two id lists are `json` and are stored under `{items:[...]}`.
+
+That wrapper is a platform limitation, not a preference, and it was re-tested rather
+than assumed: both fields were retyped to `{type:'array', items:{type:'string'}}`, the
+schema accepted it, and a bare `["a","b","c"]` then stored as `{}` — through the entity
+API *and* through the automation's own write path. So the schema was put back to
+`object`, because a field typed `array` while holding `{items:[...]}` misdescribes
+itself to everyone who reads the object.
+
+The app never sees the wrapper: the read callables unwrap `.items`, so
+`PlanDetail.creditRuleIds` is a plain `string[]`.
 
 **`periodId` holds the period's NAME**, e.g. `YEAR-2026`. That is not a shortcut:
 `Period.name` is that object's own unique key, so the plan is storing the business
 key rather than inventing a second identity for it.
 
-**`PlanAssignment` needed no change.** One row per target, with `targetType`
-(`TITLE` / `POSITION`), `targetId`, `startDate` and `endDate` — which is exactly the
-`assignments.titles[]` / `assignments.positions[]` shape, flattened. `targetType` is
-the only thing separating a title assignment from a position one.
+**`PlanAssignment` carries two real LOOKUPS**, `titleId` to `Title` and `positionId`
+to `Position`. One row per target; each row fills the column that applies and leaves
+the other unset. `targetType` (`Title` / `Position`) still labels the kind, so nothing
+has to test two columns for emptiness to find out what a row is.
+
+`targetId` is no longer written. `Get Plan` still RETURNS one, derived from whichever
+lookup is set, so the page can render both kinds through a single path without the
+value being stored twice.
+
+Both lookups hold RECORD ids, which is what the pickers already supply:
+`TitleOption.titleId` and `LivePosition.positionId` are both `String.valueOf(r.id)`.
+The position picker was passing `positionCode` — the business key — and now passes the
+id, with the code kept as the option's label.
 
 ## Create — inputs and refusals
 

@@ -251,7 +251,7 @@
       "entityDelete": {
         "entityType": "PlanAssignment",
         "filters": {
-          "targetId": "title_ae_eu"
+          "positionId": "title_ae_eu"
         },
         "allowZero": true
       }
@@ -261,7 +261,7 @@
       "entityDelete": {
         "entityType": "PlanAssignment",
         "filters": {
-          "targetId": "pos_10482"
+          "positionId": "pos_10482"
         },
         "allowZero": true
       }

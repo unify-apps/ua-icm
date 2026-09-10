@@ -1,5 +1,5 @@
 {
-  "columnCounts": 6,
+  "columnCounts": 8,
   "createdTime": 1788769608176,
   "deleted": false,
   "description": "",
@@ -8,13 +8,35 @@
     "type": "SCHEMA_AND_LAYOUT",
     "dynamic": false,
     "layout": {
+      "positionId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:Position",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "titleId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:Title",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
       "ui:order": [
         "assignmentId",
         "planId",
         "targetType",
         "targetId",
         "startDate",
-        "endDate"
+        "endDate",
+        "titleId",
+        "positionId"
       ],
       "planId": {
         "ui:widget": "LookupWidget",
@@ -88,13 +110,33 @@
           "title": "End Date",
           "filterable": true,
           "sortable": true
+        },
+        "titleId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Title Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Title"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "positionId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Position Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Position"
+          },
+          "foreignKeyConstraintEnforced": false
         }
       }
     }
   },
   "lastModifiedBy": 435691,
   "lastPlatformUpdateBy": 435691,
-  "lastPlatformUpdateOn": 1788769608178,
+  "lastPlatformUpdateOn": 1789029833489,
   "lcName": "planassignment",
   "metadata": {
     "auditable": true,
@@ -116,7 +158,9 @@
       "targetType",
       "targetId",
       "startDate",
-      "endDate"
+      "endDate",
+      "titleId",
+      "positionId"
     ],
     "graphType": "LEGACY_MDM",
     "hasTimeSeriesRecords": true,
@@ -131,6 +175,14 @@
       {
         "key": "properties.planId",
         "referenceType": "Plan"
+      },
+      {
+        "key": "properties.titleId",
+        "referenceType": "Title"
+      },
+      {
+        "key": "properties.positionId",
+        "referenceType": "Position"
       }
     ],
     "scdType2Enabled": false,
@@ -168,7 +220,7 @@
     "vectorFields": [],
     "versioningEnabled": true
   },
-  "modifiedTime": 1788769608178,
+  "modifiedTime": 1789029833489,
   "name": "PlanAssignment",
   "ownerUserId": 435691,
   "packaged": false,
@@ -237,6 +289,26 @@
           "title": "End Date",
           "filterable": true,
           "sortable": true
+        },
+        "titleId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Title Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Title"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "positionId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Position Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Position"
+          },
+          "foreignKeyConstraintEnforced": false
         }
       }
     }
@@ -245,5 +317,5 @@
   "tags": [
     "icm"
   ],
-  "version": 0
+  "version": 1
 }
