@@ -2,6 +2,15 @@
   "appsUsed": [],
   "createdTime": 1789046788701,
   "deleted": false,
+  "deployedVersion": 1,
+  "deploymentState": {
+    "deployedAt": 1789048523306,
+    "deployedBy": 388282,
+    "deployedDefinitionId": "6aa2b6cb3c7f7b6b9114de99",
+    "status": "DEPLOYED",
+    "version": 1,
+    "workflowVersion": 2
+  },
   "description": "The People screen behind one callable: list the roster (paged, searched, filtered), create a person, edit a person. Composes the required nameField from firstName/lastName and pre-checks the employeeId unique key.",
   "edges": [
     {
@@ -178,9 +187,9 @@
   "id": "6aa2b0043aa7845ea19179f4",
   "lastModifiedBy": 388282,
   "lastPlatformUpdateBy": 388282,
-  "lastPlatformUpdateOn": 1789047151762,
+  "lastPlatformUpdateOn": 1789048523307,
   "lcName": "icm | manage people",
-  "modifiedTime": 1789047151762,
+  "modifiedTime": 1789048523307,
   "name": "ICM | Manage People",
   "nodes": [
     {

@@ -2,6 +2,15 @@
   "appsUsed": [],
   "createdTime": 1789047269637,
   "deleted": false,
+  "deployedVersion": 1,
+  "deploymentState": {
+    "deployedAt": 1789048526150,
+    "deployedBy": 388282,
+    "deployedDefinitionId": "6aa2b6ce4f1e1040ac355757",
+    "status": "DEPLOYED",
+    "version": 1,
+    "workflowVersion": 0
+  },
   "description": "The People screen's Download button: the whole roster written to a CSV file by the platform's CSV node, with currency codes joined and dates rendered yyyy-MM-dd UTC.",
   "edges": [
     {
@@ -74,9 +83,9 @@
   "id": "6aa2b1e58f7899040900afe2",
   "lastModifiedBy": 388282,
   "lastPlatformUpdateBy": 388282,
-  "lastPlatformUpdateOn": 1789047269637,
+  "lastPlatformUpdateOn": 1789048526151,
   "lcName": "icm | export people csv",
-  "modifiedTime": 1789047269637,
+  "modifiedTime": 1789048526151,
   "name": "ICM | Export People CSV",
   "nodes": [
     {

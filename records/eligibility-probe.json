@@ -1,0 +1,36 @@
+{
+  "set": "eligibility-probe",
+  "note": [
+    "One row, to prove PayeeEligibility actually drives the answer in",
+    "`ICM | List Profiles` rather than being fetched and ignored.",
+    "",
+    "THE WINDOW IS HISTORICAL ON PURPOSE. 2020 is long closed, so this row can",
+    "never change what the app shows for today - ask as of today and it is out of",
+    "force, ask as of 2020 and it is the answer. That is what makes it safe to run",
+    "on an environment holding real records, and it also happens to prove the more",
+    "interesting half: not that `false` is honoured, but that a window which ENDED",
+    "stops applying. A flat boolean on Payee could never fail that test, because it",
+    "has no window to end - which is the whole reason this is a dated table.",
+    "",
+    "Marcus Lin (E-10041) is the fixture the app's own seed data leads with, so a",
+    "failure here is visible on the first row of the Profiles page.",
+    "",
+    "ua-records can never update or delete, so re-running this is a no-op rather",
+    "than a second conflicting row. Remove it from the Records tab when done."
+  ],
+  "records": {
+    "PayeeEligibility": [
+      {
+        "name": "KITFIX-elig-2020 (probe - historical window, safe to delete)",
+        "payeeId": "e_6a9bd4b9a397f67f706c5d63",
+        "isCommissionEligible": false,
+        "effectiveStart": "2020-01-01",
+        "effectiveEnd": "2020-12-31",
+        "reason": "KITFIX probe: proves the dated window is obeyed"
+      }
+    ]
+  },
+  "keyField": {
+    "PayeeEligibility": "name"
+  }
+}

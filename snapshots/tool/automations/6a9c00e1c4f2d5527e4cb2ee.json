@@ -1,0 +1,2138 @@
+{
+  "appsUsed": [],
+  "createdTime": 1788608737422,
+  "deleted": false,
+  "deployedVersion": 7,
+  "deploymentState": {
+    "deployedAt": 1788771267681,
+    "deployedBy": 403181,
+    "deployedDefinitionId": "6a9e7bc33aa7845ea17ac5b1",
+    "deploymentNotes": "Resolves a mixed-case-class OR instead of refusing it. The store cannot OR a case-insensitive leaf with a case-sensitive one, so the existing pre-pass fetch now carries a case-insensitive SUPERSET of the union, the conditions are applied exactly in memory, and the whole OR collapses to one 'id IN' leaf. Costs the one extra fetch 'does not contain' already paid for. Approved by Nishank Kansara in session.",
+    "status": "DEPLOYED",
+    "version": 7,
+    "workflowVersion": 13
+  },
+  "description": "A paged, searchable, filterable list of profiles (Payee) - each with the seat they hold as of a date, that seat's title and territory, and their manager. Every join is resolved in BULK so a page never makes one call per row. Spec: docs/automations/list-profiles.md",
+  "edges": [
+    {
+      "fromNodeId": "n_sTaRt",
+      "id": "next@n_sTaRt@n_Norm",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Norm",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Norm",
+      "id": "next@n_Norm@n_FtNc",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtNc",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtNc",
+      "id": "next@n_FtNc@n_FtAtF",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtAtF",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtAtF",
+      "id": "next@n_FtAtF@n_FtHiF",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtHiF",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtHiF",
+      "id": "next@n_FtHiF@n_PosF",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_PosF",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_PosF",
+      "id": "next@n_PosF@n_FtAsF",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtAsF",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtAsF",
+      "id": "next@n_FtAsF@n_PayFil",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_PayFil",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_PayFil",
+      "id": "next@n_PayFil@n_FtPay",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtPay",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtPay",
+      "id": "next@n_FtPay@n_PayIds",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_PayIds",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_PayIds",
+      "id": "next@n_PayIds@n_FtAsg",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtAsg",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtAsg",
+      "id": "next@n_FtAsg@n_FtElig",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtElig",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Live",
+      "id": "next@n_Live@n_FtHier",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtHier",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtHier",
+      "id": "next@n_FtHier@n_Parent",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Parent",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Parent",
+      "id": "next@n_Parent@n_FtPos",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtPos",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtPos",
+      "id": "next@n_FtPos@n_FtAttr",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtAttr",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtAttr",
+      "id": "next@n_FtAttr@n_FtMgAs",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtMgAs",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtMgAs",
+      "id": "next@n_FtMgAs@n_MgPay",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_MgPay",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_MgPay",
+      "id": "next@n_MgPay@n_FtMgPy",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtMgPy",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtMgPy",
+      "id": "next@n_FtMgPy@n_FtTtl",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtTtl",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtTtl",
+      "id": "next@n_FtTtl@n_FtTer",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtTer",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtTer",
+      "id": "next@n_FtTer@n_Fold",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Fold",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Fold",
+      "id": "next@n_Fold@n_IfBad",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfBad",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "if@n_IfBad@n_StBad",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StBad",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "next@n_IfBad@n_StOk",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StOk",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtElig",
+      "id": "next@n_FtElig@n_Live",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Live",
+      "type": "next"
+    }
+  ],
+  "id": "6a9c00e1c4f2d5527e4cb2ee",
+  "lastModifiedBy": 372563,
+  "lastPlatformUpdateBy": 372563,
+  "lastPlatformUpdateOn": 1788947592912,
+  "lcName": "icm | list profiles",
+  "modifiedTime": 1788947592912,
+  "name": "ICM | List Profiles",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_sTaRt",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "success",
+            "message",
+            "total",
+            "profiles"
+          ],
+          "properties": {
+            "status": {
+              "type": "string",
+              "title": "Status"
+            },
+            "success": {
+              "type": "boolean",
+              "title": "Success"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            },
+            "asOfDate": {
+              "type": "string",
+              "title": "As Of Date"
+            },
+            "total": {
+              "type": "integer",
+              "title": "Total"
+            },
+            "hasMore": {
+              "type": "boolean",
+              "title": "Has More"
+            },
+            "offset": {
+              "type": "integer",
+              "title": "Offset"
+            },
+            "limit": {
+              "type": "integer",
+              "title": "Limit"
+            },
+            "orgResolved": {
+              "type": "boolean",
+              "title": "Org Resolved"
+            },
+            "joinsTruncated": {
+              "type": "boolean",
+              "title": "Joins Truncated"
+            },
+            "counts": {
+              "type": "object",
+              "title": "Counts",
+              "properties": {
+                "total": {
+                  "type": "integer",
+                  "title": "Total"
+                },
+                "assigned": {
+                  "type": "integer",
+                  "title": "Assigned"
+                },
+                "unassigned": {
+                  "type": "integer",
+                  "title": "Unassigned"
+                },
+                "conflict": {
+                  "type": "integer",
+                  "title": "Conflict"
+                }
+              }
+            },
+            "profiles": {
+              "type": "array",
+              "title": "Profiles",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "payeeId": {
+                    "type": "string",
+                    "title": "Payee Id"
+                  },
+                  "employeeId": {
+                    "type": "string",
+                    "title": "Employee Id"
+                  },
+                  "name": {
+                    "type": "string",
+                    "title": "Name"
+                  },
+                  "email": {
+                    "type": "string",
+                    "title": "Email"
+                  },
+                  "status": {
+                    "type": "string",
+                    "title": "Status"
+                  },
+                  "hireDate": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "title": "Hire Date"
+                  },
+                  "terminationDate": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "title": "Termination Date"
+                  },
+                  "assignment": {
+                    "type": "string",
+                    "title": "Assignment"
+                  },
+                  "matchCount": {
+                    "type": "integer",
+                    "title": "Match Count"
+                  },
+                  "positionId": {
+                    "type": "string",
+                    "title": "Position Id"
+                  },
+                  "positionCode": {
+                    "type": "string",
+                    "title": "Position Code"
+                  },
+                  "positionName": {
+                    "type": "string",
+                    "title": "Position Name"
+                  },
+                  "titleId": {
+                    "type": "string",
+                    "title": "Title Id"
+                  },
+                  "titleName": {
+                    "type": "string",
+                    "title": "Title Name"
+                  },
+                  "territoryId": {
+                    "type": "string",
+                    "title": "Territory Id"
+                  },
+                  "territoryName": {
+                    "type": "string",
+                    "title": "Territory Name"
+                  },
+                  "managerPositionId": {
+                    "type": "string",
+                    "title": "Manager Position Id"
+                  },
+                  "managerPayeeId": {
+                    "type": "string",
+                    "title": "Manager Payee Id"
+                  },
+                  "managerName": {
+                    "type": "string",
+                    "title": "Manager Name"
+                  },
+                  "allocationPct": {
+                    "type": [
+                      "number",
+                      "null"
+                    ],
+                    "title": "Allocation Pct"
+                  },
+                  "effectiveStart": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "title": "Effective Start"
+                  },
+                  "effectiveEnd": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "title": "Effective End"
+                  },
+                  "commissionEligible": {
+                    "type": "boolean",
+                    "title": "Commission Eligible"
+                  },
+                  "eligibilityReason": {
+                    "type": "string",
+                    "title": "Eligibility Reason"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "search": {
+              "type": "string",
+              "title": "Search"
+            },
+            "status": {
+              "type": "string",
+              "title": "Status"
+            },
+            "titleId": {
+              "type": "string",
+              "title": "Title Id"
+            },
+            "territoryId": {
+              "type": "string",
+              "title": "Territory Id"
+            },
+            "managerPositionId": {
+              "type": "string",
+              "title": "Manager Position Id"
+            },
+            "asOfDate": {
+              "type": "string",
+              "title": "As Of Date"
+            },
+            "limit": {
+              "type": "string",
+              "title": "Limit"
+            },
+            "offset": {
+              "type": "string",
+              "title": "Offset"
+            },
+            "includeOrg": {
+              "type": "string",
+              "title": "Include Org"
+            },
+            "filters": {
+              "type": "array",
+              "title": "Filters",
+              "items": {
+                "type": "object"
+              }
+            },
+            "combinator": {
+              "type": "string",
+              "title": "Combinator"
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Norm",
+      "index": 2,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "valid": {
+              "type": "boolean",
+              "title": "Valid"
+            },
+            "reason": {
+              "type": "string",
+              "title": "Reason"
+            },
+            "asOfEpoch": {
+              "type": "integer",
+              "title": "As Of Epoch"
+            },
+            "asOfDay": {
+              "type": "string",
+              "title": "As Of Day"
+            },
+            "condLeaves": {
+              "type": "array",
+              "title": "Cond Leaves",
+              "items": {
+                "type": "object"
+              }
+            },
+            "ncTerms": {
+              "type": "array",
+              "title": "Nc Terms",
+              "items": {
+                "type": "object"
+              }
+            },
+            "ncFilter": {
+              "type": "object",
+              "title": "Nc Filter"
+            },
+            "memMode": {
+              "type": "boolean",
+              "title": "Mem Mode"
+            },
+            "memTerms": {
+              "type": "array",
+              "title": "Mem Terms",
+              "items": {
+                "type": "object"
+              }
+            },
+            "combine": {
+              "type": "string",
+              "title": "Combine"
+            },
+            "hasConds": {
+              "type": "boolean",
+              "title": "Has Conds"
+            },
+            "pageLimit": {
+              "type": "integer",
+              "title": "Page Limit"
+            },
+            "pageOffset": {
+              "type": "integer",
+              "title": "Page Offset"
+            },
+            "wantOrg": {
+              "type": "boolean",
+              "title": "Want Org"
+            },
+            "restrict": {
+              "type": "boolean",
+              "title": "Restrict"
+            },
+            "wantTitle": {
+              "type": "boolean",
+              "title": "Want Title"
+            },
+            "wantTerr": {
+              "type": "boolean",
+              "title": "Want Terr"
+            },
+            "wantMgr": {
+              "type": "boolean",
+              "title": "Want Mgr"
+            },
+            "searchText": {
+              "type": "string",
+              "title": "Search Text"
+            },
+            "statusText": {
+              "type": "string",
+              "title": "Status Text"
+            },
+            "attrFilter": {
+              "type": "object",
+              "title": "Attr Filter"
+            },
+            "hierFilter": {
+              "type": "object",
+              "title": "Hier Filter"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "filters": {
+              "type": "array",
+              "title": "Filters",
+              "items": {
+                "type": "object"
+              }
+            },
+            "combinator": {
+              "type": "string",
+              "title": "Combinator"
+            },
+            "search": {
+              "type": "string",
+              "title": "Search"
+            },
+            "status": {
+              "type": "string",
+              "title": "Status"
+            },
+            "titleId": {
+              "type": "string",
+              "title": "Title Id"
+            },
+            "territoryId": {
+              "type": "string",
+              "title": "Territory Id"
+            },
+            "managerPositionId": {
+              "type": "string",
+              "title": "Manager Position Id"
+            },
+            "asOfDate": {
+              "type": "string",
+              "title": "As Of Date"
+            },
+            "limit": {
+              "type": "string",
+              "title": "Limit"
+            },
+            "offset": {
+              "type": "string",
+              "title": "Offset"
+            },
+            "includeOrg": {
+              "type": "string",
+              "title": "Include Org"
+            }
+          }
+        },
+        "code": "// Every default is applied HERE, never assumed from the caller. Real callers send\n// \"\" for what they did not fill, so \"\" is the value each branch is built around\n// rather than an edge case.\ndef s   = (search == null) ? '' : search.toString().trim()\ndef stx = (status == null) ? '' : status.toString().trim()\ndef tid = (titleId == null) ? '' : titleId.toString().trim()\ndef rid = (territoryId == null) ? '' : territoryId.toString().trim()\ndef mid = (managerPositionId == null) ? '' : managerPositionId.toString().trim()\ndef raw = (asOfDate == null) ? '' : asOfDate.toString().trim()\ndef lim = (limit == null) ? '' : limit.toString().trim()\ndef off = (offset == null) ? '' : offset.toString().trim()\ndef org = (includeOrg == null) ? '' : includeOrg.toString().trim()\n\nboolean valid = true\nString reason = ''\nlong epoch = 0L\nString day = ''\n\nif (raw.isEmpty()) {\n    // default: TODAY, UTC - echoed back so a caller in another timezone always\n    // knows which day it actually got\n    def d = java.time.LocalDate.now(java.time.ZoneOffset.UTC)\n    epoch = d.atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli()\n    day = d.toString()\n} else if (raw ==~ /^\\d{4}-\\d{2}-\\d{2}$/) {\n    try {\n        def d = java.time.LocalDate.parse(raw)\n        epoch = d.atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli()\n        day = raw\n    } catch (Exception e) { valid = false; reason = 'asOfDate is not a real calendar date: ' + raw }\n} else if (raw ==~ /^\\d{9,}$/) {\n    epoch = Long.parseLong(raw)\n    day = java.time.Instant.ofEpochMilli(epoch).atZone(java.time.ZoneOffset.UTC).toLocalDate().toString()\n} else {\n    valid = false; reason = 'asOfDate must be YYYY-MM-DD or epoch milliseconds, got: ' + raw\n}\n\nint pageLimit = 50\nif (!lim.isEmpty()) {\n    if (lim ==~ /^\\d+$/) { pageLimit = Integer.parseInt(lim) } else { valid = false; reason = 'limit must be a whole number, got: ' + lim }\n}\nif (pageLimit < 1) pageLimit = 1\nif (pageLimit > 200) pageLimit = 200\n\nint pageOffset = 0\nif (!off.isEmpty()) {\n    if (off ==~ /^\\d+$/) { pageOffset = Integer.parseInt(off) } else { valid = false; reason = 'offset must be a whole number, got: ' + off }\n}\n\nboolean wantOrg = org.isEmpty() ? true : !(org.equalsIgnoreCase('false'))\nboolean wantTitle = !tid.isEmpty()\nboolean wantTerr  = !rid.isEmpty()\nboolean wantMgr   = !mid.isEmpty()\nboolean restrict  = wantTitle || wantTerr || wantMgr\n\n// The INVERSION. titleId / territoryId / managerPositionId do not live on Payee -\n// they hang off effective-dated rows on the position a payee holds. Filtering them\n// after the page is fetched would make 'total' count rows the caller cannot see and\n// 'hasMore' lie, which on a scroll-paged table shows a short page and stops. So the\n// matching POSITIONS are resolved first and become an 'id IN' on the Payee fetch.\n// When no org filter was sent these two fetches are sentinel no-ops.\ndef attrFilters = []\nif (valid && (wantTitle || wantTerr)) {\n    if (wantTitle) attrFilters << [property: 'properties.titleId', filter: [operator: 'EQUAL', value: tid]]\n    if (wantTerr)  attrFilters << [property: 'properties.territoryId', filter: [operator: 'EQUAL', value: rid]]\n    attrFilters << [property: 'properties.effectiveStart', filter: [operator: 'LTE', value: epoch]]\n} else {\n    attrFilters << [property: 'id', filter: [operator: 'EQUAL', value: '__none__']]\n}\n\ndef hierFilters = []\nif (valid && wantMgr) {\n    hierFilters << [property: 'properties.parentPositionId', filter: [operator: 'EQUAL', value: mid]]\n    hierFilters << [property: 'properties.effectiveStart', filter: [operator: 'LTE', value: epoch]]\n} else {\n    hierFilters << [property: 'id', filter: [operator: 'EQUAL', value: '__none__']]\n}\n\n// ---------------------------------------------------------------------------\n// The condition list. Every operator below is built into the STORE filter, so\n// the page that comes back is already the answer: nothing is filtered after the\n// fetch, which is what keeps 'total' and 'hasMore' honest.\n//\n// The store has no NOT group and no \"not contains\" leaf, so NCONTAINS cannot be\n// expressed directly. It is turned into an id set by a pre-pass instead - the\n// ids that DO contain the term - and applied here as 'id NOT_IN'.\n// ---------------------------------------------------------------------------\ndef PROP = [employeeId: 'properties.employeeId', name: 'properties.name',\n            email: 'properties.email', status: 'properties.status']\ndef TEXTS = ['properties.employeeId', 'properties.name', 'properties.email']\n\n// Escape the metacharacters so a name with a dot cannot become a wildcard.\n// Written WITHOUT a single backslash: this source travels through a JS template\n// literal on the way here, which eats one level of escaping, and the version\n// that did use them arrived as invalid Groovy (\"Unexpected character\"). 92 is\n// the backslash codepoint.\ndef META = '.[]{}()*+?^$|'\ndef rx = { String v ->\n    def sb = new StringBuilder()\n    for (int i = 0; i < v.length(); i++) {\n        char ch = v.charAt(i)\n        if (META.indexOf((int) ch) >= 0 || ((int) ch) == 92) sb.append((char) 92)\n        sb.append(ch)\n    }\n    return sb.toString()\n}\n\ndef leaf = { String prop, String op, def v ->\n    def sv = (v == null) ? '' : String.valueOf(v)\n    if (op == 'EQ')        return [property: prop, filter: [operator: 'EQUAL', value: sv]]\n    if (op == 'NEQ')       return [property: prop, filter: [operator: 'NOT_EQUAL', value: sv]]\n    if (op == 'CONTAINS')  return [property: prop, filter: [operator: 'ICONTAINS', value: sv]]\n    if (op == 'STARTS')    return [property: prop, filter: [operator: 'STARTS_WITH', value: sv]]\n    // no ENDS_WITH leaf exists; REGEX is the only way to anchor at the end\n    if (op == 'ENDS')      return [property: prop, filter: [operator: 'REGEX', value: '.*' + rx(sv) + '$']]\n    // Probed on tool 2026-09-07, both the obvious choices are dead ends:\n    // EXISTS/MISSING are INVERTED on these string properties (MISSING matched all\n    // 16 payees, EXISTS matched none), and MIN_LENGTH is rejected outright as\n    // \"Invalid filter operator\" by the storage node even though the ops list\n    // names it. REGEX is the one that works - '.+' is \"has at least one character\".\n    if (op == 'NEMPTY')    return [property: prop, filter: [operator: 'REGEX', value: '.+']]\n    if (op == 'IN' || op == 'NIN') {\n        def list = (v instanceof List) ? v.collect { String.valueOf(it) }\n                                       : sv.split(',').collect { it.trim() }.findAll { !it.isEmpty() }\n        // An empty IN list reads as \"no filter\" to the store, which would widen the\n        // result instead of narrowing it. The sentinel keeps it an empty match.\n        if (list.isEmpty()) list = ['__none__']\n        return [property: prop, filter: [operator: (op == 'IN' ? 'IN' : 'NOT_IN'), value: list]]\n    }\n    return null\n}\n\ndef condLeaves = []\ndef ncTerms = []\ndef ncLeafFilters = []\n// A caller that predates these inputs does not send them at all, and an unsent\n// parameter is UNBOUND in a code node - not null. Reading it directly throws\n// \"No such property\", which is exactly how the existing suite broke. Ask the\n// binding first so the older contract keeps working untouched.\ndef filtersIn = binding.hasVariable('filters') ? filters : null\ndef combIn = binding.hasVariable('combinator') ? combinator : null\ndef rowsIn = (filtersIn instanceof List) ? filtersIn : []\nrowsIn.each { c ->\n    def f  = String.valueOf(c?.field == null ? '' : c.field).trim()\n    def op = String.valueOf(c?.op == null ? '' : c.op).trim().toUpperCase()\n    def v  = c?.value\n    if (f.isEmpty() || op.isEmpty()) return\n    // A blank value is an incomplete row, not a filter for blank - except for the\n    // two operators that are ABOUT blankness.\n    if (op != 'EMPTY' && op != 'NEMPTY' && (v == null || String.valueOf(v).trim().isEmpty())) return\n\n    if (f == 'search') {\n        // one clause across all three text fields\n        if (op == 'NCONTAINS') {\n            ncTerms << [mode: 'contains', term: String.valueOf(v), props: TEXTS]\n            TEXTS.each { pr -> ncLeafFilters << [property: pr, filter: [operator: 'ICONTAINS', value: String.valueOf(v)]] }\n        } else {\n            def group = []\n            TEXTS.each { pr -> def l = leaf(pr, op, v); if (l != null) group << l }\n            if (!group.isEmpty()) condLeaves << [operator: 'OR', filters: group]\n        }\n        return\n    }\n\n    def prop = PROP[f]\n    if (prop == null) { valid = false; reason = 'unknown filter field: ' + f; return }\n\n    if (op == 'NCONTAINS') {\n        ncTerms << [mode: 'contains', term: String.valueOf(v), props: [prop]]\n        ncLeafFilters << [property: prop, filter: [operator: 'ICONTAINS', value: String.valueOf(v)]]\n        return\n    }\n    // \"is empty\" is the negation of \"has any value\", and there is no NOT group -\n    // so it resolves through the same pre-pass as NCONTAINS.\n    if (op == 'EMPTY') {\n        ncTerms << [mode: 'nonempty', term: '', props: [prop]]\n        ncLeafFilters << [property: prop, filter: [operator: 'REGEX', value: '.+']]\n        return\n    }\n    def l = leaf(prop, op, v)\n    if (l == null) { valid = false; reason = 'unknown filter operator: ' + op; return }\n    condLeaves << l\n}\n\nString combine = (combIn == null) ? '' : combIn.toString().trim().toUpperCase()\nif (combine != 'OR') combine = 'AND'\n\n// An OR cannot mix CASE-INSENSITIVE leaves with CASE-SENSITIVE ones. It does not\n// error - it quietly answers zero rows, which reads as \"no matches\" and is the\n// worst shape a filter bug can take. Probed on tool 2026-09-07, 12 pairs:\n//\n//   ICONTAINS + ICONTAINS   ok      ICONTAINS + STARTS_WITH  ZERO\n//   REGEX     + ICONTAINS   ok      ICONTAINS + EQUAL        ZERO\n//   EQUAL     + STARTS_WITH ok      ICONTAINS + NOT_IN       ZERO\n//   EQUAL     + IN          ok      REGEX     + STARTS_WITH  ZERO\n//   STARTS_WITH + IN        ok      REGEX     + EQUAL        ZERO\n//\n// The operators themselves are not the axis - EQUAL ORs happily with STARTS_WITH,\n// and ICONTAINS with REGEX. What never survives is one of each CLASS. ICONTAINS\n// and REGEX are matched case-insensitively; every other operator compares exactly.\n//\n// Counted over the leaves the CONSUMER will build, not the ones visible here:\n// every ncTerm becomes one more leaf downstream ('id NOT_IN <hits>'), which is\n// case-sensitive and joins this same OR.\ndef CI_OPS = ['ICONTAINS', 'REGEX'] as Set\nboolean memMode = false\nif (combine == 'OR' && (condLeaves.size() + ncTerms.size()) > 1) {\n    def classes = [] as Set\n    // A nested group contributes its MEMBERS, not an opaque kind of its own. The\n    // search clause is an OR of three ICONTAINS, so OR[searchGroup, ICONTAINS] is\n    // the same query as a flat OR of four - which is proven to work. Treating the\n    // group as its own class would refuse 'Person OR Name', the pairing this\n    // panel is most likely to be asked for.\n    condLeaves.each { l ->\n        if (l.containsKey('filter')) {\n            classes << (CI_OPS.contains(String.valueOf(l.filter.operator)) ? 'ci' : 'cs')\n        } else if (l.filters != null) {\n            l.filters.each { m ->\n                classes << (CI_OPS.contains(String.valueOf(m?.filter?.operator)) ? 'ci' : 'cs')\n            }\n        }\n    }\n    if (!ncTerms.isEmpty()) classes << 'cs'\n    // Rather than refuse the query, resolve it OURSELVES. The store cannot OR\n    // across the two classes, but it CAN hand back a superset in one call: every\n    // positive condition is a subset of the same term matched case-insensitively,\n    // and a homogeneous case-insensitive OR is proven to work. The conditions are\n    // then applied exactly in memory and the whole OR collapses to a single\n    // 'id IN <matched>' leaf - one leaf, so there is nothing left to mix.\n    //\n    // It costs the pre-pass fetch that 'does not contain' already pays for, and\n    // it is the same machinery: n_FtNc's filter simply becomes the superset.\n    if (classes.size() > 1) memMode = true\n}\n\n// Every condition, in the shape the in-memory evaluator wants. Built only for\n// the mixed case; the store answers everything else directly and faster.\ndef memTerms = []\ndef memFilters = []\nboolean memScanAll = false\nif (memMode) {\n    // NEGATIVE operators match almost everything, so no term-based superset can\n    // bound them - those force a full scan of the candidate set.\n    def NEGATIVE = ['NEQ', 'NIN', 'NCONTAINS', 'EMPTY'] as Set\n    rowsIn.each { c ->\n        def f  = String.valueOf(c?.field == null ? '' : c.field).trim()\n        def op = String.valueOf(c?.op == null ? '' : c.op).trim().toUpperCase()\n        def v  = c?.value\n        if (f.isEmpty() || op.isEmpty()) return\n        if (op != 'EMPTY' && op != 'NEMPTY' && (v == null || String.valueOf(v).trim().isEmpty())) return\n        def props = (f == 'search') ? TEXTS : (PROP[f] == null ? null : [PROP[f]])\n        if (props == null) return\n        def vals = (v instanceof List) ? v.collect { String.valueOf(it) } : [String.valueOf(v)]\n        memTerms << [props: props, op: op, values: vals]\n\n        if (NEGATIVE.contains(op)) { memScanAll = true; return }\n        if (op == 'NEMPTY') {\n            props.each { pr -> memFilters << [property: pr, filter: [operator: 'REGEX', value: '.+']] }\n        } else {\n            // EQ / IN / CONTAINS / STARTS / ENDS are all subsets of the same\n            // text matched case-insensitively.\n            props.each { pr ->\n                vals.each { val ->\n                    memFilters << [property: pr, filter: [operator: 'ICONTAINS', value: val]]\n                }\n            }\n        }\n    }\n    // Nothing survived as a bound, so ask for the candidate set unfiltered. An\n    // AND with no filters is the store's \"everything\" - the same shape the\n    // blank-payload path already relies on.\n    if (memScanAll || memFilters.isEmpty()) memFilters = []\n    condLeaves = []\n    ncTerms = []\n}\n\n// The pre-pass fetch for every NCONTAINS term at once - one call however many\n// negations were sent, rather than one per condition.\n// In the mixed-OR case this same fetch carries the SUPERSET instead - the two\n// never coexist, because memMode clears ncTerms.\ndef ncFilter\nif (memMode) {\n    ncFilter = memFilters.isEmpty() ? [operator: 'AND', filters: []]\n                                    : [operator: 'OR', filters: memFilters]\n} else if (ncLeafFilters.isEmpty()) {\n    ncFilter = [operator: 'AND', filters: [[property: 'id', filter: [operator: 'EQUAL', value: '__none__']]]]\n} else {\n    ncFilter = [operator: 'OR', filters: ncLeafFilters]\n}\n\nreturn [condLeaves: condLeaves, ncTerms: ncTerms, ncFilter: ncFilter,\n        memMode: memMode, memTerms: memTerms,\n        combine: combine, hasConds: (!condLeaves.isEmpty() || !ncTerms.isEmpty() || memMode),\n        valid: valid, reason: reason, asOfEpoch: epoch, asOfDay: day,\n        pageLimit: pageLimit, pageOffset: pageOffset, wantOrg: wantOrg,\n        restrict: restrict, wantTitle: wantTitle, wantTerr: wantTerr, wantMgr: wantMgr,\n        searchText: s, statusText: stx.toUpperCase(),\n        attrFilter: [operator: 'AND', filters: attrFilters],\n        hierFilter: [operator: 'AND', filters: hierFilters]]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "filters": "{{ n_sTaRt.outputs.filters }}",
+          "combinator": "{{ n_sTaRt.outputs.combinator }}",
+          "search": "{{ n_sTaRt.outputs.search }}",
+          "status": "{{ n_sTaRt.outputs.status }}",
+          "titleId": "{{ n_sTaRt.outputs.titleId }}",
+          "territoryId": "{{ n_sTaRt.outputs.territoryId }}",
+          "managerPositionId": "{{ n_sTaRt.outputs.managerPositionId }}",
+          "asOfDate": "{{ n_sTaRt.outputs.asOfDate }}",
+          "limit": "{{ n_sTaRt.outputs.limit }}",
+          "offset": "{{ n_sTaRt.outputs.offset }}",
+          "includeOrg": "{{ n_sTaRt.outputs.includeOrg }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Apply the defaults and settle the as-of date",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtNc",
+      "index": 3,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.ncFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Payee",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 2000,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": false,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.employeeId",
+          "properties.name",
+          "properties.email",
+          "properties.status"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Candidates for the conditions resolved in memory",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtAtF",
+      "index": 4,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.attrFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "PositionAttribute",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 2000,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": false,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.positionId",
+          "properties.titleId",
+          "properties.territoryId",
+          "properties.effectiveStart",
+          "properties.effectiveEnd"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Positions carrying the title or territory asked for",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtHiF",
+      "index": 5,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.hierFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "PositionHierarchy",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 2000,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": false,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.positionId",
+          "properties.parentPositionId",
+          "properties.effectiveStart",
+          "properties.effectiveEnd"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Positions reporting to the manager asked for",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_PosF",
+      "index": 6,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "positionIds": {
+              "type": "array",
+              "title": "Position Ids",
+              "items": {
+                "type": "string"
+              }
+            },
+            "matched": {
+              "type": "integer",
+              "title": "Matched"
+            },
+            "filter": {
+              "type": "object",
+              "title": "Filter"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "attrRows": {
+              "type": "array",
+              "title": "Attr Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "hierRows": {
+              "type": "array",
+              "title": "Hier Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "asOfEpoch": {
+              "type": "integer",
+              "title": "As Of Epoch"
+            },
+            "wantTitle": {
+              "type": "boolean",
+              "title": "Want Title"
+            },
+            "wantTerr": {
+              "type": "boolean",
+              "title": "Want Terr"
+            },
+            "wantMgr": {
+              "type": "boolean",
+              "title": "Want Mgr"
+            }
+          }
+        },
+        "code": "\ndef inForce = { p, long asOf ->\n    def st = p?.effectiveStart\n    def en = p?.effectiveEnd\n    boolean started = (st == null) || (Long.valueOf(String.valueOf(st)) <= asOf)\n    boolean open = (en == null) || en.toString().trim().isEmpty()\n    return started && (open || Long.valueOf(String.valueOf(en)) >= asOf)\n}\n\nlong asOf = Long.valueOf(String.valueOf(asOfEpoch))\ndef attrPos = []\nif (attrRows != null) attrRows.each { r ->\n    if (inForce(r.properties, asOf)) {\n        def k = String.valueOf(r.properties?.positionId)\n        if (!attrPos.contains(k)) attrPos << k\n    }\n}\ndef hierPos = []\nif (hierRows != null) hierRows.each { r ->\n    if (inForce(r.properties, asOf)) {\n        def k = String.valueOf(r.properties?.positionId)\n        if (!hierPos.contains(k)) hierPos << k\n    }\n}\n// Two filters together mean the INTERSECTION, never the union - somebody asking for\n// one territory under one manager wants the overlap.\ndef ids = null\nif ((wantTitle as boolean) || (wantTerr as boolean)) ids = attrPos\nif (wantMgr as boolean) ids = (ids == null) ? hierPos : ids.findAll { hierPos.contains(it) }\nif (ids == null) ids = []\n\n// An empty IN list means \"no filter\" to the store, which here would show every\n// person in the company to somebody who asked for one territory. The sentinel\n// keeps an empty match an empty result.\ndef useIds = ids.isEmpty() ? ['__none__'] : ids\nreturn [positionIds: useIds, matched: ids.size(),\n        filter: [operator: 'AND', filters: [\n            [property: 'properties.positionId',     filter: [operator: 'IN',  value: useIds]],\n            [property: 'properties.effectiveStart', filter: [operator: 'LTE', value: asOf]]]]]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "attrRows": "{{ n_FtAtF.outputs.objects }}",
+          "hierRows": "{{ n_FtHiF.outputs.objects }}",
+          "asOfEpoch": "{{ n_Norm.outputs.result.asOfEpoch }}",
+          "wantTitle": "{{ n_Norm.outputs.result.wantTitle }}",
+          "wantTerr": "{{ n_Norm.outputs.result.wantTerr }}",
+          "wantMgr": "{{ n_Norm.outputs.result.wantMgr }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Intersect the filters into one set of positions",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtAsF",
+      "index": 7,
+      "inputs": {
+        "triggerInputCondition": "{{ n_PosF.outputs.result.filter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "PayeePositionAssignment",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 2000,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": false,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.positionId",
+          "properties.payeeId",
+          "properties.effectiveStart",
+          "properties.effectiveEnd"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Who held those positions on the date",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_PayFil",
+      "index": 8,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "payeeIds": {
+              "type": "array",
+              "title": "Payee Ids",
+              "items": {
+                "type": "string"
+              }
+            },
+            "restricted": {
+              "type": "boolean",
+              "title": "Restricted"
+            },
+            "memTruncated": {
+              "type": "boolean",
+              "title": "Mem Truncated"
+            },
+            "filter": {
+              "type": "object",
+              "title": "Filter"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "asgRows": {
+              "type": "array",
+              "title": "Asg Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "ncRows": {
+              "type": "array",
+              "title": "Nc Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "ncTerms": {
+              "type": "array",
+              "title": "Nc Terms",
+              "items": {
+                "type": "object"
+              }
+            },
+            "condLeaves": {
+              "type": "array",
+              "title": "Cond Leaves",
+              "items": {
+                "type": "object"
+              }
+            },
+            "combine": {
+              "type": "string",
+              "title": "Combine"
+            },
+            "memMode": {
+              "type": "boolean",
+              "title": "Mem Mode"
+            },
+            "memTerms": {
+              "type": "array",
+              "title": "Mem Terms",
+              "items": {
+                "type": "object"
+              }
+            },
+            "asOfEpoch": {
+              "type": "integer",
+              "title": "As Of Epoch"
+            },
+            "restrict": {
+              "type": "boolean",
+              "title": "Restrict"
+            },
+            "searchText": {
+              "type": "string",
+              "title": "Search Text"
+            },
+            "statusText": {
+              "type": "string",
+              "title": "Status Text"
+            },
+            "valid": {
+              "type": "boolean",
+              "title": "Valid"
+            }
+          }
+        },
+        "code": "long asOf = Long.valueOf(String.valueOf(asOfEpoch))\ndef ids = []\nif (asgRows != null) asgRows.each { r ->\n    def p = r.properties\n    def en = p?.effectiveEnd\n    boolean open = (en == null) || en.toString().trim().isEmpty()\n    if (open || Long.valueOf(String.valueOf(en)) >= asOf) {\n        def pid = (p?.payeeId == null) ? '' : p.payeeId.toString().trim()\n        if (!pid.isEmpty() && !ids.contains(pid)) ids << pid\n    }\n}\n\n// Turn each negated term into an exclusion. The pre-pass returned everyone who\n// DOES match; a term that matched nobody excludes nobody, which is why the\n// sentinel is used rather than an empty NOT_IN.\ndef ncLeaves = []\nif (ncTerms != null) ncTerms.each { t ->\n    def term = String.valueOf(t.term).toLowerCase()\n    def hitIds = []\n    if (ncRows != null) ncRows.each { r ->\n        def p = r.properties\n        boolean hit = false\n        def mode = String.valueOf(t.mode == null ? 'contains' : t.mode)\n        t.props.each { pr ->\n            def key = String.valueOf(pr).replace('properties.', '')\n            def val = p == null ? null : p[key]\n            if (mode == 'nonempty') {\n                if (val != null && !val.toString().trim().isEmpty()) hit = true\n            } else if (val != null && val.toString().toLowerCase().contains(term)) {\n                hit = true\n            }\n        }\n        if (hit) hitIds << String.valueOf(r.id)\n    }\n    ncLeaves << [property: 'id', filter: [operator: 'NOT_IN',\n                 value: hitIds.isEmpty() ? ['__none__'] : hitIds]]\n}\n\ndef userLeaves = []\nif (condLeaves != null) userLeaves.addAll(condLeaves)\nuserLeaves.addAll(ncLeaves)\n\n// The mixed-OR path. The store cannot OR a case-insensitive leaf with a\n// case-sensitive one, so the whole condition list is applied HERE against the\n// superset n_FtNc returned, and leaves as a single 'id IN <matched>' - which has\n// no operator to disagree with. Same answer, one extra fetch, no refusal.\nboolean memTruncated = false\nif (memMode as boolean) {\n    def NEG = ['NEQ': 'EQ', 'NIN': 'IN', 'NCONTAINS': 'CONTAINS', 'EMPTY': 'NEMPTY']\n    def hitIds = []\n    if (ncRows != null) ncRows.each { r ->\n        def p = r.properties\n        boolean any = false\n        if (memTerms != null) memTerms.each { t ->\n            if (any) return\n            String op = String.valueOf(t.op)\n            boolean negate = NEG.containsKey(op)\n            String base = negate ? String.valueOf(NEG[op]) : op\n            boolean hit = false\n            t.props.each { pr ->\n                if (hit) return\n                def key = String.valueOf(pr).replace('properties.', '')\n                def raw = (p == null) ? null : p[key]\n                String val = (raw == null) ? '' : String.valueOf(raw)\n                String lo = val.toLowerCase()\n                if (base == 'NEMPTY')       { if (!val.trim().isEmpty()) hit = true }\n                else if (base == 'EQ')      { t.values.each { v -> if (val == String.valueOf(v)) hit = true } }\n                else if (base == 'IN')      { t.values.each { v -> if (val == String.valueOf(v)) hit = true } }\n                else if (base == 'CONTAINS'){ t.values.each { v -> if (lo.contains(String.valueOf(v).toLowerCase())) hit = true } }\n                else if (base == 'STARTS')  { t.values.each { v -> if (val.startsWith(String.valueOf(v))) hit = true } }\n                else if (base == 'ENDS')    { t.values.each { v -> if (lo.endsWith(String.valueOf(v).toLowerCase())) hit = true } }\n            }\n            // A negation over several properties means NONE of them matched -\n            // 'name does not contain X' is false the moment one field holds X.\n            if (negate ? !hit : hit) any = true\n        }\n        if (any) hitIds << String.valueOf(r.id)\n    }\n    // 2000 is the fetch cap. At the cap the superset may have been cut off, and a\n    // filter that silently drops matches is the very thing this path exists to\n    // avoid - so it is reported rather than swallowed.\n    memTruncated = (ncRows != null && ncRows.size() >= 2000)\n    userLeaves = [[property: 'id', filter: [operator: 'IN',\n                   value: hitIds.isEmpty() ? ['__none__'] : hitIds]]]\n}\n\ndef s = (searchText == null) ? '' : searchText.toString().trim()\ndef st = (statusText == null) ? '' : statusText.toString().trim()\n\ndef filters = []\nif (!(valid as boolean)) {\n    filters << [property: 'id', filter: [operator: 'EQUAL', value: '__invalid_input__']]\n} else {\n    // The condition list combines by the caller's AND/OR. The legacy scalar\n    // inputs always AND on top, so an older caller sending only those keeps the\n    // behaviour it was written against.\n    if (!userLeaves.isEmpty()) {\n        filters << (userLeaves.size() == 1 ? userLeaves[0]\n                                           : [operator: String.valueOf(combine), filters: userLeaves])\n    }\n    if (!s.isEmpty()) filters << [operator: 'OR', filters: [\n        [property: 'properties.employeeId', filter: [operator: 'ICONTAINS', value: s]],\n        [property: 'properties.name',       filter: [operator: 'ICONTAINS', value: s]],\n        [property: 'properties.email',      filter: [operator: 'ICONTAINS', value: s]]]]\n    if (!st.isEmpty()) filters << [property: 'properties.status', filter: [operator: 'EQUAL', value: st]]\n    if (restrict as boolean) filters << [property: 'id', filter: [operator: 'IN', value: ids.isEmpty() ? ['__none__'] : ids]]\n}\nreturn [payeeIds: ids, restricted: (restrict as boolean), memTruncated: memTruncated,\n        filter: [operator: 'AND', filters: filters]]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "asgRows": "{{ n_FtAsF.outputs.objects }}",
+          "ncRows": "{{ n_FtNc.outputs.objects }}",
+          "memMode": "{{ n_Norm.outputs.result.memMode }}",
+          "memTerms": "{{ n_Norm.outputs.result.memTerms }}",
+          "ncTerms": "{{ n_Norm.outputs.result.ncTerms }}",
+          "condLeaves": "{{ n_Norm.outputs.result.condLeaves }}",
+          "combine": "{{ n_Norm.outputs.result.combine }}",
+          "asOfEpoch": "{{ n_Norm.outputs.result.asOfEpoch }}",
+          "restrict": "{{ n_Norm.outputs.result.restrict }}",
+          "searchText": "{{ n_Norm.outputs.result.searchText }}",
+          "statusText": "{{ n_Norm.outputs.result.statusText }}",
+          "valid": "{{ n_Norm.outputs.result.valid }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Build the one filter the payee page is fetched with",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtPay",
+      "index": 9,
+      "inputs": {
+        "triggerInputCondition": "{{ n_PayFil.outputs.result.filter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Payee",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "sortBy": [
+          {
+            "field": "properties.employeeId",
+            "order": "ASC"
+          },
+          {
+            "field": "id",
+            "order": "ASC"
+          }
+        ],
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}"
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.employeeId",
+          "properties.name",
+          "properties.email",
+          "properties.status",
+          "properties.hireDate",
+          "properties.terminationDate"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The page of profiles the caller asked for",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_PayIds",
+      "index": 10,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "payeeIds": {
+              "type": "array",
+              "title": "Payee Ids",
+              "items": {
+                "type": "string"
+              }
+            },
+            "payeeCount": {
+              "type": "integer",
+              "title": "Payee Count"
+            },
+            "filter": {
+              "type": "object",
+              "title": "Filter"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rows": {
+              "type": "array",
+              "title": "Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "asOfEpoch": {
+              "type": "integer",
+              "title": "As Of Epoch"
+            }
+          }
+        },
+        "code": "def ids = []\nif (rows != null) rows.each { r -> ids << String.valueOf(r.id) }\ndef useIds = ids.isEmpty() ? ['__none__'] : ids\nreturn [payeeIds: useIds, payeeCount: ids.size(),\n        filter: [operator: 'AND', filters: [\n            [property: 'properties.payeeId',        filter: [operator: 'IN',  value: useIds]],\n            [property: 'properties.effectiveStart', filter: [operator: 'LTE', value: asOfEpoch]]]]]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "rows": "{{ n_FtPay.outputs.objects }}",
+          "asOfEpoch": "{{ n_Norm.outputs.result.asOfEpoch }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Collect this page's payee ids for one bulk look",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtAsg",
+      "index": 11,
+      "inputs": {
+        "triggerInputCondition": "{{ n_PayIds.outputs.result.filter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "PayeePositionAssignment",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 2000,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.payeeId",
+          "properties.positionId",
+          "properties.effectiveStart",
+          "properties.effectiveEnd",
+          "properties.allocationPct"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Every assignment these people had already started",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtElig",
+      "index": 12,
+      "inputs": {
+        "triggerInputCondition": "{{ n_PayIds.outputs.result.filter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "PayeeEligibility",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 2000,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.payeeId",
+          "properties.isCommissionEligible",
+          "properties.effectiveStart",
+          "properties.effectiveEnd",
+          "properties.reason"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Each person's plan eligibility as of the date",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Live",
+      "index": 13,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "live": {
+              "type": "array",
+              "title": "Live",
+              "items": {
+                "type": "object"
+              }
+            },
+            "positionIds": {
+              "type": "array",
+              "title": "Position Ids",
+              "items": {
+                "type": "string"
+              }
+            },
+            "filter": {
+              "type": "object",
+              "title": "Filter"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rows": {
+              "type": "array",
+              "title": "Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "asOfEpoch": {
+              "type": "integer",
+              "title": "As Of Epoch"
+            }
+          }
+        },
+        "code": "long asOf = Long.valueOf(String.valueOf(asOfEpoch))\ndef live = []\ndef posIds = []\nif (rows != null) rows.each { r ->\n    def p = r.properties\n    def en = p?.effectiveEnd\n    boolean open = (en == null) || en.toString().trim().isEmpty()\n    if (open || Long.valueOf(String.valueOf(en)) >= asOf) {\n        def pos = String.valueOf(p?.positionId)\n        // carry the window and the split through: the fold needs them for an\n        // ASSIGNED row, and re-fetching them later would be a second call for\n        // data already in hand\n        live << [payeeId: String.valueOf(p?.payeeId), positionId: pos,\n                 effectiveStart: (p?.effectiveStart == null) ? null : Long.valueOf(String.valueOf(p.effectiveStart)),\n                 effectiveEnd:   (en == null || en.toString().trim().isEmpty()) ? null : Long.valueOf(String.valueOf(en)),\n                 allocationPct:  (p?.allocationPct == null) ? null : Double.valueOf(String.valueOf(p.allocationPct))]\n        if (!posIds.contains(pos)) posIds << pos\n    }\n}\ndef usePos = posIds.isEmpty() ? ['__none__'] : posIds\nreturn [live: live, positionIds: usePos,\n        filter: [operator: 'AND', filters: [\n            [property: 'properties.positionId',     filter: [operator: 'IN',  value: usePos]],\n            [property: 'properties.effectiveStart', filter: [operator: 'LTE', value: asOf]]]]]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "rows": "{{ n_FtAsg.outputs.objects }}",
+          "asOfEpoch": "{{ n_Norm.outputs.result.asOfEpoch }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Keep the assignments covering the date, and their positions",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtHier",
+      "index": 14,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Live.outputs.result.filter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "PositionHierarchy",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 2000,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": false,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.positionId",
+          "properties.parentPositionId",
+          "properties.effectiveStart",
+          "properties.effectiveEnd"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Who each of those positions reported to",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Parent",
+      "index": 15,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "parentByPos": {
+              "type": "object",
+              "title": "Parent By Pos"
+            },
+            "parentIds": {
+              "type": "array",
+              "title": "Parent Ids",
+              "items": {
+                "type": "string"
+              }
+            },
+            "posFilter": {
+              "type": "object",
+              "title": "Pos Filter"
+            },
+            "mgrFilter": {
+              "type": "object",
+              "title": "Mgr Filter"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "hierRows": {
+              "type": "array",
+              "title": "Hier Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "positionIds": {
+              "type": "array",
+              "title": "Position Ids",
+              "items": {
+                "type": "string"
+              }
+            },
+            "asOfEpoch": {
+              "type": "integer",
+              "title": "As Of Epoch"
+            }
+          }
+        },
+        "code": "\ndef inForce = { p, long asOf ->\n    def st = p?.effectiveStart\n    def en = p?.effectiveEnd\n    boolean started = (st == null) || (Long.valueOf(String.valueOf(st)) <= asOf)\n    boolean open = (en == null) || en.toString().trim().isEmpty()\n    return started && (open || Long.valueOf(String.valueOf(en)) >= asOf)\n}\n\nlong asOf = Long.valueOf(String.valueOf(asOfEpoch))\ndef parentByPos = [:]\ndef parents = []\nif (hierRows != null) hierRows.each { r ->\n    def p = r.properties\n    if (inForce(p, asOf)) {\n        def k = String.valueOf(p?.positionId)\n        // several in force is a data problem, not a pick - keep the first\n        if (!parentByPos.containsKey(k)) {\n            def par = String.valueOf(p?.parentPositionId)\n            parentByPos[k] = par\n            if (!parents.contains(par)) parents << par\n        }\n    }\n}\n// One Position fetch covers the page's own seats AND their managers' seats.\ndef all = []\nif (positionIds != null) positionIds.each { if (it != '__none__' && !all.contains(it)) all << it }\nparents.each { if (!all.contains(it)) all << it }\ndef useAll = all.isEmpty() ? ['__none__'] : all\ndef useParents = parents.isEmpty() ? ['__none__'] : parents\n\nreturn [parentByPos: parentByPos, parentIds: useParents,\n        posFilter: [operator: 'AND', filters: [\n            [property: 'id', filter: [operator: 'IN', value: useAll]]]],\n        mgrFilter: [operator: 'AND', filters: [\n            [property: 'properties.positionId',     filter: [operator: 'IN',  value: useParents]],\n            [property: 'properties.effectiveStart', filter: [operator: 'LTE', value: asOf]]]]]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "hierRows": "{{ n_FtHier.outputs.objects }}",
+          "positionIds": "{{ n_Live.outputs.result.positionIds }}",
+          "asOfEpoch": "{{ n_Norm.outputs.result.asOfEpoch }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Settle each position's manager seat as of the date",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtPos",
+      "index": 16,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Parent.outputs.result.posFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Position",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 2000,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": false,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.positionCode",
+          "properties.name",
+          "properties.active"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Name every seat on this page and every manager seat",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtAttr",
+      "index": 17,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Live.outputs.result.filter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "PositionAttribute",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 2000,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": false,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.positionId",
+          "properties.titleId",
+          "properties.territoryId",
+          "properties.effectiveStart",
+          "properties.effectiveEnd"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Each seat's title and territory as of the date",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtMgAs",
+      "index": 18,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Parent.outputs.result.mgrFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "PayeePositionAssignment",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 2000,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": false,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.positionId",
+          "properties.payeeId",
+          "properties.effectiveStart",
+          "properties.effectiveEnd"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Who held those manager seats on the date",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_MgPay",
+      "index": 19,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "mgrLive": {
+              "type": "array",
+              "title": "Mgr Live",
+              "items": {
+                "type": "object"
+              }
+            },
+            "filter": {
+              "type": "object",
+              "title": "Filter"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rows": {
+              "type": "array",
+              "title": "Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "asOfEpoch": {
+              "type": "integer",
+              "title": "As Of Epoch"
+            }
+          }
+        },
+        "code": "long asOf = Long.valueOf(String.valueOf(asOfEpoch))\ndef mgrLive = []\ndef ids = []\nif (rows != null) rows.each { r ->\n    def p = r.properties\n    def en = p?.effectiveEnd\n    boolean open = (en == null) || en.toString().trim().isEmpty()\n    if (open || Long.valueOf(String.valueOf(en)) >= asOf) {\n        def pid = (p?.payeeId == null) ? '' : p.payeeId.toString().trim()\n        mgrLive << [positionId: String.valueOf(p?.positionId), payeeId: pid]\n        if (!pid.isEmpty() && !ids.contains(pid)) ids << pid\n    }\n}\ndef useIds = ids.isEmpty() ? ['__none__'] : ids\nreturn [mgrLive: mgrLive,\n        filter: [operator: 'AND', filters: [[property: 'id', filter: [operator: 'IN', value: useIds]]]]]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "rows": "{{ n_FtMgAs.outputs.objects }}",
+          "asOfEpoch": "{{ n_Norm.outputs.result.asOfEpoch }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Keep the manager assignments covering the date",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtMgPy",
+      "index": 20,
+      "inputs": {
+        "triggerInputCondition": "{{ n_MgPay.outputs.result.filter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Payee",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 2000,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": false,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.employeeId",
+          "properties.name"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Name the managers in one call",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtTtl",
+      "index": 21,
+      "inputs": {
+        "triggerInputCondition": {},
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Title",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 2000,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": false,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.name"
+        ]
+      },
+      "options": {
+        "cacheConfig": {
+          "cacheKey": "icm-list-profiles-n_FtTtl",
+          "enabled": true,
+          "timeToLive": "300",
+          "usagePolicy": "ALWAYS",
+          "useInMemoryCache": false
+        },
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The title reference table, whole",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtTer",
+      "index": 22,
+      "inputs": {
+        "triggerInputCondition": {},
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Territory",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 2000,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": false,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.name"
+        ]
+      },
+      "options": {
+        "cacheConfig": {
+          "cacheKey": "icm-list-profiles-n_FtTer",
+          "enabled": true,
+          "timeToLive": "300",
+          "usagePolicy": "ALWAYS",
+          "useInMemoryCache": false
+        },
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The territory reference table, whole",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Fold",
+      "index": 23,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "profiles": {
+              "type": "array",
+              "title": "Profiles",
+              "items": {
+                "type": "object"
+              }
+            },
+            "total": {
+              "type": "integer",
+              "title": "Total"
+            },
+            "hasMore": {
+              "type": "boolean",
+              "title": "Has More"
+            },
+            "counts": {
+              "type": "object",
+              "title": "Counts"
+            },
+            "joinsTruncated": {
+              "type": "boolean",
+              "title": "Joins Truncated"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "payRows": {
+              "type": "array",
+              "title": "Pay Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "payTotal": {
+              "type": "integer",
+              "title": "Pay Total"
+            },
+            "live": {
+              "type": "array",
+              "title": "Live",
+              "items": {
+                "type": "object"
+              }
+            },
+            "asgRows": {
+              "type": "array",
+              "title": "Asg Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "asgTotal": {
+              "type": "integer",
+              "title": "Asg Total"
+            },
+            "posRows": {
+              "type": "array",
+              "title": "Pos Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "attrRows": {
+              "type": "array",
+              "title": "Attr Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "titleRows": {
+              "type": "array",
+              "title": "Title Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "terrRows": {
+              "type": "array",
+              "title": "Terr Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "parentByPos": {
+              "type": "object",
+              "title": "Parent By Pos"
+            },
+            "mgrLive": {
+              "type": "array",
+              "title": "Mgr Live",
+              "items": {
+                "type": "object"
+              }
+            },
+            "mgrPayRows": {
+              "type": "array",
+              "title": "Mgr Pay Rows",
+              "items": {
+                "type": "object"
+              }
+            },
+            "wantOrg": {
+              "type": "boolean",
+              "title": "Want Org"
+            },
+            "asOfDay": {
+              "type": "string",
+              "title": "As Of Day"
+            },
+            "asOfEpoch": {
+              "type": "integer",
+              "title": "As Of Epoch"
+            },
+            "pageOffset": {
+              "type": "integer",
+              "title": "Page Offset"
+            },
+            "eligRows": {
+              "type": "array",
+              "title": "Elig Rows",
+              "items": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "code": "\ndef inForce = { p, long asOf ->\n    def st = p?.effectiveStart\n    def en = p?.effectiveEnd\n    boolean started = (st == null) || (Long.valueOf(String.valueOf(st)) <= asOf)\n    boolean open = (en == null) || en.toString().trim().isEmpty()\n    return started && (open || Long.valueOf(String.valueOf(en)) >= asOf)\n}\n\nlong asOf = Long.valueOf(String.valueOf(asOfEpoch))\n\ndef byPayee = [:]\nif (live != null) live.each { l ->\n    def k = String.valueOf(l.payeeId)\n    if (!byPayee.containsKey(k)) byPayee[k] = []\n    byPayee[k] << l\n}\ndef posById = [:]\nif (posRows != null) posRows.each { p -> posById[String.valueOf(p.id)] = p.properties }\ndef titleById = [:]\nif (titleRows != null) titleRows.each { t -> titleById[String.valueOf(t.id)] = t.properties?.name ?: '' }\ndef terrById = [:]\nif (terrRows != null) terrRows.each { t -> terrById[String.valueOf(t.id)] = t.properties?.name ?: '' }\ndef mgrPayById = [:]\nif (mgrPayRows != null) mgrPayRows.each { p -> mgrPayById[String.valueOf(p.id)] = p.properties?.name ?: '' }\n\n// A seat's title is effective-dated too: an attribute row that ended before the\n// date describes a seat that has since been re-titled.\ndef attrByPos = [:]\nif (attrRows != null) attrRows.each { a ->\n    def ap = a.properties\n    if (inForce(ap, asOf)) {\n        def k = String.valueOf(ap?.positionId)\n        if (!attrByPos.containsKey(k)) attrByPos[k] = ap\n    }\n}\ndef mgrByPos = [:]\nif (mgrLive != null) mgrLive.each { m ->\n    def k = String.valueOf(m.positionId)\n    if (!mgrByPos.containsKey(k)) mgrByPos[k] = []\n    mgrByPos[k] << m\n}\n\ndef eligByPayee = [:]\nint eligConflict = 0\nif (eligRows != null) eligRows.each { e ->\n    if (!inForce(e.properties, asOf)) return\n    def k = String.valueOf(e.properties?.payeeId)\n    if (eligByPayee.containsKey(k)) { eligConflict = eligConflict + 1; return }\n    eligByPayee[k] = e\n}\n\nint assigned = 0, unassigned = 0, conflict = 0\ndef profiles = []\nif (payRows != null) payRows.each { r ->\n    def p = r.properties\n    def row = [payeeId: String.valueOf(r.id),\n               employeeId: p?.employeeId ?: '',\n               name: p?.name ?: '',\n               email: p?.email ?: '',\n               status: p?.status ?: '',\n               hireDate: (p?.hireDate == null) ? null : Long.valueOf(String.valueOf(p.hireDate)),\n               terminationDate: (p?.terminationDate == null) ? null : Long.valueOf(String.valueOf(p.terminationDate)),\n               // A person with NO row in force resolves to eligible. Every person on prod\n               // has no row today, so defaulting to false would tell the app that nobody in\n               // the company is on a variable plan - a total, silent change to every screen\n               // caused by adding a table rather than by any decision. Absence means nothing\n               // has been said, and the standing answer is eligible.\n               // `!= false` and not `== true`: a boolean the platform never set is MISSING,\n               // not false, so a row saved without the flag must not make someone ineligible.\n               commissionEligible: (eligByPayee[String.valueOf(r.id)] == null) ? true\n                   : (eligByPayee[String.valueOf(r.id)].properties?.isCommissionEligible != false),\n               eligibilityReason: (eligByPayee[String.valueOf(r.id)] == null) ? ''\n                   : (eligByPayee[String.valueOf(r.id)].properties?.reason ?: ''),\n               assignment: 'UNKNOWN', matchCount: 0,\n               positionId: '', positionCode: '', positionName: '',\n               titleId: '', titleName: '', territoryId: '', territoryName: '',\n               managerPositionId: '', managerPayeeId: '', managerName: '',\n               // null unless ONE assignment resolved this row - an UNASSIGNED row has\n               // none and a CONFLICT row has several, and naming one would be the\n               // guess this product refuses to make\n               allocationPct: null, effectiveStart: null, effectiveEnd: null]\n\n    if (wantOrg) {\n        def hits = byPayee[String.valueOf(r.id)] ?: []\n        row.matchCount = hits.size()\n        if (hits.size() == 0)     { row.assignment = 'UNASSIGNED'; unassigned++ }\n        else if (hits.size() > 1) { row.assignment = 'CONFLICT';   conflict++ }\n        else {\n            row.assignment = 'ASSIGNED'; assigned++\n            def pos = String.valueOf(hits[0].positionId)\n            row.positionId = pos\n            def pr = posById[pos]\n            row.positionCode = (pr == null) ? '' : (pr.positionCode ?: '')\n            row.positionName = (pr == null) ? '' : (pr.name ?: '')\n            row.effectiveStart = hits[0].effectiveStart\n            // null here means OPEN-ENDED, still held - not \"unknown\"\n            row.effectiveEnd   = hits[0].effectiveEnd\n            row.allocationPct  = hits[0].allocationPct\n\n            def attr = attrByPos[pos]\n            if (attr != null) {\n                row.titleId     = (attr.titleId == null) ? '' : String.valueOf(attr.titleId)\n                row.titleName   = titleById[row.titleId] ?: ''\n                row.territoryId = (attr.territoryId == null) ? '' : String.valueOf(attr.territoryId)\n                row.territoryName = terrById[row.territoryId] ?: ''\n            }\n            def par = parentByPos == null ? null : parentByPos[pos]\n            if (par != null) {\n                row.managerPositionId = String.valueOf(par)\n                def mh = mgrByPos[String.valueOf(par)] ?: []\n                // exactly as with the payee's own seat: two people in the manager\n                // seat on one day is a conflict, and it is left unnamed rather than\n                // guessed\n                if (mh.size() == 1) {\n                    row.managerPayeeId = String.valueOf(mh[0].payeeId)\n                    row.managerName = mgrPayById[row.managerPayeeId] ?: ''\n                }\n            }\n        }\n    }\n    profiles << row\n}\n\nint total = (payTotal == null) ? profiles.size() : Integer.valueOf(String.valueOf(payTotal))\nint got   = (asgRows == null) ? 0 : asgRows.size()\nint asgTot = (asgTotal == null) ? got : Integer.valueOf(String.valueOf(asgTotal))\n\nreturn [profiles: profiles,\n        total: total,\n        hasMore: (Integer.valueOf(String.valueOf(pageOffset)) + profiles.size()) < total,\n        counts: [total: profiles.size(), assigned: assigned, unassigned: unassigned, conflict: conflict],\n        joinsTruncated: got < asgTot,\n        message: wantOrg\n            ? (profiles.size() + ' profile(s) on this page, as of ' + String.valueOf(asOfDay))\n            : (profiles.size() + ' profile(s) on this page; org not resolved')]",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "payRows": "{{ n_FtPay.outputs.objects }}",
+          "payTotal": "{{ n_FtPay.outputs.total }}",
+          "live": "{{ n_Live.outputs.result.live }}",
+          "asgRows": "{{ n_FtAsg.outputs.objects }}",
+          "asgTotal": "{{ n_FtAsg.outputs.total }}",
+          "posRows": "{{ n_FtPos.outputs.objects }}",
+          "attrRows": "{{ n_FtAttr.outputs.objects }}",
+          "titleRows": "{{ n_FtTtl.outputs.objects }}",
+          "terrRows": "{{ n_FtTer.outputs.objects }}",
+          "parentByPos": "{{ n_Parent.outputs.result.parentByPos }}",
+          "mgrLive": "{{ n_MgPay.outputs.result.mgrLive }}",
+          "mgrPayRows": "{{ n_FtMgPy.outputs.objects }}",
+          "wantOrg": "{{ n_Norm.outputs.result.wantOrg }}",
+          "asOfDay": "{{ n_Norm.outputs.result.asOfDay }}",
+          "asOfEpoch": "{{ n_Norm.outputs.result.asOfEpoch }}",
+          "pageOffset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "eligRows": "{{ n_FtElig.outputs.objects }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Build every profile row for this page at once",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_IfBad",
+      "index": 24,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Norm.outputs.result.valid }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": false
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Was the request itself unusable?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@y",
+      "id": "n_StBad",
+      "index": 25,
+      "inputs": {
+        "result": {
+          "asOfDate": "{{ n_Norm.outputs.result.asOfDay }}",
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "status": "INVALID_INPUT",
+          "success": false,
+          "message": "{{ n_Norm.outputs.result.reason }}",
+          "total": 0,
+          "hasMore": false,
+          "orgResolved": false,
+          "joinsTruncated": false,
+          "counts": {
+            "total": 0,
+            "assigned": 0,
+            "unassigned": 0,
+            "conflict": 0
+          },
+          "profiles": []
+        }
+      },
+      "skip": false,
+      "subTitle": "Caller sent an unusable date, limit or offset",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_StOk",
+      "index": 26,
+      "inputs": {
+        "result": {
+          "asOfDate": "{{ n_Norm.outputs.result.asOfDay }}",
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "status": "OK",
+          "success": true,
+          "message": "{{ n_Fold.outputs.result.message }}",
+          "total": "{{ n_Fold.outputs.result.total }}",
+          "hasMore": "{{ n_Fold.outputs.result.hasMore }}",
+          "orgResolved": "{{ n_Norm.outputs.result.wantOrg }}",
+          "joinsTruncated": "{{ n_Fold.outputs.result.joinsTruncated }}",
+          "counts": "{{ n_Fold.outputs.result.counts }}",
+          "profiles": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Fold.outputs.result.profiles }}",
+            "items": "{{ n_Fold.outputs.result.profiles[0] }}"
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "The page of profiles, with each one's seat and manager",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 403181,
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 14
+}

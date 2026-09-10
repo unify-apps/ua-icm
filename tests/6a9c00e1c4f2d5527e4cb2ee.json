@@ -1,0 +1,88 @@
+{
+  "name": "ICM | List Profiles",
+  "fixtures": "records/eligibility-probe.json - seed with: node scripts/ua-records.mjs seed records/eligibility-probe.json --env tool",
+  "note": [
+    "Covers the commissionEligible join added 2026-09-09. Spec:",
+    "docs/automations/list-profiles-eligibility.md",
+    "",
+    "The probe row's window is HISTORICAL (2020) on purpose, so the suite can",
+    "assert a `false` without any date the product actually reports being",
+    "affected. Ask as of today and the row is out of force; ask as of 2020 and it",
+    "is the answer. That also makes the interesting assertion possible: not that",
+    "false is honoured, but that a window which ENDED stops applying. A flat",
+    "boolean on Payee cannot fail that test, because it has no window to end -",
+    "which is the entire reason eligibility is a dated table.",
+    "",
+    "Read-only: creates and deletes nothing, safe to re-run.",
+    "",
+    "asOfDate is sent EMPTY for the today cases rather than a literal date, so the",
+    "suite does not start failing the day someone runs it in a different month."
+  ],
+  "cases": [
+    { "name": "find: Marcus", "entityFind": { "entityType": "Payee", "filters": { "employeeId": "E-10041" } } },
+
+    {
+      "name": "eligibility: no row in force resolves to ELIGIBLE",
+      "note": "The default, and the whole risk of this change. Every person on the platform has no row, so a default of false would have told the app that nobody in the company is on a variable plan.",
+      "payload": { "search": "", "status": "", "titleId": "", "territoryId": "", "managerPositionId": "", "asOfDate": "", "limit": "3", "offset": "0", "includeOrg": "true", "filters": [], "combinator": "AND" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "success", "equals": true },
+        { "path": "profiles.0.commissionEligible", "equals": true },
+        { "path": "profiles.0.eligibilityReason", "equals": "" }
+      ]
+    },
+    {
+      "name": "eligibility: a row IN FORCE makes the person ineligible, with its reason",
+      "payload": { "search": "", "status": "", "titleId": "", "territoryId": "", "managerPositionId": "", "asOfDate": "2020-06-01", "limit": "3", "offset": "0", "includeOrg": "true", "filters": [], "combinator": "AND" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "profiles.0.employeeId", "equals": "E-10041" },
+        { "path": "profiles.0.commissionEligible", "equals": false },
+        { "path": "profiles.0.eligibilityReason", "equals": "KITFIX probe: proves the dated window is obeyed" }
+      ]
+    },
+    {
+      "name": "eligibility: a window that ENDED no longer applies",
+      "note": "THE case. This is the March question the design doc's rule 4 exists for, and the only one that distinguishes a dated table from an overwritable flag. If this returns false, the join is ignoring effectiveEnd and every historical answer is wrong.",
+      "payload": { "search": "", "status": "", "titleId": "", "territoryId": "", "managerPositionId": "", "asOfDate": "", "limit": "3", "offset": "0", "includeOrg": "true", "filters": [], "combinator": "AND" },
+      "checks": [
+        { "path": "profiles.0.employeeId", "equals": "E-10041" },
+        { "path": "profiles.0.commissionEligible", "equals": true },
+        { "path": "profiles.0.eligibilityReason", "equals": "" }
+      ]
+    },
+    {
+      "name": "eligibility: a window that has NOT STARTED does not apply either",
+      "note": "The other end of the window. Without this, a join that only checked effectiveEnd would pass every case above.",
+      "payload": { "search": "", "status": "", "titleId": "", "territoryId": "", "managerPositionId": "", "asOfDate": "2019-06-01", "limit": "3", "offset": "0", "includeOrg": "true", "filters": [], "combinator": "AND" },
+      "checks": [
+        { "path": "profiles.0.employeeId", "equals": "E-10041" },
+        { "path": "profiles.0.commissionEligible", "equals": true },
+        { "path": "profiles.0.eligibilityReason", "equals": "" }
+      ]
+    },
+    {
+      "name": "the join added a field and did not drop rows",
+      "note": "A join wired wrong is as likely to shrink the page as to return the wrong value, and a page that silently loses people is the worse failure. Asserts the shape the automation had BEFORE eligibility existed.",
+      "payload": { "search": "", "status": "", "titleId": "", "territoryId": "", "managerPositionId": "", "asOfDate": "", "limit": "3", "offset": "0", "includeOrg": "true", "filters": [], "combinator": "AND" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "limit", "equals": 3 },
+        { "path": "offset", "equals": 0 },
+        { "path": "hasMore", "equals": true },
+        { "path": "orgResolved", "equals": true },
+        { "path": "joinsTruncated", "equals": false },
+        { "path": "counts.total", "equals": 3 }
+      ]
+    },
+    {
+      "name": "an unusable request is still refused",
+      "note": "Eligibility must not have moved the failure path. This is the automation's own pre-existing contract, asserted here because nothing else covered it.",
+      "payload": { "search": "", "status": "", "titleId": "", "territoryId": "", "managerPositionId": "", "asOfDate": "not-a-date", "limit": "3", "offset": "0", "includeOrg": "true", "filters": [], "combinator": "AND" },
+      "checks": [
+        { "path": "success", "equals": false }
+      ]
+    }
+  ]
+}
