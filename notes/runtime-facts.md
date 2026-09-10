@@ -1744,18 +1744,26 @@ widget draws itself empty. The platform's own validator calls this out by name
 array whose elements match the item schema, or a mapped-array object containing
 `ua:type: mappedArray`, `source`, and `items`"*.
 
-**The fix is the DECLARATION, not the binding.** Declare a bound list as
-`{"type":["string","array"], "items":{...}}`:
+**Fix the VALUE, and declare a single type.** Both halves are needed:
 
-- the field picker reads `type[0]` (`packages/form/src/fields/SchemaField/RJSFSchemaField.tsx`),
-  so `"string"` first renders a plain expression input that shows the mapping;
-- the input validator only rejects a bare pill when `array` is accepted and `string` is
-  not, so naming both accepts it;
-- the binding is untouched, which matters because the bare form is what actually runs.
+```json
+"input.properties.rows":  {"type":"array","title":"Rows",
+                           "items":{"type":"object","properties":{},"additionalProperties":false}}
+"parameters.rows":        {"ua:type":"mappedArray",
+                           "source":"{{ n_Ft.outputs.objects }}",
+                           "items": "{{ n_Ft.outputs.objects[0] }}"}
+```
 
-This is the platform's established idiom, not a workaround — `listSource` on
-`utility_by_unifyapps_filter_list`, `loop_for_each` and `sort_list` are all declared
-`type: "string"` while carrying a whole-list pill.
+A `["string","array"]` union does satisfy the RJSF field picker, which reads `type[0]` —
+but the builder's own "Add new input" editor writes ONE type and cannot represent a
+union, so its **Type dropdown renders blank**. Declaring the union looks fixed in JSON
+and looks broken in the product. Use the single `"array"` and fix the value instead.
+
+**`items` must be the WHOLE element — `{{ …objects[0] }}`, not `{{ …objects[0].properties }}`.**
+`[0]` denotes the current element, and mapping to `.properties` strips `id`, which every
+one of these scripts reads. That failure is silent in the worst way: the node still runs,
+`rows[0].id` is just null, the filter built from it matches nothing, and the automation
+answers OK with an empty list. Three Get Plan cases caught it; nothing else would have.
 
 Objects do NOT have this problem: `MappedObjectField` has an empty-`properties` early
 return that renders a single pill, so `{"type":"object","properties":{}}` accepts a bare

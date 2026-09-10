@@ -279,6 +279,15 @@
    }
   },
   {
+   "name": "clean up the resolving plan's assignment rows",
+   "entityDelete": {
+    "entityType": "PlanAssignment",
+    "filters": {
+     "planId": "{{case:seed a plan pointing at real title and position records:recordId}}"
+    }
+   }
+  },
+  {
    "name": "clean up the resolving plan",
    "entityDelete": {
     "entityType": "Plan",

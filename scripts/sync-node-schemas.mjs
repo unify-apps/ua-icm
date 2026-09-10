@@ -192,10 +192,47 @@ if (typesOnly) {
     const params = n.inputs.parameters;
     if (!params || Object.keys(params).length === 0) { unboundT.push(`${n.id} (${n.subTitle})`); continue; }
     for (const [k, sch] of Object.entries(n.inputs.input?.properties ?? {})) {
-      if (sch.type === "array" && k in params) {
-        sch.type = ["string", "array"];
-        console.log(`${n.id}  ${k}: "array" -> ["string","array"]  (mapping was hidden)`);
+      const isArray = sch.type === "array" || (Array.isArray(sch.type) && sch.type.includes("array"));
+      if (!isArray || !(k in params)) continue;
+
+      // The builder's own input editor writes ONE type, so a ["string","array"] union
+      // leaves its Type dropdown blank. Declare it the way the builder does.
+      if (sch.type !== "array") {
+        sch.type = "array";
+        console.log(`${n.id}  ${k}: declared type -> "array"`);
         retyped++;
+      }
+      // Only default the element schema to an object. A list of ids or numbers keeps
+      // the element type it already had - the declaration should describe the data.
+      if (!sch.items || sch.items.type === "object" || sch.items.type === undefined) {
+        sch.items = { type: "object", properties: {}, additionalProperties: false };
+      }
+
+      // ...and an array parameter's VALUE has to be the mapped-array envelope, not a
+      // bare pill. `source` is the list; `items` is the per-element template, where
+      // [0] denotes the current element.
+      const cur = params[k];
+      if (typeof cur === "string") {
+        const m = /^\s*\{\{\s*(.+?)\s*\}\}\s*$/.exec(cur);
+        if (!m) { console.log(`${n.id}  ${k}: not a single pill, left alone`); continue; }
+        params[k] = {
+          "ua:type": "mappedArray",
+          source: cur,
+          // The WHOLE element, deliberately. Mapping to `[0].properties` drops `id`,
+          // which every one of these scripts reads - it silently empties the result
+          // rather than failing, so it has to be got right here.
+          items: `{{ ${m[1]}[0] }}`,
+        };
+        console.log(`${n.id}  ${k}: bare pill -> mappedArray envelope`);
+        retyped++;
+      } else if (cur && typeof cur === "object" && typeof cur.items === "string") {
+        // Repair an envelope whose per-element template drops fields the code needs.
+        const bad = /\[0\]\.properties\s*\}\}\s*$/.test(cur.items);
+        if (bad) {
+          cur.items = cur.items.replace(/\[0\]\.properties(\s*\}\})/, "[0]$1");
+          console.log(`${n.id}  ${k}: items mapped [0].properties -> [0]  (was dropping id)`);
+          retyped++;
+        }
       }
     }
   }
