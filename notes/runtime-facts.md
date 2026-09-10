@@ -1314,3 +1314,35 @@ OMITS the key, and every callable's suite needs both.
 Same mechanism as the `create_record` output-path entry above: there, the expression
 pointed at a field that does not exist; here, at a field the caller did not send. One
 cause, one error message, two very different-looking bugs.
+
+## `txn.attrs.<key>` is the escape hatch that makes a rule read source data (ICM, 2026-09-10)
+
+`ConditionMatcher.KINDS` is a closed namespace of ~17 subjects, and a subject outside it
+is REFUSED rather than read as false. That is the right default, and it would also have
+made the NA export uncreditable: nothing in the namespace can see a Salesforce record
+type or which half of a Channel-and-Direct row a line represents.
+
+`kindOf` has one prefix rule for exactly this:
+
+```groovy
+if (subject.startsWith('txn.attrs.') && subject.length() > 'txn.attrs.'.length()) return 'string'
+```
+
+So `txn.attrs.recordType == "Renewals"` and `txn.attrs.component == "CHANNEL_INV"` both
+evaluate, against whatever the ingest flattened into `Transaction.attrs`. Proven live on
+three rules over 29 real transactions.
+
+Two things this costs, both worth knowing before leaning on it:
+
+- **The kind is always `string`.** A numeric or date attr compares lexically, so
+  `txn.attrs.qty > "9"` is true for "10" only by accident. Anything a rule compares as a
+  number needs a real typed subject in `KINDS`, not an attr.
+- **It is open-ended, so a typo cannot be refused.** `txn.attrs.recordTyp` is a perfectly
+  legal subject that simply never has a value — which the matcher then reports as
+  `RULE_REFUSED: no value supplied`. That is the good outcome, and it only works because
+  a missing fact is refused rather than read as false. Turn that rule into a `false` and
+  every typo becomes a silent no-match.
+
+The `in` operator earns its keep here: `txn.attrs.recordType in "Channel and Direct, NA
+Direct, NA Channel"` is one condition instead of three rules, and it splits on commas
+after trimming, so multi-word values are fine as long as none contains a comma.

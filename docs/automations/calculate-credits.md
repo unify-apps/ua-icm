@@ -243,9 +243,69 @@ status rather than a silent success.
   `Sales-Commission-Management/engine/`. Nothing yet notices if they drift —
   `check-deployed.mjs` covers that repo's node, not this one.
 
+## Reconciled against the customer's real export
+
+**A slice of the real NA Salesforce export credits to the cent.** 24 rows across 15
+orders, seeded as `records/na-sample-jul2026.json`, run `6aa2ba658f78990409034d0a` on
+tool:
+
+| | credits | engine | the sheet's own column |
+|---|---|---|---|
+| DIRECT | 23 | 477,404.66 | 485,848.35 less the one refused row |
+| CHANNEL_INV | 5 | 102,421.20 | 102,421.20 |
+| MGR_ROLLUP | 11 | 46,915.62 | = the RENEWAL total, 1 level |
+
+Every one of the 28 direct credits equals `Amount (converted)` or `CHANNEL INVENTORY
+SPLIT` exactly, including all four 50% rows, both 70% rows and all four negatives. The
+one refusal is `UNRESOLVED_PAYEE` for a rep left unseeded on purpose.
+
+### One export row is up to TWO commissionable lines
+
+Measured across all 2,917 rows, not assumed:
+
+```
+TOTAL CREDITS           == Amount + CHANNEL INVENTORY SPLIT       2917 / 2917
+CHANNEL INVENTORY SPLIT == Channel Inventory Amount x Percent     2917 / 2917
+Amount                  == (Total Amount - Channel Inv) x Percent 2793 / 2917
+```
+
+The first two are exact, so they are the contract. `Amount` and `CHANNEL INVENTORY
+SPLIT` are two separate credited figures that sum to `TOTAL CREDITS`, and the record type
+is literally called "Channel and Direct". Each becomes its own `Transaction` carrying
+`attrs.component`; a design that treats a row as one credit loses the channel half, and
+on order `00386893` that half is **USD 47,069.40 sitting behind USD 13,019.94** of direct
+value.
+
+**`Total Amount` is NOT a per-order base.** The third identity fails on 124 rows and the
+misses are structural, not noise: it is the OPPORTUNITY's value, which stays constant
+while one opportunity spans several order numbers (59 rows) or ships in parts (65).
+Orders `00392823` and `00392824` both read Total `132,093.04` while their Amounts are
+`129,669.81` and `2,423.22` — the two halves of one opportunity. Multiplying it by
+Percent is wrong 4% of the time, silently.
+
+**Both credited figures already have the split applied**, so the base is recovered by
+DIVIDING the split out (`Amount / Percent`). Feeding a pre-multiplied number to an engine
+that multiplies again is how 70% silently becomes 49%.
+
+### What the real data settled
+
+- **200% splits are real.** Order `00392225` credits 50% + 100% + 50% across three reps.
+  Order `00388125` and `00391559` each credit 170%. Three orders, two record types — the
+  design doc's "unconfirmed" is now confirmed, and any guard that normalises to 100%
+  rejects real orders.
+- **Negatives flow all the way through.** `-4,365.59`, `-268.82`, `-2,562.00` land as
+  credits, and their rolled copies are negative too.
+- **Ship date decides the period.** `00377914` closed 29 May and `00384850` closed 23
+  June; both are credited in July because the ship date is the commissionable trigger.
+  Under close date neither would appear.
+
+**Finding this run produced:** order `00387058` is USD 0.00 and the engine wrote a credit
+of 0.00 for it. That is a row, not an earning — it needs a `ZERO_AMOUNT` pre-check at
+ingest. Left in place so the behaviour is visible and the fix has a test.
+
 ## State
 
-**All 13 regression cases green** (`node scripts/regress.mjs 6aa2ab9e4f1e1040ac32d181 --env tool`),
+**All 19 regression cases green** (`node scripts/regress.mjs 6aa2ab9e4f1e1040ac32d181 --env tool`),
 `ua.mjs validate` **clean**, `lint.mjs` **clean**. Draft v6, **not deployed**.
 
 Proved end to end on tool, run `6aa2af693c7f7b6b91132e7c`: 6 credits written, the run

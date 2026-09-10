@@ -1,6 +1,6 @@
 {
  "name": "ICM | Calculate Credits",
- "note": "EVERY CASE IS A DRY RUN. A suite that writes pay is a suite nobody can run twice, and the write path is the one thing here whose side effects reach a bank account - it is proved by hand (run 6aa2af693c7f7b6b91132e7c, 6 credits landed, run marked Succeeded) and deliberately not by this file. What the suite pins is the FOLD: which lane won, whether the row's own split was read, that a negative amount survives, and that each refusal keeps its own name. The counts below are measured against the seeded test bed AND the pre-existing SEP-2026 rows on tool; re-seeding does not change them, but somebody adding a September transaction will, and that is a true failure rather than a flaky one. The index-based checks below are only legitimate because n_Calc SORTS its output (deal, then person, then the direct credit before the rolled copies); fetch order is promised by nothing.",
+ "note": "EVERY CASE IS A DRY RUN. A suite that writes pay is a suite nobody can run twice, and the write path is the one thing here whose side effects reach a bank account - it is proved by hand (run 6aa2af693c7f7b6b91132e7c, 6 credits landed, run marked Succeeded) and deliberately not by this file. What the suite pins is the FOLD: which lane won, whether the row's own split was read, that a negative amount survives, and that each refusal keeps its own name. The counts below are measured against the seeded test bed AND the pre-existing SEP-2026 rows on tool; re-seeding does not change them, but somebody adding a September transaction will, and that is a true failure rather than a flaky one. The index-based checks below are only legitimate because n_Calc SORTS its output (deal, then person, then the direct credit before the rolled copies); fetch order is promised by nothing. The last six cases run against TEST-NA-JUL-2026, a slice of the customer's real 2,917-row Salesforce export - see records/na-sample-jul2026.json for what each order proves and why Total Amount is not a per-order base.",
  "cases": [
   {
    "name": "OK_DRY_RUN - the whole period, computed and nothing written",
@@ -312,6 +312,184 @@
     {
      "path": "message",
      "matches": "Transaction"
+    }
+   ]
+  },
+  {
+   "name": "NA sample - the real export reconciles, and the channel half is not lost",
+   "payload": {
+    "periodId": "e_6aa2b98a35cc1f4f3c87919c",
+    "dryRun": true,
+    "pageLimit": 2000
+   },
+   "checks": [
+    {
+     "path": "status",
+     "equals": "OK_DRY_RUN"
+    },
+    {
+     "path": "periodName",
+     "equals": "TEST-NA-JUL-2026"
+    },
+    {
+     "path": "stats.scanned",
+     "equals": 29
+    },
+    {
+     "path": "stats.matched",
+     "equals": 28
+    },
+    {
+     "path": "stats.rolledUp",
+     "equals": 11
+    },
+    {
+     "path": "stats.refused",
+     "equals": 1
+    },
+    {
+     "path": "credits",
+     "type": "array",
+     "minLen": 39,
+     "maxLen": 39
+    },
+    {
+     "path": "exceptions.0.code",
+     "equals": "UNRESOLVED_PAYEE"
+    }
+   ]
+  },
+  {
+   "name": "NA sample - a 70% row credits 4,154.39, the sheet's own figure to the cent",
+   "payload": {
+    "periodId": "e_6aa2b98a35cc1f4f3c87919c",
+    "dryRun": true,
+    "pageLimit": 2000
+   },
+   "checks": [
+    {
+     "path": "credits.22.orderNumber",
+     "equals": "00388125"
+    },
+    {
+     "path": "credits.22.payeeName",
+     "equals": "Andrei Sin"
+    },
+    {
+     "path": "credits.22.splitBps",
+     "equals": "7000"
+    },
+    {
+     "path": "credits.22.amount",
+     "equals": 415439
+    },
+    {
+     "path": "credits.22.creditType",
+     "equals": "RENEWAL"
+    }
+   ]
+  },
+  {
+   "name": "NA sample - order 00392225 credits 200% across three reps, unnormalised",
+   "payload": {
+    "periodId": "e_6aa2b98a35cc1f4f3c87919c",
+    "dryRun": true,
+    "pageLimit": 2000
+   },
+   "checks": [
+    {
+     "path": "credits.30.orderNumber",
+     "equals": "00392225"
+    },
+    {
+     "path": "credits.30.amount",
+     "equals": 19666053
+    },
+    {
+     "path": "credits.31.amount",
+     "equals": 9833027
+    },
+    {
+     "path": "credits.32.amount",
+     "equals": 9833027
+    }
+   ]
+  },
+  {
+   "name": "NA sample - the channel-inventory half is its own credit, 47,069.40 behind 13,019.94",
+   "payload": {
+    "periodId": "e_6aa2b98a35cc1f4f3c87919c",
+    "dryRun": true,
+    "pageLimit": 2000
+   },
+   "checks": [
+    {
+     "path": "credits.4.creditType",
+     "equals": "CHANNEL_INV"
+    },
+    {
+     "path": "credits.4.amount",
+     "equals": 4706940
+    },
+    {
+     "path": "credits.4.payeeName",
+     "equals": "Alden Naeny"
+    },
+    {
+     "path": "credits.5.creditType",
+     "equals": "NEW_BOOKING"
+    },
+    {
+     "path": "credits.5.amount",
+     "equals": 1301994
+    },
+    {
+     "path": "credits.5.payeeName",
+     "equals": "Alden Naeny"
+    }
+   ]
+  },
+  {
+   "name": "NA sample - a billing credit stays negative all the way to the Credit row",
+   "payload": {
+    "periodId": "e_6aa2b98a35cc1f4f3c87919c",
+    "dryRun": true,
+    "pageLimit": 2000
+   },
+   "checks": [
+    {
+     "path": "credits.35.orderNumber",
+     "equals": "00395661"
+    },
+    {
+     "path": "credits.35.amount",
+     "equals": -436559
+    },
+    {
+     "path": "credits.33.amount",
+     "equals": -26882
+    }
+   ]
+  },
+  {
+   "name": "NA sample - a deal that CLOSED in May is credited in July, because ship date is the trigger",
+   "payload": {
+    "periodId": "e_6aa2b98a35cc1f4f3c87919c",
+    "dryRun": true,
+    "pageLimit": 2000
+   },
+   "checks": [
+    {
+     "path": "credits.0.orderNumber",
+     "equals": "00377914"
+    },
+    {
+     "path": "credits.0.amount",
+     "equals": 477284
+    },
+    {
+     "path": "credits.2.orderNumber",
+     "equals": "00384850"
     }
    ]
   }
