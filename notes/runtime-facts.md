@@ -1604,3 +1604,41 @@ one field, saw `{}`, tried a second write path, saw `{}` again, and generalised 
 "storage drops arrays". Two paths, one field — and the field was the variable that
 mattered. Varying the input while holding the suspect fixed proves nothing about the
 suspect.
+
+## A Groovy node has TWO parameter lists, and only one of them binds (ICM, 2026-09-10)
+
+A script node stores its parameters in two places that look interchangeable and are
+not:
+
+- `inputs.parameters` — the map of `name -> {{ expression }}`. **This is what binds
+  variables into the script.**
+- `inputs.input` — a JSON schema of properties. **This is what the BUILDER renders the
+  "Parameters" form from.** It binds nothing.
+
+They drift the moment a node is cloned, because cloning copies both and rewriting the
+code updates neither. `ICM | Get Plan` was cloned from `ICM | List Credit Rules`, so
+every Groovy node in it declared `search, name, ruleType, limit, offset` in
+`inputs.input` while binding only `planId`. Opening the node in the builder shows five
+empty input boxes that no code reads and no caller fills. A sweep found the same
+residue in 12 of 19 workflows.
+
+Proof the schema is cosmetic, both directions:
+
+- `n_Shape` binds `titleRows`, `posRows`, `ruleRows` — **none of them declared in
+  `inputs.input`** — and the suite asserts the resolved names those variables produce.
+  So a parameter binds without being declared.
+- `search` is declared on the same workflow's `n_Norm`, is referenced by no line of
+  code, and is passed by no caller. So a declaration binds nothing.
+
+This is the mirror image of "rewriting a node's code is not rewriting its contract".
+That fact was about `parameters` lagging the code and silently dropping a real binding.
+This one is about `input` lagging the code and silently inventing a fake one. The first
+breaks the workflow; the second only misleads the person reading it — but it misleads
+them convincingly, because the builder presents the ghost fields exactly as it presents
+real ones.
+
+Unverified hazard worth avoiding: it is not known what the builder writes back if
+somebody types into one of those ghost boxes and presses Save, or whether a
+builder-side save reconciles `parameters` against `input` and drops bindings the schema
+does not mention. A script-side edit never touches `input`, so the residue is stable
+until a human opens the node. Prefer deleting the ghost properties over leaving them.
