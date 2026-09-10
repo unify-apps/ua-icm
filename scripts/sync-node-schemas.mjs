@@ -3,6 +3,12 @@
 //
 //   node scripts/sync-node-schemas.mjs <workflowId> --payload '<json>'   show the diff
 //   node scripts/sync-node-schemas.mjs <workflowId> --payload '<json>' --apply
+//   node scripts/sync-node-schemas.mjs <workflowId> --types-only [--apply]
+//
+// --types-only needs NO run and NO payload. It only retypes a bound array parameter
+// from `array` to ["string","array"], which is what makes the builder show its mapping
+// instead of an empty MappedArrayField. Because it never executes the draft, it is the
+// only mode safe to point at a callable that WRITES.
 //
 // A Groovy node carries two parameter lists that look interchangeable and are not:
 //
@@ -56,10 +62,15 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const args = process.argv.slice(2);
 const workflowId = args[0];
 const apply = args.includes("--apply");
+const typesOnly = args.includes("--types-only");
 const pi = args.indexOf("--payload");
-if (!workflowId || pi === -1) die("usage: sync-node-schemas.mjs <workflowId> --payload '<json>' [--apply]");
+if (!workflowId || (pi === -1 && !typesOnly)) {
+  die("usage: sync-node-schemas.mjs <workflowId> (--payload '<json>' | --types-only) [--apply]");
+}
 let payload;
-try { payload = JSON.parse(args[pi + 1]); } catch { die("--payload must be valid JSON"); }
+if (!typesOnly) {
+  try { payload = JSON.parse(args[pi + 1]); } catch { die("--payload must be valid JSON"); }
+}
 
 // ---------------------------------------------------------------------------
 // Type inference from an observed value
@@ -67,15 +78,33 @@ try { payload = JSON.parse(args[pi + 1]); } catch { die("--payload must be valid
 
 // An absent value gets NO type rather than a guessed one. An empty schema accepts
 // anything, which is honest; "string" would be a claim the run did not support.
-function jtype(v) {
+//
+// `binds` says whether this type describes a PARAMETER (something a {{ }} expression is
+// mapped into) or a returned field. It only changes anything for arrays - see below.
+function jtype(v, binds = false) {
   if (v === null || v === undefined) return {};
   if (Array.isArray(v)) {
     const el = v.find((x) => x !== null && x !== undefined);
     const t = typeof el;
-    if (t === "string") return { type: "array", items: { type: "string" } };
-    if (t === "number") return { type: "array", items: { type: Number.isInteger(el) ? "integer" : "number" } };
-    if (t === "boolean") return { type: "array", items: { type: "boolean" } };
-    return { type: "array", items: { type: "object", properties: {} } };
+    const items =
+      t === "string" ? { type: "string" }
+      : t === "number" ? { type: Number.isInteger(el) ? "integer" : "number" }
+      : t === "boolean" ? { type: "boolean" }
+      : { type: "object", properties: {} };
+    // A bare `{{ node.outputs.objects }}` is NOT a valid value for a `type: "array"`
+    // parameter. That declaration renders as MappedArrayField - a "<Title> List Source"
+    // plus "Items" pair whose only accepted values are a literal array or a
+    // {source, items, "ua:type":"mappedArray"} envelope - so a whole-value template
+    // matches neither, the widget draws itself empty, and a mapping that works
+    // perfectly at runtime looks unset.
+    //
+    // ["string", "array"] is the platform's own idiom for binding a whole list (see
+    // the `listSource` parameter on utility_by_unifyapps_filter_list). The field picker
+    // reads type[0], so it renders a plain expression input that shows the mapping, and
+    // the input validator accepts a bare pill as soon as "string" is among the accepted
+    // types. The BINDING is untouched - this is the declaration catching up to the
+    // value, not the value being changed to suit the form.
+    return binds ? { type: ["string", "array"], items } : { type: "array", items };
   }
   switch (typeof v) {
     case "boolean": return { type: "boolean" };
@@ -98,6 +127,46 @@ const schema = (entries) => ({
 
 const getPath = (obj, p) => p.split(".").reduce((o, k) => (o == null ? o : o[k]), obj);
 
+// Delegated to ua-write rather than posting here: that script fills in the edge
+// metadata the builder canvas needs (without it every node past a branch stops
+// rendering) and enforces the production-write opt-in. One writer, one set of
+// safeguards.
+//
+// Then READ IT BACK. A parameter went missing across one of these writes once, and
+// nothing noticed until a later run reported a node that had quietly stopped being
+// reported at all. Asserting the bindings survived is cheap; discovering it from a
+// broken automation is not.
+function writeDraft(definition, note) {
+  const bindingsBefore = Object.fromEntries(
+    definition.nodes.filter((n) => n.inputs?.parameters).map((n) => [n.id, Object.keys(n.inputs.parameters).sort().join(",")]),
+  );
+  const out = path.join(ROOT, `.tmp-schema-sync-${workflowId}.json`);
+  fs.writeFileSync(out, JSON.stringify(definition, null, 1));
+  const { status } = spawnSync(
+    process.execPath,
+    [path.join(ROOT, "scripts", "ua-write.mjs"), "update", workflowId, out],
+    { stdio: "inherit" },
+  );
+  fs.unlinkSync(out);
+  if (status !== 0) die("ua-write refused the update - the draft is unchanged");
+
+  return api(`/api/workflow-definition/${workflowId}`).then((after) => {
+    const lost = [];
+    for (const n of after.nodes ?? []) {
+      const want = bindingsBefore[n.id];
+      if (want === undefined) continue;
+      const got = Object.keys(n.inputs?.parameters ?? {}).sort().join(",");
+      if (got !== want) lost.push(`   ${n.id}: sent [${want}] but the draft now holds [${got || "nothing"}]`);
+    }
+    if (lost.length) {
+      console.error("\nWRITE LANDED BUT BINDINGS DID NOT SURVIVE:");
+      for (const l of lost) console.error(l);
+      die("restore these before running the automation");
+    }
+    console.log(`\n${note}; bindings read back intact.`);
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Run the draft and collect every node's observed output
 // ---------------------------------------------------------------------------
@@ -114,6 +183,33 @@ async function readNode(runId, nodeId) {
 const wf = await api(`/api/workflow-definition/${workflowId}`);
 if (!wf.nodes) die(`no draft nodes for workflow ${workflowId}`);
 console.log(`${wf.name} (${workflowId}, draft v${wf.version})\n`);
+
+if (typesOnly) {
+  let retyped = 0;
+  const unboundT = [];
+  for (const n of wf.nodes) {
+    if (n.inputs?.code === undefined) continue;
+    const params = n.inputs.parameters;
+    if (!params || Object.keys(params).length === 0) { unboundT.push(`${n.id} (${n.subTitle})`); continue; }
+    for (const [k, sch] of Object.entries(n.inputs.input?.properties ?? {})) {
+      if (sch.type === "array" && k in params) {
+        sch.type = ["string", "array"];
+        console.log(`${n.id}  ${k}: "array" -> ["string","array"]  (mapping was hidden)`);
+        retyped++;
+      }
+    }
+  }
+  if (unboundT.length) {
+    console.error("\nREFUSING TO WRITE - script node(s) with code but no bound parameters:");
+    for (const u of unboundT) console.error("   " + u);
+    process.exit(1);
+  }
+  if (retyped === 0) { console.log("no bound array parameter is hiding its mapping"); process.exit(0); }
+  if (!apply) { console.log(`\n${retyped} parameter(s) would change. Re-run with --apply.`); process.exit(0); }
+  // awaited, not fired and forgotten - the read-back assertion is the point
+  await writeDraft(wf, `retyped ${retyped} parameter(s)`);
+  process.exit(0);
+}
 
 const init = await api(`/api/test-workflow/initiate-test/${workflowId}`, {
   type: "MOCK", workflowDefinition: wf, payload,
@@ -141,10 +237,20 @@ if (Object.keys(observed).length === 0) die(`run ${runId} produced no node outpu
 
 let changed = 0;
 const skipped = [];
+const unbound = [];
 
 for (const n of wf.nodes) {
-  const params = n.inputs?.parameters;
-  if (!params || n.inputs?.code === undefined) continue;
+  if (n.inputs?.code === undefined) continue;
+  const params = n.inputs.parameters;
+
+  // A script node with code but NO parameters is broken, not merely undeclared: the
+  // code reads variables nothing binds, so it throws on the first line that touches
+  // one. Skipping it quietly is how it stays broken - this ran once and the only
+  // symptom was a node absent from the report.
+  if (!params || Object.keys(params).length === 0) {
+    unbound.push(`${n.id} (${n.subTitle})`);
+    continue;
+  }
 
   if (!observed[n.id]) { skipped.push(`${n.id} (${n.subTitle}) - the run never reached it`); continue; }
 
@@ -156,7 +262,7 @@ for (const n of wf.nodes) {
     let value;
     const m = /^\s*\{\{\s*([A-Za-z0-9_]+)\.outputs\.(.+?)\s*\}\}\s*$/.exec(String(expr));
     if (m && observed[m[1]]) value = getPath(observed[m[1]], m[2]);
-    inputEntries.push([key, { ...jtype(value), title: humanize(key) }]);
+    inputEntries.push([key, { ...jtype(value, true), title: humanize(key) }]);
   }
 
   // OUTPUT: the keys the script actually returned. A Groovy node's return map lands
@@ -193,6 +299,14 @@ for (const n of wf.nodes) {
   console.log();
 }
 
+if (unbound.length) {
+  console.error("REFUSING TO WRITE - these script nodes have code but no bound parameters:");
+  for (const u of unbound) console.error("   " + u);
+  console.error("\nTheir code reads variables nothing supplies, so they throw at runtime.");
+  console.error("Restore the bindings first; this script only fixes DECLARATIONS.");
+  process.exit(1);
+}
+
 if (skipped.length) {
   console.log("SKIPPED - no observed run data, schema left alone rather than guessed:");
   for (const s of skipped) console.log("   " + s);
@@ -206,17 +320,4 @@ if (!apply) {
   process.exit(0);
 }
 
-// Delegated to ua-write rather than posting here: that script fills in the edge
-// metadata the builder canvas needs (without it every node past a branch stops
-// rendering) and enforces the production-write opt-in. One writer, one set of
-// safeguards.
-const out = path.join(ROOT, `.tmp-schema-sync-${workflowId}.json`);
-fs.writeFileSync(out, JSON.stringify(wf, null, 1));
-const { status } = spawnSync(
-  process.execPath,
-  [path.join(ROOT, "scripts", "ua-write.mjs"), "update", workflowId, out],
-  { stdio: "inherit" },
-);
-fs.unlinkSync(out);
-if (status !== 0) die("ua-write refused the update - the draft is unchanged");
-console.log(`\napplied to ${changed} node(s). Re-fetch and diff before trusting it.`);
+await writeDraft(wf, `applied to ${changed} node(s)`);

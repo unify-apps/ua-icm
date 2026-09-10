@@ -1719,3 +1719,78 @@ index (`properties.ruleId`, `properties.planId`) draw no warning.
 
 Do not treat this as a reason to keep filters as template strings. Losing the warning
 is not the same as fixing it.
+
+## An ARRAY parameter cannot hold a bare `{{ }}` pill (ICM, 2026-09-10)
+
+A script node parameter bound to a whole list — `rows: "{{ n_Ft.outputs.objects }}"` —
+**works at runtime and renders as unset**. It is the same class of problem as the
+hidden filter, and it has a documented contract behind it.
+
+Declaring the property `{"type":"array","items":{...}}` makes the builder render
+`MappedArrayField` (`www/packages/form/src/fields/MappedArrayField/MappedArrayField.tsx`),
+which rewrites the schema into `{source, items}` and derives the labels — hence the
+`"<Title> List Source"` and `"Items"` pair. That widget accepts exactly two persisted
+shapes:
+
+```json
+["literal", "array"]
+{"ua:type": "mappedArray", "source": "{{ n_Ft.outputs.objects }}",
+                           "items":  "{{ n_Ft.outputs.objects[0] }}"}
+```
+
+A bare template string is neither, so `shouldShowMappedField` matches nothing and the
+widget draws itself empty. The platform's own validator calls this out by name
+(`packages/llm-tools/.../dynamicSchemaInputTypeValidationRule.ts`): *"expected either an
+array whose elements match the item schema, or a mapped-array object containing
+`ua:type: mappedArray`, `source`, and `items`"*.
+
+**The fix is the DECLARATION, not the binding.** Declare a bound list as
+`{"type":["string","array"], "items":{...}}`:
+
+- the field picker reads `type[0]` (`packages/form/src/fields/SchemaField/RJSFSchemaField.tsx`),
+  so `"string"` first renders a plain expression input that shows the mapping;
+- the input validator only rejects a bare pill when `array` is accepted and `string` is
+  not, so naming both accepts it;
+- the binding is untouched, which matters because the bare form is what actually runs.
+
+This is the platform's established idiom, not a workaround — `listSource` on
+`utility_by_unifyapps_filter_list`, `loop_for_each` and `sort_list` are all declared
+`type: "string"` while carrying a whole-list pill.
+
+Objects do NOT have this problem: `MappedObjectField` has an empty-`properties` early
+return that renders a single pill, so `{"type":"object","properties":{}}` accepts a bare
+template. Only arrays need the two-type declaration.
+
+There is **no** `x-`, `format`, `widget`, `allowExpression` or `templatable` keyword that
+turns an array property into an expression input in this form. Naming both types is the
+mechanism.
+
+## A parameter can vanish across a definition write, silently (ICM, 2026-09-10)
+
+While syncing Get Plan's declared schemas, `n_AsgFil` lost `parameters.rows` — the only
+binding it had. Its code reads `rows` on its first working line, so the draft was
+broken. Nothing reported it:
+
+- the write answered HTTP 200;
+- `/api/workflow-definition/validate` answered `[]`, strict or not;
+- `sync-node-schemas` skipped the node on the next run, because its guard was
+  `if (!params || code === undefined) continue` — the very condition that means BROKEN
+  was treated as "nothing to do", so the node just stopped appearing in the report;
+- the only visible trace was a node absent from a list of four.
+
+I could not establish what dropped it. It was one node out of ten written across
+eleven workflows, and the nodes either side kept array bindings of the same shape, so
+neither "the server rejects a bare pill on an array-typed property" nor any pattern in
+my own edits explains it. **Recorded as unexplained rather than diagnosed.**
+
+What the kit does about it now, since cause unknown is not the same as risk unmanaged:
+
+- `sync-node-schemas` REFUSES to write when any node has code but no bound parameters,
+  and names them, instead of quietly skipping;
+- every write reads the definition back and asserts each node still holds the parameter
+  names that were sent, failing loudly when it does not.
+
+The general lesson is the one this file keeps relearning: **assert the READ, never the
+write's status code.** This is its sharpest form so far, because the thing lost was not
+the thing being written. A definition write is not a patch of the fields you touched —
+verify the whole node came back, not just your edit.
