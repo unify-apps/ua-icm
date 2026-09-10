@@ -1,0 +1,209 @@
+{
+  "name": "ICM | Update Plan",
+  "note": "Editing REPLACES the assignment rows rather than diffing them. The case that matters is therefore the second edit: going from two targets to one must leave exactly one row, not three. Seeded through the create callable so the rows start in the shape the app actually writes.",
+  "cases": [
+    {
+      "name": "pre-clean",
+      "entityDelete": {
+        "entityType": "Plan",
+        "filters": {
+          "name": "KITFIX-Edit me"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "NOT_FOUND - editing a plan that does not exist is not a silent no-op",
+      "payload": {
+        "planId": "KITFIX-NO-SUCH-PLAN",
+        "name": "x",
+        "periodId": "YEAR-2026",
+        "description": "",
+        "status": "",
+        "creditRuleIds": [],
+        "payoutRuleIds": [],
+        "assignments": {}
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "NOT_FOUND"
+        }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - no planId",
+      "payload": {
+        "planId": "",
+        "name": "x",
+        "periodId": "YEAR-2026",
+        "description": "",
+        "status": "",
+        "creditRuleIds": [],
+        "payoutRuleIds": [],
+        "assignments": {}
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - a status outside the object's own enum",
+      "payload": {
+        "planId": "KITFIX-ANY",
+        "name": "x",
+        "periodId": "YEAR-2026",
+        "description": "",
+        "status": "LIVE",
+        "creditRuleIds": [],
+        "payoutRuleIds": [],
+        "assignments": {}
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        }
+      ]
+    },
+    {
+      "name": "seed a plan with TWO targets, through the create callable",
+      "payload": {
+        "name": "KITFIX-Edit me",
+        "description": "before",
+        "periodId": "YEAR-2026",
+        "status": "Draft",
+        "creditRuleIds": [
+          "r1"
+        ],
+        "payoutRuleIds": [],
+        "assignments": {
+          "titles": [
+            {
+              "titleId": "t_one",
+              "effectiveStart": "2026-01-01",
+              "effectiveEnd": null
+            }
+          ],
+          "positions": [
+            {
+              "positionId": "p_one",
+              "effectiveStart": "2026-01-01",
+              "effectiveEnd": null
+            }
+          ]
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "titleCount",
+          "equals": 1
+        },
+        {
+          "path": "positionCount",
+          "equals": 1
+        }
+      ],
+      "workflowId": "6aa18daacab06d30bad86124"
+    },
+    {
+      "name": "let the index catch up with the seed",
+      "sleepMs": 15000
+    },
+    {
+      "name": "OK - edit down to ONE target; the replaced set must be 1, not 3",
+      "payload": {
+        "planId": "{{case:seed a plan with TWO targets, through the create callable:planId}}",
+        "name": "KITFIX-Edit me",
+        "description": "after",
+        "periodId": "YEAR-2026",
+        "status": "Active",
+        "creditRuleIds": [
+          "r1",
+          "r2"
+        ],
+        "payoutRuleIds": [
+          "p9"
+        ],
+        "assignments": {
+          "titles": [
+            {
+              "titleId": "t_two",
+              "effectiveStart": "2026-03-01",
+              "effectiveEnd": "2026-12-31"
+            }
+          ]
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "titleCount",
+          "equals": 1
+        },
+        {
+          "path": "positionCount",
+          "equals": 0
+        }
+      ]
+    },
+    {
+      "name": "let the index catch up with the edit",
+      "sleepMs": 15000
+    },
+    {
+      "name": "OK - reading it back shows the edit, and exactly one assignment",
+      "payload": {
+        "planId": "{{case:seed a plan with TWO targets, through the create callable:planId}}"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "plan.description",
+          "equals": "after"
+        },
+        {
+          "path": "plan.status",
+          "equals": "Active"
+        },
+        {
+          "path": "plan.assignments.titles.0.targetId",
+          "equals": "t_two"
+        }
+      ],
+      "workflowId": "6aa18daaff41994689752982"
+    },
+    {
+      "name": "clean up",
+      "entityDelete": {
+        "entityType": "Plan",
+        "filters": {
+          "name": "KITFIX-Edit me"
+        }
+      }
+    },
+    {
+      "name": "clean up rows",
+      "entityDelete": {
+        "entityType": "PlanAssignment",
+        "filters": {
+          "targetId": "t_two"
+        },
+        "allowZero": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "name": "ICM | List Plans",
+  "note": "Seeds three plans that differ in status and period so each filter has something to EXCLUDE, not merely something to match. Filter cases pin themselves to the seeds with an ICONTAINS 'KITFIX-' leaf and assert COMPLEMENTS: asserting against an assumed table size is what once made every negative operator look broken.",
+  "cases": [
+    { "name": "pre-clean A", "entityDelete": { "entityType": "Plan", "filters": { "planId": "KITFIX-PL-1" }, "allowZero": true } },
+    { "name": "pre-clean B", "entityDelete": { "entityType": "Plan", "filters": { "planId": "KITFIX-PL-2" }, "allowZero": true } },
+    { "name": "pre-clean C", "entityDelete": { "entityType": "Plan", "filters": { "planId": "KITFIX-PL-3" }, "allowZero": true } },
+    { "name": "seed A", "entityCreate": { "entityType": "Plan", "properties": { "planId": "KITFIX-PL-1", "name": "KITFIX-Alpha plan", "description": "first", "periodId": "YEAR-2026", "status": "Active", "creditRuleIds": { "items": ["r1", "r2"] }, "payoutRuleIds": { "items": ["p1"] } } } },
+    { "name": "seed B", "entityCreate": { "entityType": "Plan", "properties": { "planId": "KITFIX-PL-2", "name": "KITFIX-Beta plan", "description": "second", "periodId": "YEAR-2026", "status": "Draft", "creditRuleIds": { "items": [] }, "payoutRuleIds": { "items": [] } } } },
+    { "name": "seed C", "entityCreate": { "entityType": "Plan", "properties": { "planId": "KITFIX-PL-3", "name": "KITFIX-Gamma plan", "description": "third", "periodId": "Q1-2026", "status": "Draft", "creditRuleIds": { "items": ["r9"] }, "payoutRuleIds": { "items": [] } } } },
+    { "name": "let the search index catch up with the seeds", "sleepMs": 15000 },
+    {
+      "name": "OK - search finds the seeded plans and counts the rule lists through .items",
+      "payload": { "search": "KITFIX-", "status": "", "periodId": "", "limit": "50", "offset": "" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "total", "equals": 3 },
+        { "path": "limit", "equals": 50 }
+      ]
+    },
+    {
+      "name": "OK - status narrows server-side",
+      "payload": { "search": "KITFIX-", "status": "Draft", "periodId": "", "limit": "50", "offset": "" },
+      "checks": [{ "path": "status", "equals": "OK" }, { "path": "total", "equals": 2 }]
+    },
+    {
+      "name": "OK - periodId narrows to one period",
+      "payload": { "search": "KITFIX-", "status": "", "periodId": "Q1-2026", "limit": "50", "offset": "" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "total", "equals": 1 },
+        { "path": "plans.0.planId", "equals": "KITFIX-PL-3" },
+        { "path": "plans.0.creditRuleCount", "equals": 1 },
+        { "path": "plans.0.payoutRuleCount", "equals": 0 }
+      ]
+    },
+    {
+      "name": "FILTER EQUAL - a caller-built filter on name",
+      "payload": { "search": "", "status": "", "periodId": "", "limit": "50", "offset": "",
+        "filter": { "op": "AND", "values": [ { "field": "name", "op": "ICONTAINS", "values": ["KITFIX-"] }, { "field": "name", "op": "EQUAL", "values": ["KITFIX-Alpha plan"] } ] } },
+      "checks": [{ "path": "status", "equals": "OK" }, { "path": "total", "equals": 1 }]
+    },
+    {
+      "name": "FILTER NOT_EQUAL - the complement, within the same seeded set",
+      "payload": { "search": "", "status": "", "periodId": "", "limit": "50", "offset": "",
+        "filter": { "op": "AND", "values": [ { "field": "name", "op": "ICONTAINS", "values": ["KITFIX-"] }, { "field": "name", "op": "NOT_EQUAL", "values": ["KITFIX-Alpha plan"] } ] } },
+      "checks": [{ "path": "status", "equals": "OK" }, { "path": "total", "equals": 2 }]
+    },
+    {
+      "name": "FILTER status - a closed field filtered as a leaf",
+      "payload": { "search": "", "status": "", "periodId": "", "limit": "50", "offset": "",
+        "filter": { "op": "AND", "values": [ { "field": "name", "op": "ICONTAINS", "values": ["KITFIX-"] }, { "field": "status", "op": "EQUAL", "values": ["Active"] } ] } },
+      "checks": [{ "path": "status", "equals": "OK" }, { "path": "total", "equals": 1 }]
+    },
+    {
+      "name": "INVALID_INPUT - a field this list cannot filter by",
+      "payload": { "search": "", "status": "", "periodId": "", "limit": "50", "offset": "",
+        "filter": { "op": "AND", "values": [ { "field": "secretBudget", "op": "EQUAL", "values": ["1"] } ] } },
+      "checks": [{ "path": "status", "equals": "INVALID_INPUT" }]
+    },
+    {
+      "name": "INVALID_INPUT - limit is not a number",
+      "payload": { "search": "", "status": "", "periodId": "", "limit": "lots", "offset": "" },
+      "checks": [{ "path": "status", "equals": "INVALID_INPUT" }]
+    },
+    { "name": "clean up A", "entityDelete": { "entityType": "Plan", "filters": { "planId": "KITFIX-PL-1" } } },
+    { "name": "clean up B", "entityDelete": { "entityType": "Plan", "filters": { "planId": "KITFIX-PL-2" } } },
+    { "name": "clean up C", "entityDelete": { "entityType": "Plan", "filters": { "planId": "KITFIX-PL-3" } } }
+  ]
+}

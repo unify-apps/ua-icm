@@ -1,0 +1,38 @@
+{
+  "name": "ICM | List Periods",
+  "note": "Period.name is the object's unique key and what a plan stores, so the row leads with it. Periods are real reference data on tool - the suite filters by a KITFIX- prefix and never asserts on the real ones.",
+  "cases": [
+    { "name": "pre-clean", "entityDelete": { "entityType": "Period", "filters": { "name": "KITFIX-PER-Q1" }, "allowZero": true } },
+    { "name": "pre-clean 2", "entityDelete": { "entityType": "Period", "filters": { "name": "KITFIX-PER-Y1" }, "allowZero": true } },
+    { "name": "seed a quarter", "entityCreate": { "entityType": "Period", "properties": { "name": "KITFIX-PER-Q1", "periodType": "QUARTER", "status": "OPEN", "startDate": 1767225600000, "endDate": 1774915200000 } } },
+    { "name": "seed a year", "entityCreate": { "entityType": "Period", "properties": { "name": "KITFIX-PER-Y1", "periodType": "YEAR", "status": "OPEN", "startDate": 1767225600000, "endDate": 1798675200000 } } },
+    { "name": "let the search index catch up", "sleepMs": 15000 },
+    {
+      "name": "OK - both seeds, name leading",
+      "payload": { "search": "KITFIX-PER", "periodType": "", "limit": "", "offset": "" },
+      "checks": [{ "path": "status", "equals": "OK" }, { "path": "total", "equals": 2 }]
+    },
+    {
+      "name": "OK - periodType narrows, and the row carries what a plan stores",
+      "payload": { "search": "KITFIX-PER", "periodType": "YEAR", "limit": "", "offset": "" },
+      "checks": [
+        { "path": "status", "equals": "OK" },
+        { "path": "total", "equals": 1 },
+        { "path": "periods.0.name", "equals": "KITFIX-PER-Y1" },
+        { "path": "periods.0.periodType", "equals": "YEAR" }
+      ]
+    },
+    {
+      "name": "OK - a periodType matching nothing is a result, not an error",
+      "payload": { "search": "KITFIX-PER", "periodType": "MONTH", "limit": "", "offset": "" },
+      "checks": [{ "path": "status", "equals": "OK" }, { "path": "total", "equals": 0 }]
+    },
+    {
+      "name": "INVALID_INPUT - limit is not a number",
+      "payload": { "search": "", "periodType": "", "limit": "ten", "offset": "" },
+      "checks": [{ "path": "status", "equals": "INVALID_INPUT" }]
+    },
+    { "name": "clean up quarter", "entityDelete": { "entityType": "Period", "filters": { "name": "KITFIX-PER-Q1" } } },
+    { "name": "clean up year", "entityDelete": { "entityType": "Period", "filters": { "name": "KITFIX-PER-Y1" } } }
+  ]
+}

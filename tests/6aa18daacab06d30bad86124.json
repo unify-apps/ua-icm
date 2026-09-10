@@ -1,6 +1,6 @@
 {
   "name": "ICM | Create Plan",
-  "note": "A plan and its assignment rows are written in one run, so the cases that matter are the ones where the two could disagree: a plan with no assignments at all (does a bulk create of an empty list succeed?), and a refusal that must leave NOTHING behind rather than a plan with no rows. Every check runs before the first write for exactly that reason.",
+  "note": "A plan and its assignment rows are written in one run, so the cases that matter are the ones where the two could disagree: a plan with no assignments at all (does a bulk create of an empty list succeed?), and a refusal that must leave NOTHING behind rather than a plan with no rows. Every check runs before the first write for exactly that reason. The read-back case exists because the returned titleCount/positionCount are parsed from the INPUT: they reported 1 and 1 while every row was being refused for a targetType the object does not allow. A count computed from what you sent is not evidence of what was written.",
   "cases": [
     {
       "name": "pre-clean plans",
@@ -200,6 +200,35 @@
       ]
     },
     {
+      "name": "let the index catch up with the created plan",
+      "sleepMs": 15000
+    },
+    {
+      "name": "OK - the assignment rows actually LANDED, read back through Get Plan",
+      "workflowId": "6aa18daaff41994689752982",
+      "payload": {
+        "planId": "{{case:OK - the payload from the spec, titles and positions together:planId}}"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "plan.assignments.titles.0.targetId",
+          "equals": "title_ae_eu"
+        },
+        {
+          "path": "plan.assignments.positions.0.targetId",
+          "equals": "pos_10482"
+        },
+        {
+          "path": "plan.creditRuleIds.0",
+          "equals": "rule_dc_booked"
+        }
+      ]
+    },
+    {
       "name": "clean up plan A",
       "entityDelete": {
         "entityType": "Plan",
@@ -215,6 +244,26 @@
         "filters": {
           "name": "KITFIX-Plan B"
         }
+      }
+    },
+    {
+      "name": "clean up assignment rows",
+      "entityDelete": {
+        "entityType": "PlanAssignment",
+        "filters": {
+          "targetId": "title_ae_eu"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "clean up position rows",
+      "entityDelete": {
+        "entityType": "PlanAssignment",
+        "filters": {
+          "targetId": "pos_10482"
+        },
+        "allowZero": true
       }
     }
   ]

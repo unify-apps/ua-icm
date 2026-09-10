@@ -1523,3 +1523,47 @@ probe through a data source cannot see a draft-only change and reports every
 operator as ignored. Print `status` alongside `total` so a refusal cannot pass for a
 result.
 
+
+## `useRawPayload` REPLACES a record's properties; it does not merge (ICM, 2026-09-10)
+
+`storage_by_unifyapps_update_record_by_id` with `useRawPayload: true` writes the
+payload as the record's WHOLE property set. Sending only the fields you changed
+deletes every field you did not — including the object's own unique key.
+
+Measured: a Plan updated with `{name, description, periodId, status, creditRuleIds,
+payoutRuleIds}` came back missing `planId`, and the plan could no longer be found by
+the key every reader looks it up by. The node reported success.
+
+**This is the same shape as the entity API's `requestType: "UPDATED"`**, which also
+replaces rather than merges and which destroyed a live record earlier. Two different
+doors into one behaviour: on this platform, a write that takes a payload of
+properties REPLACES them unless something explicitly says otherwise.
+
+So read the record first and lay the changes over it:
+
+```groovy
+def cur = (rows == null || rows.isEmpty()) ? [:] : (rows[0].properties ?: [:])
+def out = [:]; cur.each { k, v -> out[k] = v }
+out['name'] = nm   // only then the changes
+```
+
+## `update_records` can match zero rows on a filter that a fetch resolves fine (ICM, 2026-09-10)
+
+Same object, same storage-dialect filter, one node apart: `fetch_records` returned
+`total: 1`, and `update_records` answered `{count: 0, failedCount: 0}`. With
+`numberOfRecordsToUpdate: SINGLE` it answered `result: false` instead. Neither is an
+error, and `failedCount: 0` reads like success.
+
+Update BY ID where you can — an existence check has usually fetched the row already,
+so the id costs nothing extra and removes a second search from the middle of a write.
+
+## A bulk create can insert NOTHING and still leave the node `ok` (ICM, 2026-09-10)
+
+`bulk_create_records` answers `{insertedIds: [], inserted: 0, errors: {...}}` when the
+entity validator refuses every row — and the node's own status stays `ok`, so the flow
+runs on and responds success.
+
+`inserted` is the only signal. Compare it against the number you meant to write and
+branch on the difference; a count parsed from the INPUT proves nothing about the
+output. The Create Plan suite asserted `titleCount: 1` and passed while every row was
+being rejected, because that count came from parsing the request.

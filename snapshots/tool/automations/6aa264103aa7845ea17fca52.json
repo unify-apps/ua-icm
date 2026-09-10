@@ -1,18 +1,18 @@
 {
   "appsUsed": [],
-  "createdTime": 1788972458687,
+  "createdTime": 1789027344868,
   "deleted": false,
   "deployedVersion": 1,
   "deploymentState": {
-    "deployedAt": 1789028652649,
+    "deployedAt": 1789028717387,
     "deployedBy": 435691,
-    "deployedDefinitionId": "6aa2692c8f78990409edbc01",
+    "deployedDefinitionId": "6aa2696db614217b0d8fa307",
     "deploymentNotes": "Plans: list, get, create, update",
     "status": "DEPLOYED",
     "version": 1,
-    "workflowVersion": 4
+    "workflowVersion": 6
   },
-  "description": "Creates a plan and, in the same run, the PlanAssignment row for every title and position it is attached to. Every check runs before the first write, so a refusal never leaves a half-made plan.",
+  "description": "Edits a plan and REPLACES its assignment rows. A plan has a handful of targets, and a diff that gets it wrong leaves a seat attached to a plan nobody can see - delete-then-write cannot half-apply.",
   "edges": [
     {
       "fromNodeId": "n_sTaRt",
@@ -66,17 +66,24 @@
       "type": "if"
     },
     {
-      "fromNodeId": "n_IfDup",
-      "id": "next@n_IfDup@n_Cr",
-      "name": "no",
+      "fromNodeId": "n_CrAsg",
+      "id": "next@n_CrAsg@n_StOk",
       "priority": 0,
       "skip": false,
-      "toNodeId": "n_Cr",
+      "toNodeId": "n_StOk",
       "type": "next"
     },
     {
       "fromNodeId": "n_Cr",
-      "id": "next@n_Cr@n_AsgPay",
+      "id": "next@n_Cr@n_DelAsg",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_DelAsg",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_DelAsg",
+      "id": "next@n_DelAsg@n_AsgPay",
       "priority": 0,
       "skip": false,
       "toNodeId": "n_AsgPay",
@@ -91,39 +98,30 @@
       "type": "next"
     },
     {
-      "fromNodeId": "n_CrAsg",
-      "id": "next@n_CrAsg@n_IfAsg",
-      "priority": 0,
-      "skip": false,
-      "toNodeId": "n_IfAsg",
-      "type": "next"
-    },
-    {
-      "fromNodeId": "n_IfAsg",
-      "id": "if@n_IfAsg@n_StPartial",
-      "name": "yes",
-      "priority": 0,
-      "skip": false,
-      "toNodeId": "n_StPartial",
-      "type": "if"
-    },
-    {
-      "fromNodeId": "n_IfAsg",
-      "id": "next@n_IfAsg@n_StOk",
+      "fromNodeId": "n_IfDup",
+      "id": "next@n_IfDup@n_Merge",
       "name": "no",
       "priority": 0,
       "skip": false,
-      "toNodeId": "n_StOk",
+      "toNodeId": "n_Merge",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Merge",
+      "id": "next@n_Merge@n_Cr",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Cr",
       "type": "next"
     }
   ],
-  "id": "6aa18daacab06d30bad86124",
+  "id": "6aa264103aa7845ea17fca52",
   "lastModifiedBy": 435691,
   "lastPlatformUpdateBy": 435691,
-  "lastPlatformUpdateOn": 1789028652650,
-  "lcName": "icm | create plan",
-  "modifiedTime": 1789028652650,
-  "name": "ICM | Create Plan",
+  "lastPlatformUpdateOn": 1789028717388,
+  "lcName": "icm | update plan",
+  "modifiedTime": 1789028717388,
+  "name": "ICM | Update Plan",
   "nodes": [
     {
       "context": {
@@ -173,6 +171,7 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
+            "planId",
             "name"
           ],
           "properties": {
@@ -211,6 +210,10 @@
               "additionalProperties": true,
               "properties": {},
               "title": "Assignments"
+            },
+            "planId": {
+              "type": "string",
+              "title": "Plan Id"
             }
           }
         }
@@ -335,7 +338,7 @@
           }
         },
         "compile_static": false,
-        "code": "\ndef opt = { String k -> if (!binding.hasVariable(k)) return ''\n                        def v = binding.getVariable(k); return (v == null) ? '' : v.toString().trim() }\ndef raw = { String k -> binding.hasVariable(k) ? binding.getVariable(k) : null }\ndef nm = opt('name'); def desc = opt('description')\ndef per = opt('periodId'); def stat = opt('status')\ndef cr = raw('creditRuleIds'); def pr = raw('payoutRuleIds'); def asg = raw('assignments')\n\nboolean valid = true; String reason = ''\n// Plan.status is a single-select of exactly these three, title-cased. Passing a\n// caller's string straight through fails the entity validator at WRITE time with\n// \"oneOf fail\", which is a late and unhelpful place to learn it.\ndef STATUSES = ['Draft','Active','Retired']\nString statSel = 'Draft'\nif (!stat.isEmpty()) {\n    def hit = STATUSES.find { it.equalsIgnoreCase(stat) }\n    if (hit == null) { valid = false; reason = 'status must be Draft, Active or Retired, got: ' + stat }\n    else statSel = hit\n}\nif (nm.isEmpty()) { valid = false; reason = 'name is required' }\nelse if (per.isEmpty()) { valid = false; reason = 'periodId is required - a plan without a period has no window to pay in' }\n\ndef ids = { v -> (v instanceof List) ? v.collect { String.valueOf(it).trim() }.findAll { !it.isEmpty() } : [] }\ndef crIds = ids(cr); def prIds = ids(pr)\n\n// A date arrives as YYYY-MM-DD or epoch millis, and null means open-ended - the\n// payload uses it for a position with no end date, which is a real state, not a gap.\ndef parseDate = { v, String where ->\n    if (v == null) return null\n    def t = String.valueOf(v).trim()\n    if (t.isEmpty()) return null\n    if (t ==~ /^\\d+$/) return Long.valueOf(t)\n    try { return java.time.LocalDate.parse(t).toEpochDay() * 86400000L }\n    catch (Exception e) { valid = false; reason = where + ': not a date: ' + t; return null }\n}\n\n// One PlanAssignment row per target. targetType is the only thing separating a title\n// assignment from a position one, so it is set here rather than inferred later.\ndef rows = []\ndef take = { List src, String kind, String idKey ->\n    src.eachWithIndex { a, i ->\n        if (!(a instanceof Map)) { valid = false; reason = kind + '[' + i + ']: must be an object'; return }\n        def tid = String.valueOf(a.get(idKey) ?: '').trim()\n        if (tid.isEmpty()) { valid = false; reason = kind + '[' + i + ']: ' + idKey + ' is required'; return }\n        def sEp = parseDate(a.get('effectiveStart'), kind + '[' + i + '].effectiveStart')\n        def eEp = parseDate(a.get('effectiveEnd'),   kind + '[' + i + '].effectiveEnd')\n        if (sEp != null && eEp != null && eEp < sEp) { valid = false; reason = kind + '[' + i + ']: effectiveEnd is before effectiveStart' }\n        // PlanAssignment.targetType is a single-select of exactly 'Title' and\n        // 'Position'. Uppercase fails the entity validator at WRITE time.\n        def tt = kind.substring(0,1).toUpperCase() + kind.substring(1)\n        rows << [targetType: tt, targetId: tid, startDate: sEp, endDate: eEp]\n    }\n}\ndef titlesIn    = (asg instanceof Map && asg.get('titles')    instanceof List) ? asg.get('titles')    : []\ndef positionsIn = (asg instanceof Map && asg.get('positions') instanceof List) ? asg.get('positions') : []\ntake(titlesIn, 'title', 'titleId')\ntake(positionsIn, 'position', 'positionId')\n\ndef pid = 'PLAN-' + System.currentTimeMillis() + '-' + new Random().nextInt(9000).plus(1000)\n\n// The assignment payload carries the planId that does not exist yet - it is minted\n// here and the same value is written on both records, so the rows are linked without\n// a second read.\n// planId on PlanAssignment is a FOREIGN KEY to Plan, so it holds the plan's RECORD\n// id, not the business key. That id does not exist yet, so the rows are built here\n// without it and stamped in by n_AsgPay once the plan has been written.\ndef asgRows = rows.collect { r ->\n    [assignmentId: pid + '-' + r.targetType + '-' + r.targetId,\n     targetType: r.targetType, targetId: r.targetId,\n     startDate: r.startDate, endDate: r.endDate]\n}\n\n// A bare ARRAY in a json property is dropped on write, so every ordered list goes in\n// under 'items'.\nreturn [valid: valid, reason: reason, planId: pid, nm: nm, desc: desc, per: per,\n        stat: statSel,\n        creditRuleIds: [items: crIds], payoutRuleIds: [items: prIds],\n        asgRows: asgRows, expectedAssignments: asgRows.size(),\n        titleCount: titlesIn.size(), positionCount: positionsIn.size(),\n        dupFilter: [operator:'AND', filters:[[property:'properties.planId', filter:[operator:'EQUAL', value: pid]]]]]\n",
+        "code": "\ndef opt = { String k -> if (!binding.hasVariable(k)) return ''\n                        def v = binding.getVariable(k); return (v == null) ? '' : v.toString().trim() }\ndef raw = { String k -> binding.hasVariable(k) ? binding.getVariable(k) : null }\ndef pid0 = opt('planId')\ndef nm = opt('name'); def desc = opt('description')\ndef per = opt('periodId'); def stat = opt('status')\ndef cr = raw('creditRuleIds'); def pr = raw('payoutRuleIds'); def asg = raw('assignments')\n\nboolean valid = true; String reason = ''\n// Plan.status is a single-select of exactly these three, title-cased. Passing a\n// caller's string straight through fails the entity validator at WRITE time with\n// \"oneOf fail\", which is a late and unhelpful place to learn it.\ndef STATUSES = ['Draft','Active','Retired']\nString statSel = 'Draft'\nif (!stat.isEmpty()) {\n    def hit = STATUSES.find { it.equalsIgnoreCase(stat) }\n    if (hit == null) { valid = false; reason = 'status must be Draft, Active or Retired, got: ' + stat }\n    else statSel = hit\n}\nif (pid0.isEmpty()) { valid = false; reason = 'planId is required' }\nelse if (nm.isEmpty()) { valid = false; reason = 'name is required' }\nelse if (per.isEmpty()) { valid = false; reason = 'periodId is required - a plan without a period has no window to pay in' }\n\ndef ids = { v -> (v instanceof List) ? v.collect { String.valueOf(it).trim() }.findAll { !it.isEmpty() } : [] }\ndef crIds = ids(cr); def prIds = ids(pr)\n\n// A date arrives as YYYY-MM-DD or epoch millis, and null means open-ended - the\n// payload uses it for a position with no end date, which is a real state, not a gap.\ndef parseDate = { v, String where ->\n    if (v == null) return null\n    def t = String.valueOf(v).trim()\n    if (t.isEmpty()) return null\n    if (t ==~ /^\\d+$/) return Long.valueOf(t)\n    try { return java.time.LocalDate.parse(t).toEpochDay() * 86400000L }\n    catch (Exception e) { valid = false; reason = where + ': not a date: ' + t; return null }\n}\n\n// One PlanAssignment row per target. targetType is the only thing separating a title\n// assignment from a position one, so it is set here rather than inferred later.\ndef rows = []\ndef take = { List src, String kind, String idKey ->\n    src.eachWithIndex { a, i ->\n        if (!(a instanceof Map)) { valid = false; reason = kind + '[' + i + ']: must be an object'; return }\n        def tid = String.valueOf(a.get(idKey) ?: '').trim()\n        if (tid.isEmpty()) { valid = false; reason = kind + '[' + i + ']: ' + idKey + ' is required'; return }\n        def sEp = parseDate(a.get('effectiveStart'), kind + '[' + i + '].effectiveStart')\n        def eEp = parseDate(a.get('effectiveEnd'),   kind + '[' + i + '].effectiveEnd')\n        if (sEp != null && eEp != null && eEp < sEp) { valid = false; reason = kind + '[' + i + ']: effectiveEnd is before effectiveStart' }\n        def tt = kind.substring(0,1).toUpperCase() + kind.substring(1)\n        rows << [targetType: tt, targetId: tid, startDate: sEp, endDate: eEp]\n    }\n}\ndef titlesIn    = (asg instanceof Map && asg.get('titles')    instanceof List) ? asg.get('titles')    : []\ndef positionsIn = (asg instanceof Map && asg.get('positions') instanceof List) ? asg.get('positions') : []\ntake(titlesIn, 'title', 'titleId')\ntake(positionsIn, 'position', 'positionId')\n\n// The id is the caller's - this edits an existing plan rather than minting one.\ndef pid = pid0\n\n// The assignment payload carries the planId that does not exist yet - it is minted\n// here and the same value is written on both records, so the rows are linked without\n// a second read.\ndef asgPayload = rows.collect { r ->\n    [assignmentId: pid + '-' + r.targetType + '-' + r.targetId,\n     planId: pid, targetType: r.targetType, targetId: r.targetId,\n     startDate: r.startDate, endDate: r.endDate]\n}\n\n// A bare ARRAY in a json property is dropped on write, so every ordered list goes in\n// under 'items'.\nreturn [valid: valid, reason: reason, planId: pid, nm: nm, desc: desc, per: per,\n        stat: statSel,\n        creditRuleIds: [items: crIds], payoutRuleIds: [items: prIds],\n        asgPayload: asgPayload, hasAssignments: !asgPayload.isEmpty(),\n        titleCount: titlesIn.size(), positionCount: positionsIn.size(),\n        planFilter: [operator:'AND', filters:[[property:'properties.planId', filter:[operator:'EQUAL', value: (valid ? pid : '__invalid_input__')]]]],\n        asgFilter: [operator:'AND', filters:[[property:'properties.planId', filter:[operator:'EQUAL', value: (valid ? pid : '__invalid_input__')]]]]]\n",
         "captureStdOutput": false,
         "parameters": {
           "name": "{{ n_sTaRt.outputs.name }}",
@@ -344,7 +347,8 @@
           "status": "{{ n_sTaRt.outputs.status }}",
           "creditRuleIds": "{{ n_sTaRt.outputs.creditRuleIds }}",
           "payoutRuleIds": "{{ n_sTaRt.outputs.payoutRuleIds }}",
-          "assignments": "{{ n_sTaRt.outputs.assignments }}"
+          "assignments": "{{ n_sTaRt.outputs.assignments }}",
+          "planId": "{{ n_sTaRt.outputs.planId }}"
         }
       },
       "skip": false,
@@ -418,7 +422,7 @@
       "id": "n_FtDup",
       "index": 5,
       "inputs": {
-        "triggerInputCondition": "{{ n_Norm.outputs.result.dupFilter }}",
+        "triggerInputCondition": "{{ n_Norm.outputs.result.planFilter }}",
         "shouldSearchInAnalyticsStore": false,
         "object_type": "Plan",
         "includeRoleMappings": false,
@@ -434,7 +438,16 @@
         "readThroughSessionVariables": false,
         "fields": [
           "id",
-          "properties.planId"
+          "properties.planId",
+          "properties.name",
+          "properties.description",
+          "properties.periodId",
+          "properties.status",
+          "properties.version",
+          "properties.startDate",
+          "properties.endDate",
+          "properties.creditRuleIds",
+          "properties.payoutRuleIds"
         ]
       },
       "options": {
@@ -443,7 +456,7 @@
         "stepError": "STOP"
       },
       "skip": false,
-      "subTitle": "Could the minted id already exist?",
+      "subTitle": "The plan being edited",
       "title": "Fetch records",
       "type": "ACTION"
     },
@@ -465,7 +478,7 @@
             "property": "{{ n_FtDup.outputs.total }}",
             "filter": {
               "operator": "EQUAL",
-              "value": 1
+              "value": 0
             }
           }
         ],
@@ -490,51 +503,15 @@
       "index": 7,
       "inputs": {
         "result": {
-          "status": "DUPLICATE_PLAN_ID",
+          "status": "NOT_FOUND",
           "success": false,
-          "message": "the minted plan id collided; retry"
+          "message": "no plan with that id"
         }
       },
       "skip": false,
       "subTitle": "The minted id collided - the caller should simply retry",
       "title": "Respond to automation",
       "type": "STOP"
-    },
-    {
-      "context": {
-        "appName": "storage_by_unifyapps",
-        "resourceVersion": 864,
-        "resourceName": "storage_by_unifyapps_create_record",
-        "type": "APPLICATION"
-      },
-      "debug": false,
-      "dirty": false,
-      "fallbackMode": "STOP",
-      "groupId": "n_IfDup@n_IfBad@root_id-1@n@n",
-      "id": "n_Cr",
-      "index": 8,
-      "inputs": {
-        "writeThroughSessionVariables": false,
-        "object_type": "Plan",
-        "record": {
-          "planId": "{{ n_Norm.outputs.result.planId }}",
-          "name": "{{ n_Norm.outputs.result.nm }}",
-          "description": "{{ n_Norm.outputs.result.desc }}",
-          "periodId": "{{ n_Norm.outputs.result.per }}",
-          "status": "{{ n_Norm.outputs.result.stat }}",
-          "creditRuleIds": "{{ n_Norm.outputs.result.creditRuleIds }}",
-          "payoutRuleIds": "{{ n_Norm.outputs.result.payoutRuleIds }}"
-        }
-      },
-      "options": {
-        "disableLogging": false,
-        "enabledForReExecution": false,
-        "stepError": "STOP"
-      },
-      "skip": false,
-      "subTitle": "The plan itself",
-      "title": "Create record",
-      "type": "ACTION"
     },
     {
       "context": {
@@ -546,8 +523,8 @@
       "dirty": false,
       "fallbackMode": "STOP",
       "groupId": "n_IfDup@n_IfBad@root_id-1@n@n",
-      "id": "n_AsgPay",
-      "index": 9,
+      "id": "n_Merge",
+      "index": 8,
       "inputs": {
         "output": {
           "type": "object",
@@ -648,11 +625,217 @@
           }
         },
         "compile_static": false,
-        "code": "\n// The foreign key can only be filled once the plan exists. Doing it here rather than\n// in the normaliser is what keeps PlanAssignment.planId a real reference instead of a\n// business key sitting in a lookup field.\ndef rid = String.valueOf(planRecordId)\ndef out = []\nif (asgRows instanceof List) asgRows.each { r ->\n    out << [assignmentId: r.assignmentId, planId: rid, targetType: r.targetType,\n            targetId: r.targetId, startDate: r.startDate, endDate: r.endDate]\n}\nreturn [payload: out, expected: out.size()]\n",
+        "code": "\n// update_record_by_id with useRawPayload REPLACES the record's properties - it does\n// not merge. Sending only the changed fields wiped planId, and the plan then could\n// not be found by the key it is looked up by. So the existing property set is read\n// first and the changes are laid over it.\ndef cur = (rows == null || rows.isEmpty()) ? [:] : (rows[0].properties ?: [:])\ndef out = [:]\ncur.each { k, v -> out[k] = v }\nout['name'] = String.valueOf(nm)\nout['description'] = String.valueOf(desc)\nout['periodId'] = String.valueOf(per)\nout['status'] = String.valueOf(stat)\nout['creditRuleIds'] = crIds\nout['payoutRuleIds'] = prIds\nreturn [payload: out]\n",
         "captureStdOutput": false,
         "parameters": {
-          "asgRows": "{{ n_Norm.outputs.result.asgRows }}",
-          "planRecordId": "{{ n_Cr.outputs.id }}"
+          "rows": "{{ n_FtDup.outputs.objects }}",
+          "nm": "{{ n_Norm.outputs.result.nm }}",
+          "desc": "{{ n_Norm.outputs.result.desc }}",
+          "per": "{{ n_Norm.outputs.result.per }}",
+          "stat": "{{ n_Norm.outputs.result.stat }}",
+          "crIds": "{{ n_Norm.outputs.result.creditRuleIds }}",
+          "prIds": "{{ n_Norm.outputs.result.payoutRuleIds }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Existing properties, plus the changes",
+      "title": "Execute Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceVersion": 864,
+        "resourceName": "storage_by_unifyapps_update_record_by_id",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfDup@n_IfBad@root_id-1@n@n",
+      "id": "n_Cr",
+      "index": 9,
+      "inputs": {
+        "recordId": "{{ n_FtDup.outputs.objects[0].id }}",
+        "useRawPayload": true,
+        "rawPayload": "{{ n_Merge.outputs.result.payload }}",
+        "writeThroughSessionVariables": false,
+        "object_type": "Plan",
+        "skipIfBlank": false,
+        "retryOnFailure": false,
+        "upsert": false
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The plan itself",
+      "title": "Update record by id",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceVersion": 864,
+        "resourceName": "storage_by_unifyapps_delete_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfDup@n_IfBad@root_id-1@n@n",
+      "id": "n_DelAsg",
+      "index": 10,
+      "inputs": {
+        "triggerInputCondition": {
+          "operator": "AND",
+          "filters": [
+            {
+              "property": "properties.planId",
+              "filter": {
+                "operator": "EQUAL",
+                "value": "{{ n_FtDup.outputs.objects[0].id }}"
+              }
+            }
+          ]
+        },
+        "object_type": "PlanAssignment",
+        "numberOfRecordsToDelete": "MULTIPLE",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 500,
+          "offset": 0
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The plan's old assignment rows",
+      "title": "Delete records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfDup@n_IfBad@root_id-1@n@n",
+      "id": "n_AsgPay",
+      "index": 11,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "valid": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "ruleId": {
+              "type": "string"
+            },
+            "nm": {
+              "type": "string"
+            },
+            "rt": {
+              "type": "string"
+            },
+            "desc": {
+              "type": "string"
+            },
+            "tg": {
+              "type": "string"
+            },
+            "extra": {
+              "type": "string"
+            },
+            "activeStart": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "activeEnd": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "conditions": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "results": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "conditionCount": {
+              "type": "integer"
+            },
+            "resultCount": {
+              "type": "integer"
+            },
+            "dupFilter": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "ruleType": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "activeStart": {
+              "type": "string"
+            },
+            "activeEnd": {
+              "type": "string"
+            },
+            "tags": {
+              "type": "string"
+            },
+            "conditionsJson": {
+              "type": "string"
+            },
+            "resultsJson": {
+              "type": "string"
+            },
+            "rollableOnReporting": {
+              "type": "string"
+            }
+          }
+        },
+        "compile_static": false,
+        "code": "\n// planId on PlanAssignment is a foreign key to Plan, so it holds the record id.\ndef rid = String.valueOf(planRecordId)\ndef out = []\nif (asgRows instanceof List) asgRows.each { r ->\n    out << [assignmentId: r.assignmentId, planId: rid, targetType: r.targetType,\n            targetId: r.targetId, startDate: r.startDate, endDate: r.endDate]\n}\nreturn [payload: out, expected: out.size()]\n",
+        "captureStdOutput": false,
+        "parameters": {
+          "asgRows": "{{ n_Norm.outputs.result.asgPayload }}",
+          "planRecordId": "{{ n_FtDup.outputs.objects[0].id }}"
         }
       },
       "skip": false,
@@ -672,7 +855,7 @@
       "fallbackMode": "STOP",
       "groupId": "n_IfDup@n_IfBad@root_id-1@n@n",
       "id": "n_CrAsg",
-      "index": 10,
+      "index": 12,
       "inputs": {
         "useRawPayload": true,
         "writeThroughSessionVariables": false,
@@ -693,80 +876,23 @@
     },
     {
       "context": {
-        "appName": "if_else",
-        "resourceName": "if_else_condition",
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
         "type": "APPLICATION"
       },
       "debug": false,
       "dirty": false,
       "fallbackMode": "STOP",
       "groupId": "n_IfDup@n_IfBad@root_id-1@n@n",
-      "id": "n_IfAsg",
-      "index": 11,
-      "inputs": {
-        "filters": [
-          {
-            "property": "{{ n_CrAsg.outputs.inserted }}",
-            "filter": {
-              "operator": "NOT_EQUAL",
-              "value": "{{ n_AsgPay.outputs.result.expected }}"
-            }
-          }
-        ],
-        "operator": "AND"
-      },
-      "skip": false,
-      "subTitle": "Did every assignment row land?",
-      "title": "Condition",
-      "type": "IF_ELSE"
-    },
-    {
-      "context": {
-        "appName": "callables",
-        "resourceName": "callables_return_to_automation",
-        "type": "APPLICATION"
-      },
-      "debug": false,
-      "dirty": false,
-      "fallbackMode": "STOP",
-      "groupId": "n_IfAsg@n_IfDup@n_IfBad@root_id-1@n@n@y",
-      "id": "n_StPartial",
-      "index": 12,
-      "inputs": {
-        "result": {
-          "status": "ASSIGNMENTS_FAILED",
-          "success": false,
-          "message": "the plan was created but its assignment rows were refused - check targetType and the ids",
-          "planId": "{{ n_Norm.outputs.result.planId }}",
-          "recordId": "{{ n_Cr.outputs.id }}",
-          "titleCount": 0,
-          "positionCount": 0
-        }
-      },
-      "skip": false,
-      "subTitle": "The minted id collided - the caller should simply retry",
-      "title": "Respond to automation",
-      "type": "STOP"
-    },
-    {
-      "context": {
-        "appName": "callables",
-        "resourceName": "callables_return_to_automation",
-        "type": "APPLICATION"
-      },
-      "debug": false,
-      "dirty": false,
-      "fallbackMode": "STOP",
-      "groupId": "n_IfAsg@n_IfDup@n_IfBad@root_id-1@n@n@n",
       "id": "n_StOk",
       "index": 13,
       "inputs": {
         "result": {
           "status": "OK",
           "success": true,
-          "message": "plan created",
+          "message": "plan updated",
           "planId": "{{ n_Norm.outputs.result.planId }}",
-          "recordId": "{{ n_Cr.outputs.id }}",
+          "recordId": "",
           "titleCount": "{{ n_Norm.outputs.result.titleCount }}",
           "positionCount": "{{ n_Norm.outputs.result.positionCount }}"
         }
@@ -792,5 +918,5 @@
   "tags": [
     "icm"
   ],
-  "version": 4
+  "version": 6
 }

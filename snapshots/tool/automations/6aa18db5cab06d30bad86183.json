@@ -2,6 +2,16 @@
   "appsUsed": [],
   "createdTime": 1788972469360,
   "deleted": false,
+  "deployedVersion": 1,
+  "deploymentState": {
+    "deployedAt": 1789028481906,
+    "deployedBy": 435691,
+    "deployedDefinitionId": "6aa268813c7f7b6b91fd8ca3",
+    "deploymentNotes": "Plans: list, get, create, update",
+    "status": "DEPLOYED",
+    "version": 1,
+    "workflowVersion": 1
+  },
   "description": "The periods a plan can be attached to. Period.name is the object's unique key, so it is what a plan stores - not a record id.",
   "edges": [
     {
@@ -58,9 +68,9 @@
   "id": "6aa18db5cab06d30bad86183",
   "lastModifiedBy": 435691,
   "lastPlatformUpdateBy": 435691,
-  "lastPlatformUpdateOn": 1788972492388,
+  "lastPlatformUpdateOn": 1789028481908,
   "lcName": "icm | list periods",
-  "modifiedTime": 1788972492388,
+  "modifiedTime": 1789028481908,
   "name": "ICM | List Periods",
   "nodes": [
     {

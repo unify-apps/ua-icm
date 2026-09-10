@@ -2,12 +2,17 @@
 
 The plan model, and the four callables the Plans page reads and writes.
 
-| callable | id | state |
-|---|---|---|
-| `ICM \| Create Plan` | `6aa18daacab06d30bad86124` | suite 11/11, **not deployed yet** |
-| `ICM \| List Plans` | `6aa18daa3c7f7b6b91c15ce6` | built, untested |
-| `ICM \| Get Plan` | `6aa18daaff41994689752982` | built, untested |
-| `ICM \| List Periods` | `6aa18db5cab06d30bad86183` | built, untested |
+| callable | id | data source | suite |
+|---|---|---|---|
+| `ICM \| List Plans` | `6aa18daa3c7f7b6b91c15ce6` | `e_6aa26765561c60372d70121f` | green |
+| `ICM \| Get Plan` | `6aa18daaff41994689752982` | `e_6aa26766561c60372d701223` | 9/9 |
+| `ICM \| Create Plan` | `6aa18daacab06d30bad86124` | `e_6aa26766561c60372d701226` | 15/15 |
+| `ICM \| Update Plan` | `6aa264103aa7845ea17fca52` | `e_6aa26767561c60372d701243` | 11/11 |
+| `ICM \| List Periods` | `6aa18db5cab06d30bad86183` | `e_6aa26767561c60372d701246` | green |
+
+All five deployed on tool 2026-09-10 and verified end to end through the data
+sources: create with one title and one position, read it back, edit down to one
+title, read again (status and description changed, positions gone), then list.
 
 ## Storage
 
@@ -48,10 +53,34 @@ in the same run, so the two are linked without a second read.
 **A plan with no assignments at all works** — the bulk write of an empty list
 succeeds. That was worth proving rather than designing around.
 
-## Still to do
+## Four traps, all the same family: a write that reports success and does nothing
 
-Suites and deploys for the three read callables, an `Update Plan` for editing, five
-data sources, and the page.
+**`Plan.status`** is a single-select of `Draft` / `Active` / `Retired`, title-cased.
+Anything else reaches the entity validator and fails at WRITE time with
+`property status invalid; oneOf fail`.
+
+**`PlanAssignment.targetType`** is `Title` / `Position`, likewise. `TITLE` was
+refused — and `bulk_create_records` answered `inserted: 0` with an `errors` map while
+the NODE stayed `ok`, so the automation reported success having written no assignment
+rows at all. Create Plan now compares `inserted` against the expected count and
+answers `ASSIGNMENTS_FAILED` rather than lying.
+
+**`update_records` matched zero rows** with the identical filter that found the
+record one node earlier. Updating by record id works; the plan is already fetched for
+the existence check, so the id is in hand.
+
+**`update_record_by_id` with `useRawPayload` REPLACES the property set** — it does not
+merge. Sending only the changed fields wiped `planId`, and the plan then could not be
+found by the key it is looked up by. The update reads the whole record first and lays
+the changes over it.
+
+**`PlanAssignment.planId` is a foreign key**, so it holds the plan's RECORD id, not
+the business key. The create stamps it in after the plan exists; both readers filter
+on it.
+
+**Get Plan guards the second fetch.** A planId matching nothing left
+`objects[0].id` null, which put a null in the assignment filter and errored the node
+— so a missing plan crashed instead of answering `NOT_FOUND`.
 
 **`PlanComponent` overlaps with this and is untouched.** It already carries calc
 type, rate table, caps, draw and sort order per component, while this model points

@@ -2,6 +2,16 @@
   "appsUsed": [],
   "createdTime": 1788972458578,
   "deleted": false,
+  "deployedVersion": 1,
+  "deploymentState": {
+    "deployedAt": 1789028592651,
+    "deployedBy": 435691,
+    "deployedDefinitionId": "6aa268f0b614217b0d8f91b0",
+    "deploymentNotes": "Plans: list, get, create, update",
+    "status": "DEPLOYED",
+    "version": 1,
+    "workflowVersion": 3
+  },
   "description": "One plan in full, by planId: every field, the rule id lists, and its title and position assignments. The list returns counts; this is what the edit form reads.",
   "edges": [
     {
@@ -47,28 +57,36 @@
       "type": "next"
     },
     {
-      "fromNodeId": "n_Ft",
-      "id": "next@n_Ft@n_FtAsg",
-      "priority": 0,
-      "skip": false,
-      "toNodeId": "n_FtAsg",
-      "type": "next"
-    },
-    {
       "fromNodeId": "n_FtAsg",
       "id": "next@n_FtAsg@n_Shape",
       "priority": 0,
       "skip": false,
       "toNodeId": "n_Shape",
       "type": "next"
+    },
+    {
+      "fromNodeId": "n_Ft",
+      "id": "next@n_Ft@n_AsgFil",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_AsgFil",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_AsgFil",
+      "id": "next@n_AsgFil@n_FtAsg",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtAsg",
+      "type": "next"
     }
   ],
   "id": "6aa18daaff41994689752982",
   "lastModifiedBy": 435691,
   "lastPlatformUpdateBy": 435691,
-  "lastPlatformUpdateOn": 1788972578548,
+  "lastPlatformUpdateOn": 1789028592652,
   "lcName": "icm | get plan",
-  "modifiedTime": 1788972578548,
+  "modifiedTime": 1789028592652,
   "name": "ICM | Get Plan",
   "nodes": [
     {
@@ -254,6 +272,77 @@
     },
     {
       "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_AsgFil",
+      "index": 4,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "valid": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "filter": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "pageLimit": {
+              "type": "integer"
+            },
+            "pageOffset": {
+              "type": "integer"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "search": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "ruleType": {
+              "type": "string"
+            },
+            "limit": {
+              "type": "string"
+            },
+            "offset": {
+              "type": "string"
+            }
+          }
+        },
+        "compile_static": false,
+        "code": "\n// PlanAssignment.planId holds the plan's RECORD id, so the filter needs it. When\n// the plan does not exist there is no id to filter by, and a null in a filter value\n// throws - so this returns a filter that deliberately matches nothing and lets the\n// shape node report NOT_FOUND properly.\ndef rid = (rows == null || rows.isEmpty()) ? '__no_such_plan__' : String.valueOf(rows[0].id)\nreturn [filter: [operator:'AND', filters: [[property:'properties.planId',\n                 filter:[operator:'EQUAL', value: rid]]]]]\n",
+        "captureStdOutput": false,
+        "parameters": {
+          "rows": "{{ n_Ft.outputs.objects }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "The assignment filter, or one that matches nothing",
+      "title": "Execute Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
         "appName": "storage_by_unifyapps",
         "resourceName": "storage_by_unifyapps_fetch_records",
         "type": "APPLICATION"
@@ -263,9 +352,9 @@
       "fallbackMode": "STOP",
       "groupId": "root_id-1",
       "id": "n_FtAsg",
-      "index": 4,
+      "index": 5,
       "inputs": {
-        "triggerInputCondition": "{{ n_Norm.outputs.result.asgFilter }}",
+        "triggerInputCondition": "{{ n_AsgFil.outputs.result.filter }}",
         "shouldSearchInAnalyticsStore": false,
         "object_type": "PlanAssignment",
         "includeRoleMappings": false,
@@ -310,7 +399,7 @@
       "fallbackMode": "STOP",
       "groupId": "root_id-1",
       "id": "n_Shape",
-      "index": 5,
+      "index": 6,
       "inputs": {
         "output": {
           "type": "object",
@@ -381,7 +470,7 @@
       "fallbackMode": "STOP",
       "groupId": "root_id-1",
       "id": "n_IfBad",
-      "index": 6,
+      "index": 7,
       "inputs": {
         "filters": [
           {
@@ -410,7 +499,7 @@
       "fallbackMode": "STOP",
       "groupId": "n_IfBad@root_id-1@y",
       "id": "n_StBad",
-      "index": 7,
+      "index": 8,
       "inputs": {
         "result": {
           "status": "{{ n_Shape.outputs.result.status }}",
@@ -434,7 +523,7 @@
       "fallbackMode": "STOP",
       "groupId": "n_IfBad@root_id-1@n",
       "id": "n_StOk",
-      "index": 8,
+      "index": 9,
       "inputs": {
         "result": {
           "status": "OK",
@@ -463,5 +552,5 @@
   "tags": [
     "icm"
   ],
-  "version": 1
+  "version": 3
 }

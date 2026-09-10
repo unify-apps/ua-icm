@@ -2,6 +2,16 @@
   "appsUsed": [],
   "createdTime": 1788972458354,
   "deleted": false,
+  "deployedVersion": 1,
+  "deploymentState": {
+    "deployedAt": 1789028547845,
+    "deployedBy": 435691,
+    "deployedDefinitionId": "6aa268c38f78990409edab2c",
+    "deploymentNotes": "Plans: list, get, create, update",
+    "status": "DEPLOYED",
+    "version": 1,
+    "workflowVersion": 1
+  },
   "description": "Compensation plans, filterable. Rule ids and assignments are counted rather than shipped, so a page of plans stays small; the detail read carries them.",
   "edges": [
     {
@@ -58,9 +68,9 @@
   "id": "6aa18daa3c7f7b6b91c15ce6",
   "lastModifiedBy": 435691,
   "lastPlatformUpdateBy": 435691,
-  "lastPlatformUpdateOn": 1788972529999,
+  "lastPlatformUpdateOn": 1789028547845,
   "lcName": "icm | list plans",
-  "modifiedTime": 1788972529999,
+  "modifiedTime": 1789028547845,
   "name": "ICM | List Plans",
   "nodes": [
     {
