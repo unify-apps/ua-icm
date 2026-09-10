@@ -1,0 +1,319 @@
+{
+ "name": "ICM | Calculate Credits",
+ "note": "EVERY CASE IS A DRY RUN. A suite that writes pay is a suite nobody can run twice, and the write path is the one thing here whose side effects reach a bank account - it is proved by hand (run 6aa2af693c7f7b6b91132e7c, 6 credits landed, run marked Succeeded) and deliberately not by this file. What the suite pins is the FOLD: which lane won, whether the row's own split was read, that a negative amount survives, and that each refusal keeps its own name. The counts below are measured against the seeded test bed AND the pre-existing SEP-2026 rows on tool; re-seeding does not change them, but somebody adding a September transaction will, and that is a true failure rather than a flaky one. The index-based checks below are only legitimate because n_Calc SORTS its output (deal, then person, then the direct credit before the rolled copies); fetch order is promised by nothing.",
+ "cases": [
+  {
+   "name": "OK_DRY_RUN - the whole period, computed and nothing written",
+   "payload": {
+    "periodId": "e_6aa001b735cc1f4f3c704dae",
+    "dryRun": true,
+    "pageLimit": 1000
+   },
+   "checks": [
+    {
+     "path": "status",
+     "equals": "OK_DRY_RUN"
+    },
+    {
+     "path": "written",
+     "equals": 0
+    },
+    {
+     "path": "periodName",
+     "equals": "SEP-2026"
+    },
+    {
+     "path": "credits",
+     "type": "array",
+     "minLen": 6,
+     "maxLen": 6
+    },
+    {
+     "path": "stats.rolledUp",
+     "equals": 2
+    },
+    {
+     "path": "stats.matched",
+     "equals": 4
+    },
+    {
+     "path": "stats.unmatched",
+     "equals": 1
+    },
+    {
+     "path": "stats.outOfWindow",
+     "equals": 0
+    }
+   ]
+  },
+  {
+   "name": "the credit order is DETERMINISTIC - two runs of the same period diff cleanly",
+   "payload": {
+    "periodId": "e_6aa001b735cc1f4f3c704dae",
+    "dryRun": true
+   },
+   "checks": [
+    {
+     "path": "credits.0.orderNumber",
+     "equals": "00388125"
+    },
+    {
+     "path": "credits.4.orderNumber",
+     "equals": "00392225"
+    },
+    {
+     "path": "credits.5.orderNumber",
+     "equals": "00395650"
+    }
+   ]
+  },
+  {
+   "name": "the SEAT plan beats the TITLE plan on a seat carrying both",
+   "payload": {
+    "periodId": "e_6aa001b735cc1f4f3c704dae",
+    "dryRun": true
+   },
+   "checks": [
+    {
+     "path": "credits.3.lane",
+     "equals": "Position"
+    },
+    {
+     "path": "credits.3.creditType",
+     "equals": "RENEWAL"
+    },
+    {
+     "path": "credits.3.orderNumber",
+     "equals": "00388125"
+    }
+   ]
+  },
+  {
+   "name": "a rule with no splitBps reads the ROW's own split - 70% of 250000",
+   "payload": {
+    "periodId": "e_6aa001b735cc1f4f3c704dae",
+    "dryRun": true
+   },
+   "checks": [
+    {
+     "path": "credits.4.amount",
+     "equals": 175000
+    },
+    {
+     "path": "credits.4.splitBps",
+     "equals": "7000"
+    },
+    {
+     "path": "credits.4.orderNumber",
+     "equals": "00392225"
+    }
+   ]
+  },
+  {
+   "name": "a rule WITH splitBps overrides the row - 100% even though the row says 70%",
+   "payload": {
+    "periodId": "e_6aa001b735cc1f4f3c704dae",
+    "dryRun": true
+   },
+   "checks": [
+    {
+     "path": "credits.0.amount",
+     "equals": 593484
+    },
+    {
+     "path": "credits.0.splitBps",
+     "equals": "10000"
+    },
+    {
+     "path": "credits.0.lane",
+     "equals": "Title"
+    },
+    {
+     "path": "credits.0.creditType",
+     "equals": "NEW_BOOKING"
+    }
+   ]
+  },
+  {
+   "name": "rollup climbs two levels, files under a DIFFERENT credit type, and carries its parent",
+   "payload": {
+    "periodId": "e_6aa001b735cc1f4f3c704dae",
+    "dryRun": true
+   },
+   "checks": [
+    {
+     "path": "credits.1.isRollup",
+     "equals": true
+    },
+    {
+     "path": "credits.1.creditType",
+     "equals": "MGR_ROLLUP"
+    },
+    {
+     "path": "credits.1.hierarchyLevel",
+     "equals": 1
+    },
+    {
+     "path": "credits.1.sourceCreditId",
+     "type": "string"
+    },
+    {
+     "path": "credits.2.hierarchyLevel",
+     "equals": 2
+    },
+    {
+     "path": "credits.2.creditType",
+     "equals": "MGR_ROLLUP"
+    }
+   ]
+  },
+  {
+   "name": "a NEGATIVE amount is credited, not dropped - the billing-credit row",
+   "payload": {
+    "periodId": "e_6aa001b735cc1f4f3c704dae",
+    "dryRun": true
+   },
+   "checks": [
+    {
+     "path": "credits.5.amount",
+     "equals": -26882
+    },
+    {
+     "path": "credits.5.creditType",
+     "equals": "RENEWAL"
+    },
+    {
+     "path": "credits.5.orderNumber",
+     "equals": "00395650"
+    }
+   ]
+  },
+  {
+   "name": "every refusal keeps its own name",
+   "payload": {
+    "periodId": "e_6aa001b735cc1f4f3c704dae",
+    "dryRun": true
+   },
+   "checks": [
+    {
+     "path": "exceptions",
+     "type": "array",
+     "minLen": 7,
+     "maxLen": 7
+    },
+    {
+     "path": "exceptions.0.code",
+     "equals": "UNRESOLVED_PAYEE"
+    },
+    {
+     "path": "exceptions.1.code",
+     "equals": "NO_POSITION"
+    },
+    {
+     "path": "exceptions.2.code",
+     "equals": "NO_PAYEE_NAME"
+    }
+   ]
+  },
+  {
+   "name": "dryRun defaults to TRUE when the caller omits it - writing pay is opt-in",
+   "payload": {
+    "periodId": "e_6aa001b735cc1f4f3c704dae"
+   },
+   "checks": [
+    {
+     "path": "status",
+     "equals": "OK_DRY_RUN"
+    },
+    {
+     "path": "dryRun",
+     "equals": true
+    },
+    {
+     "path": "written",
+     "equals": 0
+    }
+   ]
+  },
+  {
+   "name": "the all-empty-strings payload every callable's suite must carry",
+   "payload": {
+    "periodId": "",
+    "dryRun": "",
+    "pageLimit": ""
+   },
+   "checks": [
+    {
+     "path": "status",
+     "equals": "INVALID_INPUT"
+    },
+    {
+     "path": "credits",
+     "type": "array",
+     "maxLen": 0
+    },
+    {
+     "path": "written",
+     "equals": 0
+    }
+   ]
+  },
+  {
+   "name": "PERIOD_NOT_FOUND - a periodId no Period carries is answered, not thrown",
+   "payload": {
+    "periodId": "e_000000000000000000000000",
+    "dryRun": true
+   },
+   "checks": [
+    {
+     "path": "status",
+     "equals": "PERIOD_NOT_FOUND"
+    },
+    {
+     "path": "written",
+     "equals": 0
+    }
+   ]
+  },
+  {
+   "name": "PERIOD_NOT_OPEN - JAN-2026 is PAID, and a paid month is the audit boundary",
+   "payload": {
+    "periodId": "e_6a9bd4b7a397f67f706c5d3d",
+    "dryRun": true
+   },
+   "checks": [
+    {
+     "path": "status",
+     "equals": "PERIOD_NOT_OPEN"
+    },
+    {
+     "path": "written",
+     "equals": 0
+    }
+   ]
+  },
+  {
+   "name": "FETCH_TRUNCATED - a page too small to hold the data refuses instead of averaging a prefix",
+   "payload": {
+    "periodId": "e_6aa001b735cc1f4f3c704dae",
+    "dryRun": true,
+    "pageLimit": 1
+   },
+   "checks": [
+    {
+     "path": "status",
+     "equals": "FETCH_TRUNCATED"
+    },
+    {
+     "path": "credits",
+     "type": "array",
+     "maxLen": 0
+    },
+    {
+     "path": "message",
+     "matches": "Transaction"
+    }
+   ]
+  }
+ ]
+}

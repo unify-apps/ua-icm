@@ -1,0 +1,401 @@
+{
+  "columnCounts": 10,
+  "createdTime": 1788769610036,
+  "deleted": false,
+  "description": "",
+  "id": "Credit",
+  "input": {
+    "type": "SCHEMA_AND_LAYOUT",
+    "dynamic": false,
+    "layout": {
+      "positionId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:Position",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "ui:order": [
+        "creditId",
+        "runId",
+        "transactionId",
+        "employeeId",
+        "positionId",
+        "creditRuleId",
+        "creditTypeId",
+        "amount",
+        "triggerFired",
+        "sourceCreditId"
+      ],
+      "employeeId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:Payee",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "runId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:CalculationRun",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "creditTypeId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:CreditType",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "transactionId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:Transaction",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "creditRuleId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:CreditRule",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "sourceCreditId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:Credit",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      }
+    },
+    "schema": {
+      "type": "object",
+      "properties": {
+        "creditId": {
+          "type": "string",
+          "title": "Credit Id",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true,
+          "uniqueKey": true,
+          "nameField": true
+        },
+        "runId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Run Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:CalculationRun"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "transactionId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Transaction Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Transaction"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "employeeId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Employee Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Payee"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "positionId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Position Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Position"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "creditRuleId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Credit Rule Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:CreditRule"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "creditTypeId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Credit Type Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:CreditType"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "amount": {
+          "type": "integer",
+          "title": "Amount (minor units, base currency)",
+          "filterable": true,
+          "sortable": true
+        },
+        "triggerFired": {
+          "type": "boolean",
+          "title": "Trigger Fired",
+          "filterable": true,
+          "sortable": true
+        },
+        "sourceCreditId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Source Credit Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Credit"
+          },
+          "foreignKeyConstraintEnforced": false
+        }
+      }
+    }
+  },
+  "lastModifiedBy": 435691,
+  "lastPlatformUpdateBy": 435691,
+  "lastPlatformUpdateOn": 1788769628942,
+  "lcName": "credit",
+  "metadata": {
+    "auditable": true,
+    "autoGeneratedFields": [],
+    "cacheable": false,
+    "captureActivity": true,
+    "captureReferences": false,
+    "captureReporting": true,
+    "dateFields": [],
+    "deployable": false,
+    "encryptedFields": [],
+    "external": false,
+    "filterableFields": [
+      "creditId",
+      "runId",
+      "transactionId",
+      "employeeId",
+      "positionId",
+      "creditRuleId",
+      "creditTypeId",
+      "amount",
+      "triggerFired",
+      "sourceCreditId"
+    ],
+    "graphType": "LEGACY_MDM",
+    "hasTimeSeriesRecords": true,
+    "hashedFields": [],
+    "inaccessibleFromUI": false,
+    "includeInDependency": false,
+    "nameField": "creditId",
+    "partFields": [],
+    "piiFields": [],
+    "primaryKeyField": "",
+    "referenceKeys": [
+      {
+        "key": "properties.runId",
+        "referenceType": "CalculationRun"
+      },
+      {
+        "key": "properties.transactionId",
+        "referenceType": "Transaction"
+      },
+      {
+        "key": "properties.employeeId",
+        "referenceType": "Payee"
+      },
+      {
+        "key": "properties.positionId",
+        "referenceType": "Position"
+      },
+      {
+        "key": "properties.creditRuleId",
+        "referenceType": "CreditRule"
+      },
+      {
+        "key": "properties.creditTypeId",
+        "referenceType": "CreditType"
+      },
+      {
+        "key": "properties.sourceCreditId",
+        "referenceType": "Credit"
+      }
+    ],
+    "scdType2Enabled": false,
+    "schemaValidationEnabled": true,
+    "searchableFields": [
+      "creditId",
+      "creditId"
+    ],
+    "sessionBackedStorageEnabled": false,
+    "skipConfigSyncIfModified": false,
+    "skipDeletedEntityBackup": false,
+    "skipFetchBeforeUpdate": false,
+    "skipIndexLimitValidation": false,
+    "skipPermissionCheckForAggregation": false,
+    "skipPermissionsFilter": false,
+    "skipReportingEventsOrdering": false,
+    "skipRoutineLoad": false,
+    "skipTotalHitsInAggregation": false,
+    "skipVersionIncrementOnUpdate": false,
+    "storeDetails": {
+      "store": "MONGO",
+      "uniqueKeySupported": true
+    },
+    "supportsDistinctValues": false,
+    "supportsWebhook": false,
+    "syncFromSourceCustomer": false,
+    "translationsEnabled": false,
+    "uniqueKeyFields": [
+      "creditId"
+    ],
+    "urlValidationEnabledFields": [],
+    "useCachedEntityStoreForAutomations": false,
+    "userLevelEncryption": false,
+    "vectorFields": [],
+    "versioningEnabled": true
+  },
+  "modifiedTime": 1788769628942,
+  "name": "Credit",
+  "ownerUserId": 435691,
+  "packaged": false,
+  "pluralName": "Credits",
+  "schema": {
+    "type": "SCHEMA",
+    "dynamic": false,
+    "schema": {
+      "type": "object",
+      "properties": {
+        "creditId": {
+          "type": "string",
+          "title": "Credit Id",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true,
+          "uniqueKey": true,
+          "nameField": true
+        },
+        "runId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Run Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:CalculationRun"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "transactionId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Transaction Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Transaction"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "employeeId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Employee Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Payee"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "positionId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Position Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Position"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "creditRuleId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Credit Rule Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:CreditRule"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "creditTypeId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Credit Type Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:CreditType"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "amount": {
+          "type": "integer",
+          "title": "Amount (minor units, base currency)",
+          "filterable": true,
+          "sortable": true
+        },
+        "triggerFired": {
+          "type": "boolean",
+          "title": "Trigger Fired",
+          "filterable": true,
+          "sortable": true
+        },
+        "sourceCreditId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Source Credit Id",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Credit"
+          },
+          "foreignKeyConstraintEnforced": false
+        }
+      }
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 1
+}

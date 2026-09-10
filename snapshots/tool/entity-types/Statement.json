@@ -1,38 +1,47 @@
 {
-  "columnCounts": 8,
-  "createdTime": 1788594607505,
+  "columnCounts": 7,
+  "createdTime": 1788769611363,
   "deleted": false,
-  "description": "A person who can be paid incentive compensation. The bridge from a platform user to the comp world. A payee holds a Position over a date range (PayeePositionAssignment); credit attaches to the POSITION and resolves to the payee who held it on the transaction's close date. Currency is a LOOKUP to Currency, not a loose three-letter string: a typo cannot silently create a second currency that sums separately.",
-  "id": "Payee",
+  "description": "",
+  "id": "Statement",
   "input": {
     "type": "SCHEMA_AND_LAYOUT",
     "dynamic": false,
     "layout": {
-      "ui:order": [
-        "employeeId",
-        "name",
-        "email",
-        "userId",
-        "currencyId",
-        "hireDate",
-        "terminationDate",
-        "status"
-      ],
-      "currencyId": {
+      "periodId": {
         "ui:widget": "LookupWidget",
         "ui:options": {
           "ua:payload": {
-            "lookupType": "ENTITY_ID:Currency",
+            "lookupType": "ENTITY_ID:Period",
             "type": "ByQuery"
           },
           "multiple": false
         }
       },
-      "userId": {
+      "ui:order": [
+        "statementId",
+        "runId",
+        "employeeId",
+        "periodId",
+        "total",
+        "status",
+        "releasedAt"
+      ],
+      "employeeId": {
         "ui:widget": "LookupWidget",
         "ui:options": {
           "ua:payload": {
-            "lookupType": "USER",
+            "lookupType": "ENTITY_ID:Payee",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      },
+      "runId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:CalculationRun",
             "type": "ByQuery"
           },
           "multiple": false
@@ -42,84 +51,91 @@
     "schema": {
       "type": "object",
       "properties": {
-        "employeeId": {
+        "statementId": {
           "type": "string",
-          "title": "Employee Id",
+          "title": "Statement Id",
           "filterable": true,
           "sortable": true,
           "searchable": true,
-          "uniqueKey": true
-        },
-        "name": {
-          "type": "string",
-          "title": "Name",
-          "filterable": true,
-          "sortable": true,
-          "searchable": true,
+          "uniqueKey": true,
           "nameField": true
         },
-        "email": {
-          "type": "string",
-          "title": "Email",
-          "filterable": true,
-          "sortable": true,
-          "searchable": true
-        },
-        "userId": {
+        "runId": {
           "type": "string",
           "format": "single-select",
-          "title": "Platform User",
+          "title": "Run Id",
           "filterable": true,
           "foreignKey": {
-            "reference": "USER"
+            "reference": "ENTITY_ID:CalculationRun"
           },
           "foreignKeyConstraintEnforced": false
         },
-        "currencyId": {
+        "employeeId": {
           "type": "string",
           "format": "single-select",
-          "title": "Currency",
+          "title": "Employee Id",
           "filterable": true,
           "foreignKey": {
-            "reference": "ENTITY_ID:Currency"
+            "reference": "ENTITY_ID:Payee"
           },
           "foreignKeyConstraintEnforced": false
         },
-        "hireDate": {
-          "type": "integer",
-          "format": "date",
-          "dateFormat": "epoch",
-          "title": "Hire Date",
+        "periodId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Period Id",
           "filterable": true,
-          "sortable": true
+          "foreignKey": {
+            "reference": "ENTITY_ID:Period"
+          },
+          "foreignKeyConstraintEnforced": false
         },
-        "terminationDate": {
+        "total": {
           "type": "integer",
-          "format": "date",
-          "dateFormat": "epoch",
-          "title": "Termination Date",
+          "title": "Total (minor units)",
           "filterable": true,
           "sortable": true
         },
         "status": {
           "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "Draft",
+              "title": "Draft"
+            },
+            {
+              "const": "Released",
+              "title": "Released"
+            },
+            {
+              "const": "Acknowledged",
+              "title": "Acknowledged"
+            },
+            {
+              "const": "Paid",
+              "title": "Paid"
+            }
+          ],
           "title": "Status",
           "filterable": true,
           "sortable": true
+        },
+        "releasedAt": {
+          "type": "integer",
+          "format": "date-time",
+          "dateFormat": "epoch",
+          "title": "Released At",
+          "filterable": true,
+          "sortable": true
         }
-      },
-      "required": [
-        "employeeId",
-        "name",
-        "currencyId",
-        "status"
-      ]
+      }
     }
   },
-  "lastModifiedBy": 372563,
-  "lastPlatformUpdateBy": 372563,
-  "lastPlatformUpdateOn": 1788941432162,
-  "lcName": "people",
+  "lastModifiedBy": 435691,
+  "lastPlatformUpdateBy": 435691,
+  "lastPlatformUpdateOn": 1788769611365,
+  "lcName": "statement",
   "metadata": {
     "auditable": true,
     "autoGeneratedFields": [],
@@ -128,44 +144,48 @@
     "captureReferences": false,
     "captureReporting": true,
     "dateFields": [
-      "terminationDate",
-      "hireDate"
+      "releasedAt"
     ],
     "deployable": false,
     "encryptedFields": [],
     "external": false,
     "filterableFields": [
+      "statementId",
+      "runId",
       "employeeId",
-      "name",
-      "email",
-      "userId",
-      "currencyId",
-      "hireDate",
-      "terminationDate",
-      "status"
+      "periodId",
+      "total",
+      "status",
+      "releasedAt"
     ],
     "graphType": "LEGACY_MDM",
     "hasTimeSeriesRecords": true,
     "hashedFields": [],
     "inaccessibleFromUI": false,
     "includeInDependency": false,
-    "nameField": "name",
+    "nameField": "statementId",
     "partFields": [],
     "piiFields": [],
     "primaryKeyField": "",
     "referenceKeys": [
       {
-        "key": "properties.currencyId",
-        "referenceType": "Currency"
+        "key": "properties.runId",
+        "referenceType": "CalculationRun"
+      },
+      {
+        "key": "properties.employeeId",
+        "referenceType": "Payee"
+      },
+      {
+        "key": "properties.periodId",
+        "referenceType": "Period"
       }
     ],
     "scdType2Enabled": false,
     "schemaValidationEnabled": true,
     "searchableFields": [
-      "employeeId",
-      "name",
-      "name",
-      "email"
+      "statementId",
+      "statementId"
     ],
     "sessionBackedStorageEnabled": false,
     "skipConfigSyncIfModified": false,
@@ -187,7 +207,7 @@
     "syncFromSourceCustomer": false,
     "translationsEnabled": false,
     "uniqueKeyFields": [
-      "employeeId"
+      "statementId"
     ],
     "urlValidationEnabledFields": [],
     "useCachedEntityStoreForAutomations": false,
@@ -195,94 +215,101 @@
     "vectorFields": [],
     "versioningEnabled": true
   },
-  "modifiedTime": 1788941432162,
-  "name": "People",
-  "ownerUserId": 372563,
+  "modifiedTime": 1788769611365,
+  "name": "Statement",
+  "ownerUserId": 435691,
   "packaged": false,
-  "pluralName": "People",
+  "pluralName": "Statements",
   "schema": {
     "type": "SCHEMA",
     "dynamic": false,
     "schema": {
       "type": "object",
       "properties": {
-        "employeeId": {
+        "statementId": {
           "type": "string",
-          "title": "Employee Id",
+          "title": "Statement Id",
           "filterable": true,
           "sortable": true,
           "searchable": true,
-          "uniqueKey": true
-        },
-        "name": {
-          "type": "string",
-          "title": "Name",
-          "filterable": true,
-          "sortable": true,
-          "searchable": true,
+          "uniqueKey": true,
           "nameField": true
         },
-        "email": {
-          "type": "string",
-          "title": "Email",
-          "filterable": true,
-          "sortable": true,
-          "searchable": true
-        },
-        "userId": {
+        "runId": {
           "type": "string",
           "format": "single-select",
-          "title": "Platform User",
+          "title": "Run Id",
           "filterable": true,
           "foreignKey": {
-            "reference": "USER"
+            "reference": "ENTITY_ID:CalculationRun"
           },
           "foreignKeyConstraintEnforced": false
         },
-        "currencyId": {
+        "employeeId": {
           "type": "string",
           "format": "single-select",
-          "title": "Currency",
+          "title": "Employee Id",
           "filterable": true,
           "foreignKey": {
-            "reference": "ENTITY_ID:Currency"
+            "reference": "ENTITY_ID:Payee"
           },
           "foreignKeyConstraintEnforced": false
         },
-        "hireDate": {
-          "type": "integer",
-          "format": "date",
-          "dateFormat": "epoch",
-          "title": "Hire Date",
+        "periodId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Period Id",
           "filterable": true,
-          "sortable": true
+          "foreignKey": {
+            "reference": "ENTITY_ID:Period"
+          },
+          "foreignKeyConstraintEnforced": false
         },
-        "terminationDate": {
+        "total": {
           "type": "integer",
-          "format": "date",
-          "dateFormat": "epoch",
-          "title": "Termination Date",
+          "title": "Total (minor units)",
           "filterable": true,
           "sortable": true
         },
         "status": {
           "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "Draft",
+              "title": "Draft"
+            },
+            {
+              "const": "Released",
+              "title": "Released"
+            },
+            {
+              "const": "Acknowledged",
+              "title": "Acknowledged"
+            },
+            {
+              "const": "Paid",
+              "title": "Paid"
+            }
+          ],
           "title": "Status",
           "filterable": true,
           "sortable": true
+        },
+        "releasedAt": {
+          "type": "integer",
+          "format": "date-time",
+          "dateFormat": "epoch",
+          "title": "Released At",
+          "filterable": true,
+          "sortable": true
         }
-      },
-      "required": [
-        "employeeId",
-        "name",
-        "currencyId",
-        "status"
-      ]
+      }
     }
   },
   "standard": false,
   "tags": [
     "icm"
   ],
-  "version": 2
+  "version": 0
 }

@@ -1178,3 +1178,139 @@ show/hide is:
 `filter.value` is always TEXT whatever the operator wants — `"0"`, not `0`.
 Note `create_block` DOES accept `visibility.value` as a prop path while
 `update_blocks` does not; the two verbs disagree, and only the update refuses.
+
+## A BRANCH is the platform's parallel fan-out, and its shape is groupId-driven (ICM, 2026-09-10)
+
+Nothing in this repo had used a `BRANCH` node, so `ICM | Calculate Credits` is the first.
+The shape below was read from `workflow/rt/.../BranchNodeRuntime.java` and copied from a
+platform-authored workflow (`configs/platform-features/best-practices-analytics/.../68fc996304853878c428ae4b.json`),
+not guessed.
+
+```
+BRANCH node        context {appName:"branch", type:"APPLICATION"}   -- no resourceName
+                   inputs.branches [{id:"1", inputs:{name, conditions?}}, ..., {id:"default"}]
+per lane           a BRANCH_CONDITION node, id "<branchId>@<n>",
+                   context {appName:"branch_condition", resourceName:"branch_condition"}
+                   groupId "<branchId>@<branchGroupId>@<n>"
+edges              branch@<branchId>@<branchCondId>   name "1".."n"   type "branch"
+                   branch@<branchId>@<joinNodeId>     name "default"  type "branch"
+```
+
+Four mechanics, each with a consequence:
+
+- **A BRANCH_CONDITION node has NO runtime.** `BranchConditionNodeRuntimeBuilder.build()`
+  returns null, and `WorkflowTreeBuilderImpl` COLLAPSES the two edges around it into one
+  whose `conditionInputs` is that node's `inputs.conditions`. So the lane's condition
+  ends up on the EDGE.
+- **An edge with no filter is always applicable** (`boolean applicable = filter == null`).
+  Omitting `conditions` from every BRANCH_CONDITION is therefore how you get an
+  unconditional parallel fan-out - which is what twelve independent bulk reads want.
+- **The `default`-named branch edge is rewritten to type NEXT** (`getEdgeDefType`: name
+  `default` + type `branch` -> `NEXT`), and `onInitializationComplete` turns it into the
+  `virtualEdge`. Each child token gets `terminateAtNodeId` = that target, so the lanes
+  STOP at the join node and the parent fires it exactly once. The lane bodies still need
+  their own `next` edge to it - that is what defines the terminate target.
+- **`copyVariablesToParent` persists every child's variables onto the parent on join**,
+  so a node after the join reads `{{ n_FtX.outputs.objects }}` from any lane, and a node
+  INSIDE a lane reads anything from before the branch. Both directions are used by the
+  platform's own workflow.
+
+Validation, from `BranchNodeRuntimeBuilder.validate`: at least one outgoing BRANCH edge,
+**at most one** outgoing NEXT edge, and total outgoing edges == (number of `<branchId>@n`
+targets) + 1.
+
+Measured on the first run: all four lanes reported `{"result": true}` and the join node
+had every lane's rows.
+
+**`testrun.mjs` cannot see inside a lane.** Its variable lookup key is
+`runId.runId.nodeId`, and a lane runs in a CHILD execution instance with its own id, so
+every node inside one prints "(no output recorded - not reached or still running)" on a
+run that fully succeeded. The join node's inputs are the only evidence those fetches ran.
+Reading that as a failure costs an afternoon; it is a limitation of the test harness, not
+of the branch.
+
+## `create_record` answers the entity at the TOP level, not under `record` (ICM, 2026-09-10)
+
+`{{ n_Cr.outputs.record.id }}` resolves to nothing. The output schema
+(`configs/workflow-nodes/storage_by_unifyapps/storage_by_unifyapps_create_record.json`)
+is `{id, entityType, properties, version, createdTime, ...}` - so it is
+`{{ n_Cr.outputs.id }}`.
+
+The failure is worse than a null. A Groovy node whose parameter binds an expression that
+resolves to nothing does not receive the variable as null - it does not receive it AT
+ALL, and the script dies with `No such property: runId for class: Script_<hash>`. That
+error names the variable, which is the only reason this took minutes rather than hours,
+but it points at the SCRIPT rather than at the binding that failed to resolve.
+
+## A missing UNIQUE value collides with another missing one, and takes the batch with it (ICM, 2026-09-10)
+
+`ICM | Calculate Credits` mints its own credit ids so a rollup can carry its parent's id
+in the same batch. The fold's RESPONSE projection renames that field `id` -> `creditId`;
+the node that built the write rows still read `c.id`. Every row therefore went out with
+an empty `id` AND no `properties.creditId`, which is the object's unique key.
+
+`bulk_upsert_records_by_id` answered `{success: false, successCount: 1, failedCount: 5}`:
+the first row landed (server-minted id, creditId absent), the second collided with it on
+the unique index - absent equals absent - and per the batch behaviour already recorded
+above, the rest failed with it. The error text is
+`create error, objectClass public com.mongodb.MongoWriteException(...), argument type
+mismatch`, which names neither the field nor the constraint.
+
+Two things made this cheap to find, and both are worth copying:
+
+- the flow compares `successCount` against what it MEANT to write and has its own status
+  for the mismatch, so the run answered `CREDIT_WRITE_INCOMPLETE`, marked the
+  `CalculationRun` row `Failed`, and did not report success;
+- the errors map is keyed by the id the SERVER used. Those ids being ObjectId-shaped
+  timestamps rather than the random hex the fold minted is what said "your ids never
+  arrived" before any of the Mongo text was decoded.
+
+**A pre-minted id is only pre-minted if the field it travels in keeps its name.** Assert
+the write, never the write's status flag.
+
+## `CalculationRun.status` is an EXECUTION state machine, not an approval one (ICM, 2026-09-10)
+
+The column's closed option list is `Running | Succeeded | Failed | Superseded`. Writing
+`CALCULATED` fails the entity validator with `property status invalid; oneOf fail` - at
+WRITE time, on production, with the run row already created.
+
+The design the product is being built to wants `Draft -> Calculated -> Approved ->
+Finalized`, because only a FINALIZED run may feed the true-up baseline. That is a
+different machine about a different question, and the object carries only the first one.
+Both are needed and the second has no home yet.
+
+Meanwhile the execution states are used honestly: the run row is written `Running`
+BEFORE the credits and flipped to `Succeeded`/`Failed` after, so a crash between the two
+leaves a run that plainly says it never finished. Tool currently holds one such row from
+exactly that crash - which is the state machine working, not a leak.
+
+## An OMITTED input is an UNBOUND variable in Groovy, not a null (ICM, 2026-09-10)
+
+The shared contract already says real callers send EMPTY STRINGS for optional inputs
+they did not fill. They also sometimes send **nothing at all**, and the two fail in
+completely different places.
+
+`ICM | Calculate Credits` binds `pageLimit: "{{ n_Start.outputs.pageLimit }}"`. Called
+without `pageLimit`, the START node has no such output, the expression resolves to
+nothing, and the script does not receive the variable AS NULL - it does not receive it
+at all:
+
+```
+node n_Norm errored - No such property: pageLimit for class: Script_589ba8354efa...
+```
+
+`?:` and `== null` cannot save a name that was never bound; both throw on the read
+itself. Every optional input read straight from a START node needs
+
+```groovy
+def opt = { String name -> binding.hasVariable(name) ? binding.getVariable(name) : null }
+```
+
+Nine of the suite's twelve cases failed on this and the three that passed were the three
+that happened to send all three inputs. **The all-empty-strings case does NOT catch it** -
+`""` is a value, so the variable binds fine. The case that catches it is the one that
+OMITS the key, and every callable's suite needs both.
+
+Same mechanism as the `create_record` output-path entry above: there, the expression
+pointed at a field that does not exist; here, at a field the caller did not send. One
+cause, one error message, two very different-looking bugs.

@@ -1,0 +1,2408 @@
+{
+  "appsUsed": [],
+  "createdTime": 1789045662816,
+  "deleted": false,
+  "description": "Turns the transactions in one period into Credit rows: a payee NAME on each deal is resolved to the seat they held on that date, the seat's own plan is asked first and its title's plan second, and every credit rule on the winning plan that matches fires. Dry run by default.",
+  "edges": [
+    {
+      "fromNodeId": "n_Start",
+      "id": "next@n_Start@n_Norm",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Norm",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Norm",
+      "id": "next@n_Norm@n_FtPeriod",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtPeriod",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtPeriod",
+      "id": "next@n_FtPeriod@n_Shape",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Shape",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Shape",
+      "id": "next@n_Shape@n_IfPer",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfPer",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfPer",
+      "id": "if@n_IfPer@n_RespPer",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_RespPer",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfPer",
+      "id": "next@n_IfPer@n_Br",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Br",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Br",
+      "id": "branch@n_Br@n_Br@1",
+      "name": "1",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Br@1",
+      "type": "branch"
+    },
+    {
+      "fromNodeId": "n_Br",
+      "id": "branch@n_Br@n_Br@2",
+      "name": "2",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Br@2",
+      "type": "branch"
+    },
+    {
+      "fromNodeId": "n_Br",
+      "id": "branch@n_Br@n_Br@3",
+      "name": "3",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Br@3",
+      "type": "branch"
+    },
+    {
+      "fromNodeId": "n_Br",
+      "id": "branch@n_Br@n_Br@4",
+      "name": "4",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Br@4",
+      "type": "branch"
+    },
+    {
+      "fromNodeId": "n_Br",
+      "id": "branch@n_Br@n_Calc",
+      "name": "default",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Calc",
+      "type": "branch"
+    },
+    {
+      "fromNodeId": "n_Br@1",
+      "id": "next@n_Br@1@n_FtTxn",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtTxn",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtTxn",
+      "id": "next@n_FtTxn@n_Calc",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Calc",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Br@2",
+      "id": "next@n_Br@2@n_FtAttr",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtAttr",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtAttr",
+      "id": "next@n_FtAttr@n_FtOcc",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtOcc",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtOcc",
+      "id": "next@n_FtOcc@n_FtHier",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtHier",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtHier",
+      "id": "next@n_FtHier@n_Calc",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Calc",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Br@3",
+      "id": "next@n_Br@3@n_FtAsg",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtAsg",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtAsg",
+      "id": "next@n_FtAsg@n_FtPlan",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtPlan",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtPlan",
+      "id": "next@n_FtPlan@n_FtRule",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtRule",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtRule",
+      "id": "next@n_FtRule@n_Calc",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Calc",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Br@4",
+      "id": "next@n_Br@4@n_FtPayee",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtPayee",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtPayee",
+      "id": "next@n_FtPayee@n_FtTitle",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtTitle",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtTitle",
+      "id": "next@n_FtTitle@n_FtTerr",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtTerr",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtTerr",
+      "id": "next@n_FtTerr@n_FtCcy",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtCcy",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtCcy",
+      "id": "next@n_FtCcy@n_FtPos",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtPos",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtPos",
+      "id": "next@n_FtPos@n_FtCT",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtCT",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtCT",
+      "id": "next@n_FtCT@n_Calc",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Calc",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Calc",
+      "id": "next@n_Calc@n_IfCalc",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfCalc",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfCalc",
+      "id": "if@n_IfCalc@n_RespCalc",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_RespCalc",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfCalc",
+      "id": "next@n_IfCalc@n_IfDry",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfDry",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfDry",
+      "id": "if@n_IfDry@n_RespDry",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_RespDry",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfDry",
+      "id": "next@n_IfDry@n_CrRun",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_CrRun",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_CrRun",
+      "id": "next@n_CrRun@n_Stamp",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Stamp",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Stamp",
+      "id": "next@n_Stamp@n_WrCr",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_WrCr",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_WrCr",
+      "id": "next@n_WrCr@n_RunEnd",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_RunEnd",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_RunEnd",
+      "id": "next@n_RunEnd@n_UpRun",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_UpRun",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_UpRun",
+      "id": "next@n_UpRun@n_IfWr",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfWr",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfWr",
+      "id": "if@n_IfWr@n_RespPart",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_RespPart",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfWr",
+      "id": "next@n_IfWr@n_RespOk",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_RespOk",
+      "type": "next"
+    }
+  ],
+  "id": "6aa2ab9e4f1e1040ac32d181",
+  "lastModifiedBy": 435691,
+  "lastPlatformUpdateBy": 435691,
+  "lastPlatformUpdateOn": 1789047071040,
+  "lcName": "icm | calculate credits",
+  "modifiedTime": 1789047071040,
+  "name": "ICM | Calculate Credits",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Start",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status"
+          ],
+          "properties": {
+            "status": {
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
+            },
+            "runId": {
+              "type": "string"
+            },
+            "periodName": {
+              "type": "string"
+            },
+            "windowStart": {
+              "type": "integer"
+            },
+            "windowEnd": {
+              "type": "integer"
+            },
+            "dryRun": {
+              "type": "boolean"
+            },
+            "written": {
+              "type": "integer"
+            },
+            "credits": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            "exceptions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            "stats": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "periodId"
+          ],
+          "properties": {
+            "periodId": {
+              "type": "string",
+              "title": "Period Id"
+            },
+            "dryRun": {
+              "type": "boolean",
+              "title": "Dry Run"
+            },
+            "pageLimit": {
+              "type": "integer",
+              "title": "Page Limit"
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable - one period in, its credits out",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Norm",
+      "index": 2,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "periodId": {
+              "type": "string",
+              "title": "periodId"
+            },
+            "inputOk": {
+              "type": "boolean",
+              "title": "inputOk"
+            },
+            "dryRun": {
+              "type": "boolean",
+              "title": "dryRun"
+            },
+            "pageLimit": {
+              "type": "integer",
+              "title": "pageLimit"
+            },
+            "runId": {
+              "type": "string",
+              "title": "runId"
+            },
+            "startedAt": {
+              "type": "integer",
+              "title": "startedAt"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "periodId": {
+              "type": "string",
+              "title": "periodId"
+            },
+            "dryRun": {
+              "type": "string",
+              "title": "dryRun"
+            },
+            "pageLimit": {
+              "type": "string",
+              "title": "pageLimit"
+            }
+          }
+        },
+        "code": "// Normalise the caller's inputs, and mint the run id.\n//\n// AN OMITTED INPUT IS AN UNBOUND VARIABLE, NOT A NULL. When a caller leaves `dryRun`\n// out entirely, the START node has no such output, the parameter's expression resolves\n// to nothing, and the script does not receive the variable at all - referencing it dies\n// with `No such property: dryRun for class: Script_<hash>`. `?:` cannot save a name\n// that was never bound, so every optional input is read through `binding.hasVariable`.\n//\n// This is the second half of the shared contract's input rule. That rule says real\n// callers send EMPTY STRINGS for what they did not fill; they also sometimes send\n// nothing at all, and the two fail in completely different places.\n//\n// An unusable periodId becomes a SENTINEL rather than an empty filter. The fetch\n// downstream then keeps one property and one operator whatever the caller sent, which\n// is what lets the builder draw its filter and the index analyser read it - an empty\n// or absent filter would silently fetch every Period instead of none.\n\ndef opt = { String name -> binding.hasVariable(name) ? binding.getVariable(name) : null }\n\nString pid = opt('periodId') == null ? '' : String.valueOf(opt('periodId')).trim()\nboolean inputOk = !pid.isEmpty()\n\n// \"\" is missing, not false. A caller that omits dryRun gets the SAFE answer: compute\n// and report, write nothing. Writing pay is opt-in, never the default.\nString dr = opt('dryRun') == null ? '' : String.valueOf(opt('dryRun')).trim().toLowerCase()\nboolean dry = dr.isEmpty() ? true : (dr == 'true')\n\nint limit = 1000\nString pl = opt('pageLimit') == null ? '' : String.valueOf(opt('pageLimit')).trim()\nif (!pl.isEmpty()) {\n    try { limit = Integer.parseInt(pl) } catch (Exception e) { limit = 1000 }\n}\nif (limit < 1) limit = 1\nif (limit > 5000) limit = 5000\n\n// The engine mints the run id; the caller cannot supply one. That is what makes the\n// UNIQUE key on CalculationRun.runId un-hittable without a pre-check fetch, and the\n// reason there is no pre-check node in this flow.\nlong now = System.currentTimeMillis()\nString runId = 'RUN-' + now + '-' + Long.toHexString(new Random(now).nextInt(0x1000000))\n\nreturn [\n    periodId : inputOk ? pid : '__invalid_input__',\n    inputOk  : inputOk,\n    dryRun   : dry,\n    pageLimit: limit,\n    runId    : runId,\n    startedAt: now,\n]\n",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "periodId": "{{ n_Start.outputs.periodId }}",
+          "dryRun": "{{ n_Start.outputs.dryRun }}",
+          "pageLimit": "{{ n_Start.outputs.pageLimit }}"
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Defaults, a sentinel for an unusable period, and the run id",
+      "title": "Normalise the request",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtPeriod",
+      "index": 3,
+      "inputs": {
+        "triggerInputCondition": {
+          "operator": "AND",
+          "filters": [
+            {
+              "property": "id",
+              "filter": {
+                "operator": "EQUAL",
+                "value": "{{ n_Norm.outputs.result.periodId }}"
+              }
+            }
+          ]
+        },
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Period",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.name",
+          "properties.periodType",
+          "properties.status",
+          "properties.startDate",
+          "properties.endDate"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The one period this run is scoped to",
+      "title": "Fetch Period",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Shape",
+      "index": 4,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "ok": {
+              "type": "boolean",
+              "title": "ok"
+            },
+            "status": {
+              "type": "string",
+              "title": "status"
+            },
+            "message": {
+              "type": "string",
+              "title": "message"
+            },
+            "periodName": {
+              "type": "string",
+              "title": "periodName"
+            },
+            "windowStart": {
+              "type": "integer",
+              "title": "windowStart"
+            },
+            "windowEnd": {
+              "type": "integer",
+              "title": "windowEnd"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "periodId": {
+              "type": "string",
+              "title": "periodId"
+            },
+            "inputOk": {
+              "type": "boolean",
+              "title": "inputOk"
+            },
+            "periodRows": {
+              "type": "array",
+              "title": "periodRows",
+              "items": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "code": "// Decide whether this period may be calculated at all, and hand the window down.\n//\n// Three refusals, each with its own caller-actionable status, because \"it did not run\"\n// is not an answer anybody can act on:\n//\n//   INVALID_INPUT     the caller sent no periodId\n//   PERIOD_NOT_FOUND  they sent one no Period carries\n//   PERIOD_NOT_OPEN   the period is CLOSED, PAID or already CALCULATING\n//\n// CLOSED and PAID are the audit boundary — recalculating a paid month is how a number\n// somebody has already been paid against silently changes. CALCULATING means another\n// run holds it.\n\ndef rows(v) { return (v instanceof List) ? v : [] }\ndef p(row, String k) { return ((Map) row?.properties)?.get(k) }\n\nList periods = rows(periodRows)\n\nif (!(inputOk instanceof Boolean ? inputOk : String.valueOf(inputOk) == 'true')) {\n    return [ok: false, status: 'INVALID_INPUT', message: 'periodId is required']\n}\nif (periods.isEmpty()) {\n    return [ok: false, status: 'PERIOD_NOT_FOUND', message: \"no Period with id ${periodId}\".toString()]\n}\n\ndef period = periods[0]\nString st = String.valueOf(p(period, 'status'))\nif (st != 'OPEN') {\n    return [ok: false, status: 'PERIOD_NOT_OPEN',\n            message: \"period ${p(period, 'name')} is ${st}; only an OPEN period may be calculated\".toString()]\n}\n\ndef s = p(period, 'startDate'), e = p(period, 'endDate')\nif (s == null || e == null) {\n    return [ok: false, status: 'PERIOD_NOT_USABLE',\n            message: \"period ${p(period, 'name')} has no start or end date\".toString()]\n}\n\nreturn [\n    ok         : true,\n    status     : 'OK',\n    message    : '',\n    periodName : String.valueOf(p(period, 'name')),\n    windowStart: ((Number) s).longValue(),\n    windowEnd  : ((Number) e).longValue(),\n]\n",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "periodId": "{{ n_Norm.outputs.result.periodId }}",
+          "inputOk": "{{ n_Norm.outputs.result.inputOk }}",
+          "periodRows": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_FtPeriod.outputs.objects }}",
+            "items": "{{ n_FtPeriod.outputs.objects[0] }}"
+          }
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "May this period be calculated, and over what window",
+      "title": "Read the period",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_IfPer",
+      "index": 5,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Shape.outputs.result.ok }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": false
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Is the period unusable?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfPer@root_id-1@y",
+      "id": "n_RespPer",
+      "index": 6,
+      "inputs": {
+        "result": {
+          "status": "{{ n_Shape.outputs.result.status }}",
+          "message": "{{ n_Shape.outputs.result.message }}",
+          "runId": "{{ n_Norm.outputs.result.runId }}",
+          "periodName": "",
+          "windowStart": 0,
+          "windowEnd": 0,
+          "dryRun": "{{ n_Norm.outputs.result.dryRun }}",
+          "written": 0,
+          "credits": [],
+          "exceptions": [],
+          "stats": {}
+        }
+      },
+      "skip": false,
+      "subTitle": "Refuse with the reason, before a single deal is read",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "branch",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfPer@root_id-1@n",
+      "id": "n_Br",
+      "index": 7,
+      "inputs": {
+        "branches": [
+          {
+            "id": "1",
+            "inputs": {
+              "name": "Deals"
+            }
+          },
+          {
+            "id": "2",
+            "inputs": {
+              "name": "Seat facts"
+            }
+          },
+          {
+            "id": "3",
+            "inputs": {
+              "name": "Plan config"
+            }
+          },
+          {
+            "id": "4",
+            "inputs": {
+              "name": "Reference data"
+            }
+          },
+          {
+            "id": "default"
+          }
+        ]
+      },
+      "skip": false,
+      "subTitle": "Read every object once, in parallel",
+      "title": "Branch",
+      "type": "BRANCH"
+    },
+    {
+      "context": {
+        "appName": "branch_condition",
+        "resourceVersion": 0,
+        "resourceName": "branch_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Br@n_IfPer@root_id-1@n@1",
+      "id": "n_Br@1",
+      "index": 8,
+      "inputs": {
+        "name": "Deals"
+      },
+      "skip": false,
+      "title": "",
+      "type": "BRANCH_CONDITION"
+    },
+    {
+      "context": {
+        "appName": "branch_condition",
+        "resourceVersion": 0,
+        "resourceName": "branch_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Br@n_IfPer@root_id-1@n@2",
+      "id": "n_Br@2",
+      "index": 9,
+      "inputs": {
+        "name": "Seat facts"
+      },
+      "skip": false,
+      "title": "",
+      "type": "BRANCH_CONDITION"
+    },
+    {
+      "context": {
+        "appName": "branch_condition",
+        "resourceVersion": 0,
+        "resourceName": "branch_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Br@n_IfPer@root_id-1@n@3",
+      "id": "n_Br@3",
+      "index": 10,
+      "inputs": {
+        "name": "Plan config"
+      },
+      "skip": false,
+      "title": "",
+      "type": "BRANCH_CONDITION"
+    },
+    {
+      "context": {
+        "appName": "branch_condition",
+        "resourceVersion": 0,
+        "resourceName": "branch_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Br@n_IfPer@root_id-1@n@4",
+      "id": "n_Br@4",
+      "index": 11,
+      "inputs": {
+        "name": "Reference data"
+      },
+      "skip": false,
+      "title": "",
+      "type": "BRANCH_CONDITION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Br@n_IfPer@root_id-1@n@1",
+      "id": "n_FtTxn",
+      "index": 12,
+      "inputs": {
+        "triggerInputCondition": {
+          "operator": "AND",
+          "filters": [
+            {
+              "property": "properties.incentiveDate",
+              "filter": {
+                "operator": "GTE",
+                "value": "{{ n_Shape.outputs.result.windowStart }}"
+              }
+            },
+            {
+              "property": "properties.incentiveDate",
+              "filter": {
+                "operator": "LTE",
+                "value": "{{ n_Shape.outputs.result.windowEnd }}"
+              }
+            }
+          ]
+        },
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Transaction",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.transactionId",
+          "properties.sourceId",
+          "properties.positionId",
+          "properties.closeDate",
+          "properties.incentiveDate",
+          "properties.amount",
+          "properties.product",
+          "properties.customer",
+          "properties.attrs"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Deals whose incentive date lands in the period",
+      "title": "Fetch Transaction",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Br@n_IfPer@root_id-1@n@2",
+      "id": "n_FtAttr",
+      "index": 13,
+      "inputs": {
+        "triggerInputCondition": {
+          "operator": "AND",
+          "filters": [
+            {
+              "property": "properties.effectiveStart",
+              "filter": {
+                "operator": "LTE",
+                "value": "{{ n_Shape.outputs.result.windowEnd }}"
+              }
+            }
+          ]
+        },
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "PositionAttribute",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.positionId",
+          "properties.titleId",
+          "properties.territoryId",
+          "properties.effectiveStart",
+          "properties.effectiveEnd"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "What each seat WAS - title and territory, over a date range",
+      "title": "Fetch PositionAttribute",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Br@n_IfPer@root_id-1@n@2",
+      "id": "n_FtOcc",
+      "index": 14,
+      "inputs": {
+        "triggerInputCondition": {
+          "operator": "AND",
+          "filters": [
+            {
+              "property": "properties.effectiveStart",
+              "filter": {
+                "operator": "LTE",
+                "value": "{{ n_Shape.outputs.result.windowEnd }}"
+              }
+            }
+          ]
+        },
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "PayeePositionAssignment",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.payeeId",
+          "properties.positionId",
+          "properties.effectiveStart",
+          "properties.effectiveEnd"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Who held which seat - read both ways, by payee and by seat",
+      "title": "Fetch PayeePositionAssignment",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Br@n_IfPer@root_id-1@n@2",
+      "id": "n_FtHier",
+      "index": 15,
+      "inputs": {
+        "triggerInputCondition": {
+          "operator": "AND",
+          "filters": [
+            {
+              "property": "properties.effectiveStart",
+              "filter": {
+                "operator": "LTE",
+                "value": "{{ n_Shape.outputs.result.windowEnd }}"
+              }
+            }
+          ]
+        },
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "PositionHierarchy",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.positionId",
+          "properties.parentPositionId",
+          "properties.effectiveStart",
+          "properties.effectiveEnd"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The reporting line rollup credits climb",
+      "title": "Fetch PositionHierarchy",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Br@n_IfPer@root_id-1@n@3",
+      "id": "n_FtAsg",
+      "index": 16,
+      "inputs": {
+        "triggerInputCondition": {
+          "operator": "AND",
+          "filters": [
+            {
+              "property": "properties.startDate",
+              "filter": {
+                "operator": "LTE",
+                "value": "{{ n_Shape.outputs.result.windowEnd }}"
+              }
+            }
+          ]
+        },
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "PlanAssignment",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.planId",
+          "properties.targetType",
+          "properties.targetId",
+          "properties.titleId",
+          "properties.positionId",
+          "properties.startDate",
+          "properties.endDate"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Which plan reaches which seat or title",
+      "title": "Fetch PlanAssignment",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Br@n_IfPer@root_id-1@n@3",
+      "id": "n_FtPlan",
+      "index": 17,
+      "inputs": {
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Plan",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.planId",
+          "properties.name",
+          "properties.status",
+          "properties.startDate",
+          "properties.endDate",
+          "properties.creditRules"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Every plan - status is judged in the fold, not filtered here",
+      "title": "Fetch Plan",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Br@n_IfPer@root_id-1@n@3",
+      "id": "n_FtRule",
+      "index": 18,
+      "inputs": {
+        "triggerInputCondition": {
+          "operator": "AND",
+          "filters": [
+            {
+              "property": "properties.stage",
+              "filter": {
+                "operator": "EQUAL",
+                "value": "credit"
+              }
+            }
+          ]
+        },
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Rule",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.ruleId",
+          "properties.stage",
+          "properties.name",
+          "properties.conditions",
+          "properties.result",
+          "properties.activeStart",
+          "properties.activeEnd"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Credit rules only - the payout pass reads the others",
+      "title": "Fetch Rule",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Br@n_IfPer@root_id-1@n@4",
+      "id": "n_FtPayee",
+      "index": 19,
+      "inputs": {
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Payee",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.employeeId",
+          "properties.name",
+          "properties.currencyId",
+          "properties.hireDate",
+          "properties.terminationDate",
+          "properties.status"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Every payee - a name on a deal is resolved against these",
+      "title": "Fetch Payee",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Br@n_IfPer@root_id-1@n@4",
+      "id": "n_FtTitle",
+      "index": 20,
+      "inputs": {
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Title",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.titleCode",
+          "properties.name"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Title CODES - a rule stores T-AE, the seat stores a record id",
+      "title": "Fetch Title",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Br@n_IfPer@root_id-1@n@4",
+      "id": "n_FtTerr",
+      "index": 21,
+      "inputs": {
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Territory",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.territoryCode",
+          "properties.name"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Territory codes, for position.territory",
+      "title": "Fetch Territory",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Br@n_IfPer@root_id-1@n@4",
+      "id": "n_FtCcy",
+      "index": 22,
+      "inputs": {
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Currency",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.code",
+          "properties.name",
+          "properties.minorUnits"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Currency codes, for payee.currency",
+      "title": "Fetch Currency",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Br@n_IfPer@root_id-1@n@4",
+      "id": "n_FtPos",
+      "index": 23,
+      "inputs": {
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Position",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.positionCode",
+          "properties.name",
+          "properties.active"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Position codes - plan assignments name seats both ways",
+      "title": "Fetch Position",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Br@n_IfPer@root_id-1@n@4",
+      "id": "n_FtCT",
+      "index": 24,
+      "inputs": {
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "CreditType",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.creditTypeCode",
+          "properties.name",
+          "properties.active"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Credit type codes - a rule authors NEW_BOOKING, the column wants an id",
+      "title": "Fetch CreditType",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfPer@root_id-1@n",
+      "id": "n_Calc",
+      "index": 25,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "status": {
+              "type": "string",
+              "title": "status"
+            },
+            "message": {
+              "type": "string",
+              "title": "message"
+            },
+            "runId": {
+              "type": "string",
+              "title": "runId"
+            },
+            "periodName": {
+              "type": "string",
+              "title": "periodName"
+            },
+            "windowStart": {
+              "type": "integer",
+              "title": "windowStart"
+            },
+            "windowEnd": {
+              "type": "integer",
+              "title": "windowEnd"
+            },
+            "dryRun": {
+              "type": "boolean",
+              "title": "dryRun"
+            },
+            "written": {
+              "type": "integer",
+              "title": "written"
+            },
+            "credits": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {}
+              },
+              "title": "credits"
+            },
+            "exceptions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {}
+              },
+              "title": "exceptions"
+            },
+            "stats": {
+              "type": "object",
+              "properties": {},
+              "title": "stats"
+            },
+            "expected": {
+              "type": "integer",
+              "title": "expected"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "runId": {
+              "type": "string",
+              "title": "runId"
+            },
+            "startedAt": {
+              "type": "string",
+              "title": "startedAt"
+            },
+            "dryRun": {
+              "type": "boolean",
+              "title": "dryRun"
+            },
+            "periodName": {
+              "type": "string",
+              "title": "periodName"
+            },
+            "windowStart": {
+              "type": "integer",
+              "title": "windowStart"
+            },
+            "windowEnd": {
+              "type": "integer",
+              "title": "windowEnd"
+            },
+            "txnRows": {
+              "type": "array",
+              "title": "txnRows",
+              "items": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            },
+            "txnMore": {
+              "type": "boolean",
+              "title": "txnMore"
+            },
+            "attrRows": {
+              "type": "array",
+              "title": "attrRows",
+              "items": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            },
+            "attrMore": {
+              "type": "boolean",
+              "title": "attrMore"
+            },
+            "occRows": {
+              "type": "array",
+              "title": "occRows",
+              "items": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            },
+            "occMore": {
+              "type": "boolean",
+              "title": "occMore"
+            },
+            "hierRows": {
+              "type": "array",
+              "title": "hierRows",
+              "items": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            },
+            "hierMore": {
+              "type": "boolean",
+              "title": "hierMore"
+            },
+            "asgRows": {
+              "type": "array",
+              "title": "asgRows",
+              "items": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            },
+            "asgMore": {
+              "type": "boolean",
+              "title": "asgMore"
+            },
+            "planRows": {
+              "type": "array",
+              "title": "planRows",
+              "items": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            },
+            "planMore": {
+              "type": "boolean",
+              "title": "planMore"
+            },
+            "ruleRows": {
+              "type": "array",
+              "title": "ruleRows",
+              "items": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            },
+            "ruleMore": {
+              "type": "boolean",
+              "title": "ruleMore"
+            },
+            "payeeRows": {
+              "type": "array",
+              "title": "payeeRows",
+              "items": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            },
+            "payeeMore": {
+              "type": "boolean",
+              "title": "payeeMore"
+            },
+            "titleRows": {
+              "type": "array",
+              "title": "titleRows",
+              "items": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            },
+            "titleMore": {
+              "type": "boolean",
+              "title": "titleMore"
+            },
+            "terrRows": {
+              "type": "array",
+              "title": "terrRows",
+              "items": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            },
+            "terrMore": {
+              "type": "boolean",
+              "title": "terrMore"
+            },
+            "ccyRows": {
+              "type": "array",
+              "title": "ccyRows",
+              "items": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            },
+            "ccyMore": {
+              "type": "boolean",
+              "title": "ccyMore"
+            },
+            "posRows": {
+              "type": "array",
+              "title": "posRows",
+              "items": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            },
+            "posMore": {
+              "type": "boolean",
+              "title": "posMore"
+            },
+            "ctRows": {
+              "type": "array",
+              "title": "ctRows",
+              "items": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            },
+            "ctMore": {
+              "type": "boolean",
+              "title": "ctMore"
+            }
+          }
+        },
+        "code": "// ICM | Condition Matcher\n//\n// The calculation engine's rule-resolution core. Decides whether one Rule's\n// `conditions` apply to one row of facts. PURE: no I/O, no platform calls, no\n// clock, no randomness — which is what lets it be proved against a case table\n// in a single code node instead of only against a seeded environment.\n//\n// Spec, and the reasoning behind every edge: engine/condition-grammar.md\n// Authoring dual:  app/src/components/plan/condition-namespace.ts\n// The two are bound by engine/condition-namespace.test.ts — edit one and that test fails.\n//\n// This file is the SOURCE OF TRUTH. The platform copy lives in a code node; when\n// they disagree, this is right and the node is stale.\n\nimport java.math.BigDecimal\n\nclass ConditionMatcher {\n\n    /** The complete operator set. Anything else is reported, never evaluated. */\n    static final List OPERATORS = ['==', '!=', '>', '>=', '<', '<=', 'in']\n\n    /**\n     * Subject -> kind, mirrored from condition-namespace.ts. A subject that is not\n     * here cannot be evaluated: it would read as nothing and match nothing, which\n     * is the silent failure this map exists to turn into a reported one.\n     *\n     * `txn.attrs.<key>` is the one open-ended subject (the form types the key\n     * beside the picker), so it is matched by prefix rather than listed.\n     */\n    static final Map KINDS = [\n        // credit stage — reads the incoming deal, the seat, the person\n        'txn.amount'         : 'number',\n        'txn.product'        : 'string',\n        'txn.customer'       : 'string',\n        'txn.close_date'     : 'date',\n        // payout stage — reads what the credit stage produced\n        'credit.amount'      : 'number',\n        'credit.credit_type' : 'string',\n        'credit.close_date'  : 'date',\n        'credit.is_rollup'   : 'boolean',\n        'credit.product'     : 'string',\n        'credit.customer'    : 'string',\n        'attainment.pct'     : 'number',\n        'attainment.measure' : 'string',\n        'period.type'        : 'enum',\n        // both stages\n        'position.title'     : 'string',\n        'position.territory' : 'string',\n        'payee.currency'     : 'string',\n        'payee.hire_date'    : 'date',\n    ]\n\n    static String kindOf(String subject) {\n        if (subject == null) return null\n        if (KINDS.containsKey(subject)) return KINDS[subject]\n        if (subject.startsWith('txn.attrs.') && subject.length() > 'txn.attrs.'.length()) return 'string'\n        return null\n    }\n\n    /** Which operators are meaningful on a kind. `>` on a boolean is not a filter anyone meant. */\n    static List operatorsFor(String kind) {\n        if (kind == 'number' || kind == 'date') return ['==', '!=', '>', '>=', '<', '<=']\n        if (kind == 'boolean') return ['==', '!=']\n        return ['==', '!=', 'in']\n    }\n\n    /**\n     * Money and any other number. Never Double: a storage `number` comes back as\n     * BigDecimal below 10^7 and Double at or above it, and Groovy promotes\n     * BigDecimal + Double to Double — so one large row silently poisons the rest.\n     * See ua-icm docs/model/money-and-time.md.\n     */\n    static BigDecimal dec(v) {\n        if (v == null) return null\n        if (v instanceof BigDecimal) return v\n        try { return new BigDecimal(String.valueOf(v).trim()) } catch (Exception e) { return null }\n    }\n\n    /** Epoch millis from a number, a numeric string, or a bare YYYY-MM-DD (midnight UTC). */\n    static Long epoch(v) {\n        if (v == null) return null\n        if (v instanceof Number) return ((Number) v).longValue()\n        String s = String.valueOf(v).trim()\n        if (s ==~ /^-?\\d+$/) return Long.parseLong(s)\n        if (s ==~ /^\\d{4}-\\d{2}-\\d{2}$/) {\n            return java.time.LocalDate.parse(s).atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli()\n        }\n        return null\n    }\n\n    /**\n     * Compare one actual against one authored string, in the subject's kind.\n     * Returns an Integer (-1/0/1), or null when either side will not coerce —\n     * null is \"cannot answer\", and the caller turns it into a reported error\n     * rather than a false.\n     */\n    static Integer compareIn(String kind, actual, String expected) {\n        if (kind == 'number') {\n            BigDecimal a = dec(actual), b = dec(expected)\n            return (a == null || b == null) ? null : Integer.valueOf(a.compareTo(b))\n        }\n        if (kind == 'date') {\n            Long a = epoch(actual), b = epoch(expected)\n            return (a == null || b == null) ? null : Integer.valueOf(a.compareTo(b))\n        }\n        if (kind == 'boolean') {\n            String a = String.valueOf(actual).trim().toLowerCase()\n            String b = expected.trim().toLowerCase()\n            if (!(a in ['true', 'false']) || !(b in ['true', 'false'])) return null\n            return Integer.valueOf(a == b ? 0 : 1)   // only == / != reach here\n        }\n        // string and enum: exact, case-sensitive, on purpose (see the spec)\n        return Integer.valueOf(String.valueOf(actual).compareTo(expected))\n    }\n\n    /** `in` splits on commas; on a number subject the parts compare numerically. */\n    static Boolean isIn(String kind, actual, String expected) {\n        for (String part : expected.split(',', -1)) {\n            Integer c = compareIn(kind, actual, part.trim())\n            if (c == null) return null\n            if (c == 0) return Boolean.TRUE\n        }\n        return Boolean.FALSE\n    }\n\n    /**\n     * Evaluate every row and fold left. No precedence: `A Or B And C` is\n     * `(A Or B) And C`, because the authoring UI has no brackets and inventing\n     * precedence here would make the stored rule mean something the author never saw.\n     *\n     * Never throws. `error != null` means a row could not be evaluated — the\n     * caller records an exception and skips the rule, and MUST NOT read the\n     * false as a clean no-match.\n     */\n    static Map match(Map conditions, Map facts) {\n        List trace = []\n        List items = (conditions == null) ? null : (List) conditions.get('items')\n        if (items == null || items.isEmpty()) {\n            trace << 'no conditions — applies to everything'\n            return [matched: true, error: null, trace: trace]\n        }\n\n        Map bag = (facts == null) ? [:] : facts\n        Boolean acc = null\n\n        for (int i = 0; i < items.size(); i++) {\n            Map row = (Map) items[i]\n            String subject   = row?.get('subject')\n            String operator  = row?.get('operator')\n            String expected  = row?.get('value') == null ? null : String.valueOf(row.get('value'))\n            String connector = row?.get('connector') ?: (i == 0 ? 'If' : 'And')\n            String where     = \"condition ${i + 1}\"\n\n            String kind = kindOf(subject)\n            if (kind == null)\n                return fail(trace, \"${where}: '${subject}' is not a field any rule can read\")\n            if (!OPERATORS.contains(operator))\n                return fail(trace, \"${where}: '${operator}' is not a supported operator\")\n            if (!operatorsFor(kind).contains(operator))\n                return fail(trace, \"${where}: ${operator} cannot be used on ${subject} (${kind})\")\n            if (expected == null || expected.trim().isEmpty())\n                return fail(trace, \"${where}: ${subject} ${operator} has no value to compare against\")\n\n            // A fact that is absent or null is UNKNOWN, not false. Returning false\n            // here would read as \"this rule does not apply\", which nobody\n            // investigates — and the person is quietly underpaid.\n            if (!bag.containsKey(subject) || bag.get(subject) == null)\n                return fail(trace, \"${where}: no value supplied for '${subject}'\")\n\n            def actual = bag.get(subject)\n            Boolean r\n\n            if (operator == 'in') {\n                r = isIn(kind, actual, expected)\n            } else {\n                Integer c = compareIn(kind, actual, expected)\n                if (c == null) r = null\n                else if (operator == '==') r = (c == 0)\n                else if (operator == '!=') r = (c != 0)\n                else if (operator == '>')  r = (c > 0)\n                else if (operator == '>=') r = (c >= 0)\n                else if (operator == '<')  r = (c < 0)\n                else r = (c <= 0)\n            }\n\n            if (r == null)\n                return fail(trace, \"${where}: cannot compare ${subject} (${kind}) against '${expected}' — actual was '${actual}'\")\n\n            trace << \"${connector} ${subject} ${operator} '${expected}' -> ${r} (actual '${actual}')\".toString()\n\n            if (acc == null) acc = (connector == 'Not') ? !r : r\n            else if (connector == 'Or')  acc = acc || r\n            else if (connector == 'Not') acc = acc && !r\n            else acc = acc && r\n        }\n\n        return [matched: acc.booleanValue(), error: null, trace: trace]\n    }\n\n    private static Map fail(List trace, String message) {\n        trace << (\"REFUSED: \" + message).toString()\n        return [matched: false, error: message, trace: trace]\n    }\n}\n\n\n// ICM | Credit Pass — name-driven\n//\n// Transactions in, Credit rows out. PURE: every lookup arrives already fetched and\n// already indexed, so this holds no opinion about how records are read and can be\n// proved against a case table.\n//\n// It differs from engine/CreditPass.groovy in the Sales-Commission-Management repo\n// in ONE deliberate way, and the difference is the reason this file exists: that one\n// enters at `transaction.positionId`, this one enters at a PAYEE NAME. The source\n// export carries \"Team Member: Full Name\" and no position id, so a pass that demands\n// a resolved seat cannot read the data the product actually receives.\n//\n// Two more decisions, both from the same source data:\n//\n//  - The SPLIT is a fact on the transaction, not only a number on the rule. The export\n//    carries `Percent (%)` per row. A rule's `splitBps` OVERRIDES it; absent, the\n//    source split stands; absent from both, 100%.\n//  - Splits are NOT normalised to 100%. Order 00388125 credits one row at 100% and\n//    another at 70%. Summing to more than 100% is overlay crediting, not corruption.\n//\n// Runs AFTER ConditionMatcher in the same node — it calls ConditionMatcher.match.\n\nimport java.math.BigDecimal\nimport java.math.RoundingMode\n\nclass CreditPass {\n\n    static final BigDecimal BPS = new BigDecimal('10000')\n\n    /** Effective-dated row live at an instant. Absent bound = open in that direction. */\n    static boolean live(row, long asOf) {\n        def s = row?.effectiveStart ?: row?.startDate ?: row?.activeStart\n        def e = row?.effectiveEnd   ?: row?.endDate   ?: row?.activeEnd\n        if (s != null && asOf < ((Number) s).longValue()) return false\n        if (e != null && asOf > ((Number) e).longValue()) return false\n        return true\n    }\n\n    /** Every dated row live at asOf. Two is not one — the caller decides if that is ambiguity. */\n    static List liveRows(List rows, long asOf) {\n        if (rows == null) return []\n        return rows.findAll { live(it, asOf) }\n    }\n\n    static BigDecimal dec(v) { return ConditionMatcher.dec(v) }\n\n    /** A name as a lookup key: trimmed, collapsed whitespace, lower case. */\n    static String key(String s) {\n        if (s == null) return null\n        String t = s.trim().replaceAll(/\\s+/, ' ').toLowerCase()\n        return t.isEmpty() ? null : t\n    }\n\n    /**\n     * Walk up the reporting line, collecting the seats to roll a credit into.\n     *\n     * Ends quietly on no parent, an unknown seat, or the level budget. None of those\n     * is an error: a deal closed by someone reporting to nobody is a normal\n     * top-of-tree deal, and failing it would fail every VP's own bookings.\n     *\n     * `seen` breaks a cycle rather than trusting the data not to have one.\n     */\n    static List ancestors(String positionId, Map parentByPosition, long asOf, int levels) {\n        List out = []\n        Set seen = [positionId] as Set\n        String cur = positionId\n        for (int i = 0; i < levels; i++) {\n            List up = liveRows((List) parentByPosition[cur], asOf)\n            if (up.isEmpty()) break\n            String parent = up[0].parentPositionId\n            if (parent == null || seen.contains(parent)) break\n            out << parent\n            seen << parent\n            cur = parent\n        }\n        return out\n    }\n\n    /** `rollupLevels` as authored: '1'..'3', or 'All ancestors'. */\n    static int levelsFrom(String raw) {\n        if (raw == null) return 0\n        String t = raw.trim()\n        if (t.equalsIgnoreCase('All ancestors')) return 100\n        try { return Integer.parseInt(t) } catch (Exception e) { return 0 }\n    }\n\n    /** An ObjectId-shaped record id, minted here so a parent and its children can be\n     *  written in ONE batch with the FK between them already resolved. */\n    static String mintId(Random rnd) {\n        StringBuilder sb = new StringBuilder('e_')\n        for (int i = 0; i < 24; i++) sb.append(Integer.toHexString(rnd.nextInt(16)))\n        return sb.toString()\n    }\n\n    /**\n     * The facts a credit rule is evaluated against. Keys are the subject paths in\n     * condition-namespace.ts — this map IS the credit half of that namespace, and a\n     * subject the matcher knows but this never supplies becomes a RULE_REFUSED rather\n     * than a silent false.\n     *\n     * `position.title` carries the CODE, because that is what a rule stores.\n     */\n    static Map facts(Map txn, String titleCode, String territoryCode, Map payee) {\n        Map f = [\n            'txn.amount'         : txn.amount,\n            'txn.product'        : txn.product,\n            'txn.customer'       : txn.customer,\n            'txn.close_date'     : txn.closeDate,\n            'position.title'     : titleCode,\n            'position.territory' : territoryCode,\n            'payee.currency'     : payee?.currencyCode,\n            'payee.hire_date'    : payee?.hireDate,\n        ]\n        def attrs = txn.attrs\n        if (attrs instanceof Map) attrs.each { k, v -> f['txn.attrs.' + k] = v }\n        return f\n    }\n\n    /** Does this plan assignment name this seat? The data carries BOTH record ids and\n     *  business codes in `targetId`/`positionId`, so both are accepted — see the spec. */\n    static boolean namesPosition(Map a, String posId, String posCode) {\n        for (v in [a.targetId, a.positionId]) {\n            if (v == null) continue\n            String s = String.valueOf(v)\n            if (s == posId || (posCode != null && s == posCode)) return true\n        }\n        return false\n    }\n\n    static boolean namesTitle(Map a, String titleId, String titleCode) {\n        for (v in [a.targetId, a.titleId]) {\n            if (v == null) continue\n            String s = String.valueOf(v)\n            if (s == titleId || (titleCode != null && s == titleCode)) return true\n        }\n        return false\n    }\n\n    /**\n     * The pass. Never throws: an undecidable transaction lands in `exceptions` and the\n     * fold continues, because one unresolvable seat must not stop a quarter.\n     */\n    static Map run(List transactions, Map ctx) {\n        List credits = []\n        List exceptions = []\n        int matched = 0, rolled = 0, unmatched = 0\n\n        Map payeeIdsByName     = ctx.payeeIdsByName     ?: [:]\n        Map payeeById          = ctx.payeeById          ?: [:]\n        Map seatsByPayee       = ctx.seatsByPayee       ?: [:]\n        Map attrByPosition     = ctx.attrByPosition     ?: [:]\n        Map parentByPosition   = ctx.parentByPosition   ?: [:]\n        Map occupantByPosition = ctx.occupantByPosition ?: [:]\n        Map titleCodeById      = ctx.titleCodeById      ?: [:]\n        Map territoryCodeById  = ctx.territoryCodeById  ?: [:]\n        Map positionCodeById   = ctx.positionCodeById   ?: [:]\n        Map creditTypeIdByCode = ctx.creditTypeIdByCode ?: [:]\n        Map plansById          = ctx.plansById          ?: [:]\n        Map rulesByRuleId      = ctx.rulesByRuleId      ?: [:]\n        List assignments       = (List) (ctx.assignments ?: [])\n        Random rnd             = new Random(((Number) (ctx.seed ?: 42L)).longValue())\n\n        def refuse = { Map t, String code, String detail ->\n            exceptions << [transactionId: t.transactionId, payeeName: t.payeeName,\n                           positionId: t.positionId, code: code, detail: detail]\n        }\n\n        // A plan reaches a deal only if it is Active AND in force on the date.\n        def planUsable = { String planKey, long asOf ->\n            Map p = (Map) plansById[planKey]\n            if (p == null) return false\n            if (p.status != 'Active') return false\n            return live(p, asOf)\n        }\n\n        for (Map t : transactions) {\n            def when = t.incentiveDate ?: t.closeDate\n            if (when == null) { refuse(t, 'NO_DATE', 'neither incentiveDate nor closeDate is set'); continue }\n            long asOf = ((Number) when).longValue()\n\n            // --- name -> payee -------------------------------------------------\n            String nameKey = key((String) t.payeeName)\n            if (nameKey == null) { refuse(t, 'NO_PAYEE_NAME', 'the row names nobody to pay'); continue }\n            List hits = (List) (payeeIdsByName[nameKey] ?: [])\n            if (hits.isEmpty()) { refuse(t, 'UNRESOLVED_PAYEE', \"no Payee is named '${t.payeeName}'\"); continue }\n            if (hits.size() > 1) { refuse(t, 'AMBIGUOUS_PAYEE', \"${hits.size()} payees are named '${t.payeeName}'\"); continue }\n            String payeeId = (String) hits[0]\n            Map payee = (Map) (payeeById[payeeId] ?: [:])\n\n            // --- payee -> seat, as of the date ---------------------------------\n            List seats = liveRows((List) seatsByPayee[payeeId], asOf)\n            if (seats.isEmpty()) { refuse(t, 'NO_POSITION', \"${t.payeeName} held no position on ${asOf}\"); continue }\n            if (seats.size() > 1) { refuse(t, 'AMBIGUOUS_POSITION', \"${t.payeeName} held ${seats.size()} positions on ${asOf}\"); continue }\n            String pos = (String) seats[0].positionId\n            String posCode = (String) positionCodeById[pos]\n            t.positionId = pos\n\n            // --- seat -> title, as of the date ---------------------------------\n            List attrs = liveRows((List) attrByPosition[pos], asOf)\n            String titleId   = attrs.isEmpty() ? null : (String) attrs[0].titleId\n            String titleCode = titleId == null ? null : (String) titleCodeById[titleId]\n            String terrCode  = attrs.isEmpty() ? null : (String) territoryCodeById[attrs[0].territoryId]\n\n            // --- plan: the SEAT is asked first, then the TITLE ------------------\n            // The seat is the more specific statement about this deal, so a plan\n            // assigned to it beats one assigned to everyone carrying its title.\n            // Only an ACTIVE, in-force plan wins the seat lane; an expired seat plan\n            // must not shadow a title plan that is live.\n            Map hit = assignments.find { a ->\n                live(a, asOf) && a.targetType == 'Position' && namesPosition(a, pos, posCode) && planUsable(a.planKey, asOf)\n            }\n            String lane = 'Position'\n            if (hit == null) {\n                if (titleId == null) { refuse(t, 'NO_TITLE', \"seat ${posCode ?: pos} had no title on ${asOf}\"); continue }\n                lane = 'Title'\n                hit = assignments.find { a ->\n                    live(a, asOf) && a.targetType == 'Title' && namesTitle(a, titleId, titleCode) && planUsable(a.planKey, asOf)\n                }\n            }\n            if (hit == null) {\n                refuse(t, 'NO_PLAN', \"no active plan covers seat ${posCode ?: pos} or title ${titleCode ?: '(none)'} on ${asOf}\")\n                continue\n            }\n\n            Map plan = (Map) plansById[hit.planKey]\n            Map f = facts(t, titleCode, terrCode, payee)\n            boolean anyMatched = false\n\n            for (Object rk : (List) (plan.creditRules ?: [])) {\n                String ruleKey = String.valueOf(rk)\n                Map rule = (Map) rulesByRuleId[ruleKey]\n                if (rule == null) { refuse(t, 'RULE_MISSING', \"plan ${plan.planId} points at rule ${ruleKey}, which does not exist\"); continue }\n                if (!live(rule, asOf)) continue          // out of force, not a failure\n\n                Map m = ConditionMatcher.match((Map) rule.conditions, f)\n                if (m.error != null) { refuse(t, 'RULE_REFUSED', \"rule ${ruleKey}: ${m.error}\"); continue }\n                if (!m.matched) continue                  // did not apply — the normal case\n\n                Map values = (Map) ((Map) rule.result)?.values ?: [:]\n\n                // The rule OVERRIDES the source split; absent, the row's own split\n                // stands; absent from both, the whole deal. Never a guess at 0.\n                def rawSplit = values.splitBps != null ? values.splitBps : t.sourceSplitBps\n                BigDecimal split = rawSplit == null ? BPS : dec(rawSplit)\n                if (split == null) { refuse(t, 'BAD_SPLIT', \"rule ${ruleKey} / row split is '${rawSplit}'\"); continue }\n\n                String ctCode = values.creditType == null ? null : String.valueOf(values.creditType)\n                String ctId = ctCode == null ? null : (String) creditTypeIdByCode[ctCode]\n                if (ctCode != null && ctId == null) {\n                    refuse(t, 'UNKNOWN_CREDIT_TYPE', \"rule ${ruleKey} files credits under '${ctCode}', which is not a CreditType\")\n                    continue\n                }\n\n                anyMatched = true\n                matched++\n                String creditId = mintId(rnd)\n                credits << [\n                    id: creditId, transactionId: t.recordId, employeeId: payeeId, positionId: pos,\n                    creditRuleId: rule.recordId, creditTypeId: ctId, creditTypeCode: ctCode,\n                    amount: money(dec(t.amount), split), splitBps: split.toPlainString(),\n                    isRollup: false, sourceCreditId: null, hierarchyLevel: 0,\n                    planId: plan.planId, ruleId: ruleKey, lane: lane,\n                    payeeName: t.payeeName, orderNumber: t.orderNumber, trace: m.trace,\n                ]\n\n                if (String.valueOf(values.rollup) != 'true') continue\n\n                def rawRoll = values.rollupSplitBps\n                BigDecimal rollSplit = rawRoll == null ? split : dec(rawRoll)\n                if (rollSplit == null) { refuse(t, 'BAD_SPLIT', \"rule ${ruleKey} has rollupSplitBps '${rawRoll}'\"); continue }\n                String rollCode = values.rollupCreditType == null ? ctCode : String.valueOf(values.rollupCreditType)\n                String rollId = rollCode == null ? null : (String) creditTypeIdByCode[rollCode]\n                if (rollCode != null && rollId == null) {\n                    refuse(t, 'UNKNOWN_CREDIT_TYPE', \"rule ${ruleKey} rolls up under '${rollCode}', which is not a CreditType\")\n                    continue\n                }\n\n                int level = 0\n                for (String up : ancestors(pos, parentByPosition, asOf, levelsFrom((String) values.rollupLevels))) {\n                    level++\n                    // Eligibility is NOT checked here, on purpose. A rep on leave or\n                    // just terminated still generates the manager's rolled credit;\n                    // whether THEY are paid is a payout-stage question.\n                    List upOcc = liveRows((List) occupantByPosition[up], asOf)\n                    if (upOcc.size() != 1) continue       // vacant or contested manager seat: skip quietly\n                    rolled++\n                    credits << [\n                        id: mintId(rnd), transactionId: t.recordId, employeeId: upOcc[0].payeeId, positionId: up,\n                        creditRuleId: rule.recordId, creditTypeId: rollId, creditTypeCode: rollCode,\n                        amount: money(dec(t.amount), rollSplit), splitBps: rollSplit.toPlainString(),\n                        isRollup: true, sourceCreditId: creditId, hierarchyLevel: level,\n                        planId: plan.planId, ruleId: ruleKey, lane: lane,\n                        payeeName: t.payeeName, orderNumber: t.orderNumber, trace: m.trace,\n                    ]\n                }\n            }\n            if (!anyMatched) unmatched++\n        }\n\n        return [\n            credits: credits, exceptions: exceptions,\n            stats: [transactions: transactions.size(), matched: matched, rolledUp: rolled,\n                    unmatched: unmatched, refused: exceptions.size(), credits: credits.size()],\n        ]\n    }\n\n    /**\n     * amount x split, in MINOR UNITS.\n     *\n     * `Credit.amount` is an `integer` column, so a fraction of a paisa cannot be\n     * stored and this is a rounding point. credit-pass.md says the credit pass must\n     * not round — the single rounding point belongs at payout. The column is why it\n     * does anyway; HALF_UP matches money-and-time.md, and the divergence is recorded\n     * in the spec rather than hidden here.\n     */\n    static Long money(BigDecimal amount, BigDecimal splitBps) {\n        if (amount == null) return null\n        return amount.multiply(splitBps).divide(BPS).setScale(0, RoundingMode.HALF_UP).longValue()\n    }\n}\n\n\n// --- wiring: platform rows in, CreditPass out -------------------------------\n//\n// Everything above this line is PURE. Everything below it is the adapter: it turns\n// what the fetch nodes returned into the indexed maps CreditPass expects, and turns\n// what CreditPass returned into something that survives the response boundary.\n\ndef rows(v) { return (v instanceof List) ? v : [] }\ndef p(row, String k) { return ((Map) row?.properties)?.get(k) }\ndef truthy(v) { return v instanceof Boolean ? v : String.valueOf(v) == 'true' }\n\ndef group(List src, String byField, Closure shape) {\n    Map out = [:]\n    for (r in src) {\n        def k = p(r, byField)\n        if (k == null) continue\n        out.computeIfAbsent(String.valueOf(k), { [] }) << shape(r)\n    }\n    return out\n}\n\n// --- a fetch that hit its page limit is a WRONG ANSWER, not a slow one -------\n// `hasMore` is the platform's own signal that the page did not hold everything. A\n// bulk fetch that silently caps is the failure mode notes/runtime-facts.md names\n// first, and the only defence that scales is to refuse rather than to compute on a\n// prefix. Pagination is the fix; this is what makes its absence loud meanwhile.\nList truncated = []\ndef bound = { String label, v -> if (truthy(v)) truncated << label }\nbound('Transaction', txnMore); bound('PositionAttribute', attrMore)\nbound('PayeePositionAssignment', occMore); bound('PositionHierarchy', hierMore)\nbound('PlanAssignment', asgMore); bound('Plan', planMore); bound('Rule', ruleMore)\nbound('Payee', payeeMore); bound('Title', titleMore); bound('Territory', terrMore)\nbound('Currency', ccyMore); bound('Position', posMore); bound('CreditType', ctMore)\n\nif (!truncated.isEmpty()) {\n    return [status: 'FETCH_TRUNCATED',\n            message: (\"these objects returned more rows than one page held, so any answer would be \"\n                      + \"computed on a prefix: \" + truncated.join(', ')\n                      + \". Raise pageLimit or narrow the period.\").toString(),\n            runId: runId, dryRun: truthy(dryRun), periodName: periodName,\n            windowStart: 0, windowEnd: 0, credits: [], exceptions: [], stats: [:], expected: 0]\n}\n\n// --- reference codes ---------------------------------------------------------\nMap currencyCodeById = [:]\nfor (c in rows(ccyRows)) currencyCodeById[c.id] = p(c, 'code')\n\nMap titleCodeById = [:]\nfor (t in rows(titleRows)) titleCodeById[t.id] = p(t, 'titleCode')\n\nMap territoryCodeById = [:]\nfor (t in rows(terrRows)) territoryCodeById[t.id] = p(t, 'territoryCode')\n\nMap positionCodeById = [:]\nfor (t in rows(posRows)) positionCodeById[t.id] = p(t, 'positionCode')\n\n// creditType is authored as a CODE and stored as a record id. Resolving one to the\n// other here is what keeps a rule readable and the column a real foreign key.\nMap creditTypeIdByCode = [:]\nfor (t in rows(ctRows)) { def c = p(t, 'creditTypeCode'); if (c != null) creditTypeIdByCode[String.valueOf(c)] = t.id }\n\n// --- people ------------------------------------------------------------------\nMap payeeById = [:]\nMap payeeIdsByName = [:]\nfor (pay in rows(payeeRows)) {\n    payeeById[pay.id] = [currencyCode: currencyCodeById[p(pay, 'currencyId')],\n                         hireDate: p(pay, 'hireDate'), name: p(pay, 'name'), status: p(pay, 'status')]\n    String k = CreditPass.key((String) p(pay, 'name'))\n    if (k != null) payeeIdsByName.computeIfAbsent(k, { [] }) << pay.id\n}\n\n// --- plans and rules ---------------------------------------------------------\n// A plan is reachable by its RECORD id (what PlanAssignment.planId holds) and by its\n// business key (what a human reads). Indexing both costs nothing and removes a class\n// of \"matches nothing, says nothing\" bug.\nMap plansById = [:]\nfor (pl in rows(planRows)) {\n    Map v = [planId: p(pl, 'planId'), status: p(pl, 'status'),\n             startDate: p(pl, 'startDate'), endDate: p(pl, 'endDate'),\n             creditRules: p(pl, 'creditRules') ?: []]\n    plansById[pl.id] = v\n    if (v.planId != null) plansById[String.valueOf(v.planId)] = v\n}\n\nMap rulesByRuleId = [:]\nfor (r in rows(ruleRows)) {\n    def rk = p(r, 'ruleId')\n    if (rk == null) continue                      // a half-written Rule row indexes as nothing\n    if (p(r, 'stage') != 'credit') continue       // the payout pass reads the others\n    rulesByRuleId[String.valueOf(rk)] = [recordId: r.id, ruleId: rk, conditions: p(r, 'conditions'),\n                                         result: p(r, 'result'), activeStart: p(r, 'activeStart'),\n                                         activeEnd: p(r, 'activeEnd')]\n}\n\nList assignments = rows(asgRows).collect {\n    [planKey: p(it, 'planId'), targetType: p(it, 'targetType'), targetId: p(it, 'targetId'),\n     titleId: p(it, 'titleId'), positionId: p(it, 'positionId'),\n     startDate: p(it, 'startDate'), endDate: p(it, 'endDate')]\n}\n\nMap ctx = [\n    seed              : ((Number) startedAt).longValue(),\n    payeeIdsByName    : payeeIdsByName,\n    payeeById         : payeeById,\n    seatsByPayee      : group(rows(occRows), 'payeeId', { [positionId: p(it, 'positionId'),\n                                                          effectiveStart: p(it, 'effectiveStart'), effectiveEnd: p(it, 'effectiveEnd')] }),\n    occupantByPosition: group(rows(occRows), 'positionId', { [payeeId: p(it, 'payeeId'),\n                                                          effectiveStart: p(it, 'effectiveStart'), effectiveEnd: p(it, 'effectiveEnd')] }),\n    attrByPosition    : group(rows(attrRows), 'positionId', { [titleId: p(it, 'titleId'), territoryId: p(it, 'territoryId'),\n                                                          effectiveStart: p(it, 'effectiveStart'), effectiveEnd: p(it, 'effectiveEnd')] }),\n    parentByPosition  : group(rows(hierRows), 'positionId', { [parentPositionId: p(it, 'parentPositionId'),\n                                                          effectiveStart: p(it, 'effectiveStart'), effectiveEnd: p(it, 'effectiveEnd')] }),\n    titleCodeById     : titleCodeById,\n    territoryCodeById : territoryCodeById,\n    positionCodeById  : positionCodeById,\n    creditTypeIdByCode: creditTypeIdByCode,\n    plansById         : plansById,\n    rulesByRuleId     : rulesByRuleId,\n    assignments       : assignments,\n]\n\n// --- the deals in scope ------------------------------------------------------\n// The fetch already filtered on the window server-side; this re-check is what makes\n// a transaction with NO incentiveDate visible as a refusal instead of invisible.\nlong winStart = ((Number) windowStart).longValue()\nlong winEnd   = ((Number) windowEnd).longValue()\n\nList txns = []\nList outOfWindow = []\nfor (t in rows(txnRows)) {\n    Map attrs = (p(t, 'attrs') instanceof Map) ? (Map) p(t, 'attrs') : [:]\n    def inc = p(t, 'incentiveDate') ?: p(t, 'closeDate')\n    Map row = [\n        recordId      : t.id,\n        transactionId : p(t, 'transactionId'),\n        orderNumber   : attrs.orderNumber ?: p(t, 'sourceId'),\n        payeeName     : attrs.payeeName ?: attrs.teamMemberName,\n        sourceSplitBps: attrs.splitBps,\n        closeDate     : p(t, 'closeDate'),\n        incentiveDate : p(t, 'incentiveDate'),\n        amount        : p(t, 'amount'),\n        product       : p(t, 'product'),\n        customer      : p(t, 'customer'),\n        attrs         : attrs,\n    ]\n    if (inc == null) { txns << row; continue }   // NO_DATE, reported by the pass\n    long i = ((Number) inc).longValue()\n    if (i < winStart || i > winEnd) { outOfWindow << p(t, 'transactionId'); continue }\n    txns << row\n}\n\nMap out = CreditPass.run(txns, ctx)\n\n// SORTED, and not for cosmetics. Runs are insert-only and the way \"my number changed\n// on Tuesday, why\" gets answered is by diffing two of them - which only works if the\n// same inputs produce the same ORDER. Fetch order is not promised by anything, so the\n// fold imposes one: the deal, then the person, then the direct credit before the rolled\n// copies that hang off it.\nList ordered = new ArrayList(out.credits)\nordered.sort { a, b ->\n    int c = String.valueOf(a.orderNumber).compareTo(String.valueOf(b.orderNumber)); if (c != 0) return c\n    c = String.valueOf(a.payeeName).compareTo(String.valueOf(b.payeeName)); if (c != 0) return c\n    c = Boolean.valueOf(a.isRollup) <=> Boolean.valueOf(b.isRollup); if (c != 0) return c\n    c = ((Number) a.hierarchyLevel).intValue() <=> ((Number) b.hierarchyLevel).intValue(); if (c != 0) return c\n    return String.valueOf(a.creditTypeCode).compareTo(String.valueOf(b.creditTypeCode))\n}\n\n// A BigDecimal does not survive the response boundary intact; amounts are already\n// Long minor units, and the split goes back as a string so nothing reformats it.\nList credits = ordered.collect {\n    [creditId: it.id, transactionId: it.transactionId, orderNumber: it.orderNumber,\n     payeeName: it.payeeName, employeeId: it.employeeId, positionId: it.positionId,\n     creditRuleId: it.creditRuleId, ruleId: it.ruleId, planId: it.planId, lane: it.lane,\n     creditTypeId: it.creditTypeId, creditType: it.creditTypeCode,\n     amount: it.amount, splitBps: it.splitBps,\n     isRollup: it.isRollup, sourceCreditId: it.sourceCreditId, hierarchyLevel: it.hierarchyLevel,\n     trace: it.trace]\n}\n\nMap stats = new LinkedHashMap((Map) out.stats)\nstats.put('outOfWindow', outOfWindow.size())\nstats.put('scanned', rows(txnRows).size())\n\nreturn [status: 'OK', message: '', runId: runId, dryRun: truthy(dryRun),\n        periodName: periodName, windowStart: winStart, windowEnd: winEnd,\n        credits: credits, exceptions: out.exceptions, stats: stats, expected: credits.size()]\n",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "runId": "{{ n_Norm.outputs.result.runId }}",
+          "startedAt": "{{ n_Norm.outputs.result.startedAt }}",
+          "dryRun": "{{ n_Norm.outputs.result.dryRun }}",
+          "periodName": "{{ n_Shape.outputs.result.periodName }}",
+          "windowStart": "{{ n_Shape.outputs.result.windowStart }}",
+          "windowEnd": "{{ n_Shape.outputs.result.windowEnd }}",
+          "txnRows": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_FtTxn.outputs.objects }}",
+            "items": "{{ n_FtTxn.outputs.objects[0] }}"
+          },
+          "txnMore": "{{ n_FtTxn.outputs.hasMore }}",
+          "attrRows": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_FtAttr.outputs.objects }}",
+            "items": "{{ n_FtAttr.outputs.objects[0] }}"
+          },
+          "attrMore": "{{ n_FtAttr.outputs.hasMore }}",
+          "occRows": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_FtOcc.outputs.objects }}",
+            "items": "{{ n_FtOcc.outputs.objects[0] }}"
+          },
+          "occMore": "{{ n_FtOcc.outputs.hasMore }}",
+          "hierRows": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_FtHier.outputs.objects }}",
+            "items": "{{ n_FtHier.outputs.objects[0] }}"
+          },
+          "hierMore": "{{ n_FtHier.outputs.hasMore }}",
+          "asgRows": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_FtAsg.outputs.objects }}",
+            "items": "{{ n_FtAsg.outputs.objects[0] }}"
+          },
+          "asgMore": "{{ n_FtAsg.outputs.hasMore }}",
+          "planRows": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_FtPlan.outputs.objects }}",
+            "items": "{{ n_FtPlan.outputs.objects[0] }}"
+          },
+          "planMore": "{{ n_FtPlan.outputs.hasMore }}",
+          "ruleRows": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_FtRule.outputs.objects }}",
+            "items": "{{ n_FtRule.outputs.objects[0] }}"
+          },
+          "ruleMore": "{{ n_FtRule.outputs.hasMore }}",
+          "payeeRows": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_FtPayee.outputs.objects }}",
+            "items": "{{ n_FtPayee.outputs.objects[0] }}"
+          },
+          "payeeMore": "{{ n_FtPayee.outputs.hasMore }}",
+          "titleRows": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_FtTitle.outputs.objects }}",
+            "items": "{{ n_FtTitle.outputs.objects[0] }}"
+          },
+          "titleMore": "{{ n_FtTitle.outputs.hasMore }}",
+          "terrRows": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_FtTerr.outputs.objects }}",
+            "items": "{{ n_FtTerr.outputs.objects[0] }}"
+          },
+          "terrMore": "{{ n_FtTerr.outputs.hasMore }}",
+          "ccyRows": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_FtCcy.outputs.objects }}",
+            "items": "{{ n_FtCcy.outputs.objects[0] }}"
+          },
+          "ccyMore": "{{ n_FtCcy.outputs.hasMore }}",
+          "posRows": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_FtPos.outputs.objects }}",
+            "items": "{{ n_FtPos.outputs.objects[0] }}"
+          },
+          "posMore": "{{ n_FtPos.outputs.hasMore }}",
+          "ctRows": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_FtCT.outputs.objects }}",
+            "items": "{{ n_FtCT.outputs.objects[0] }}"
+          },
+          "ctMore": "{{ n_FtCT.outputs.hasMore }}"
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Name to seat to plan to rule to credit - the whole fold, no I/O",
+      "title": "Calculate credits",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfPer@root_id-1@n",
+      "id": "n_IfCalc",
+      "index": 26,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Calc.outputs.result.status }}",
+            "filter": {
+              "operator": "NOT_EQUAL",
+              "value": "OK"
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Did the fold refuse to answer?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfCalc@n_IfPer@root_id-1@n@y",
+      "id": "n_RespCalc",
+      "index": 27,
+      "inputs": {
+        "result": {
+          "status": "{{ n_Calc.outputs.result.status }}",
+          "message": "{{ n_Calc.outputs.result.message }}",
+          "runId": "{{ n_Calc.outputs.result.runId }}",
+          "periodName": "{{ n_Calc.outputs.result.periodName }}",
+          "windowStart": "{{ n_Calc.outputs.result.windowStart }}",
+          "windowEnd": "{{ n_Calc.outputs.result.windowEnd }}",
+          "dryRun": "{{ n_Calc.outputs.result.dryRun }}",
+          "written": 0,
+          "credits": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Calc.outputs.result.credits }}",
+            "items": "{{ n_Calc.outputs.result.credits[0] }}"
+          },
+          "exceptions": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Calc.outputs.result.exceptions }}",
+            "items": "{{ n_Calc.outputs.result.exceptions[0] }}"
+          },
+          "stats": "{{ n_Calc.outputs.result.stats }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "A truncated read is a wrong answer, so it is returned as one",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfCalc@n_IfPer@root_id-1@n@n",
+      "id": "n_IfDry",
+      "index": 28,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Calc.outputs.result.dryRun }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": true
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Compute and report, or actually write?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfDry@n_IfCalc@n_IfPer@root_id-1@n@n@y",
+      "id": "n_RespDry",
+      "index": 29,
+      "inputs": {
+        "result": {
+          "status": "OK_DRY_RUN",
+          "message": "{{ n_Calc.outputs.result.message }}",
+          "runId": "{{ n_Calc.outputs.result.runId }}",
+          "periodName": "{{ n_Calc.outputs.result.periodName }}",
+          "windowStart": "{{ n_Calc.outputs.result.windowStart }}",
+          "windowEnd": "{{ n_Calc.outputs.result.windowEnd }}",
+          "dryRun": "{{ n_Calc.outputs.result.dryRun }}",
+          "written": 0,
+          "credits": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Calc.outputs.result.credits }}",
+            "items": "{{ n_Calc.outputs.result.credits[0] }}"
+          },
+          "exceptions": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Calc.outputs.result.exceptions }}",
+            "items": "{{ n_Calc.outputs.result.exceptions[0] }}"
+          },
+          "stats": "{{ n_Calc.outputs.result.stats }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "What WOULD be written, and every row that could not be decided",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceVersion": 864,
+        "resourceName": "storage_by_unifyapps_create_record",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfDry@n_IfCalc@n_IfPer@root_id-1@n@n@n",
+      "id": "n_CrRun",
+      "index": 30,
+      "inputs": {
+        "writeThroughSessionVariables": false,
+        "object_type": "CalculationRun",
+        "record": {
+          "runId": "{{ n_Norm.outputs.result.runId }}",
+          "periodId": "{{ n_Norm.outputs.result.periodId }}",
+          "status": "Running",
+          "startedAt": "{{ n_Norm.outputs.result.startedAt }}",
+          "dryRun": false,
+          "stats": "{{ n_Calc.outputs.result.stats }}",
+          "scope": {}
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The run the credits hang off - Running until they land",
+      "title": "Create record",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfDry@n_IfCalc@n_IfPer@root_id-1@n@n@n",
+      "id": "n_Stamp",
+      "index": 31,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "updates": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {}
+              },
+              "title": "updates"
+            },
+            "expected": {
+              "type": "integer",
+              "title": "expected"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "runId": {
+              "type": "string",
+              "title": "runId"
+            },
+            "credits": {
+              "type": "array",
+              "title": "credits",
+              "items": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "code": "// Turn the computed credits into rows `bulk_upsert_records_by_id` will actually store.\n//\n// Two things happen here and nowhere else:\n//\n//  1. The CalculationRun's RECORD ID is stamped onto every credit. It cannot be known\n//     before n_CrRun runs, and Credit.runId is a foreign key to the record, not to the\n//     business key.\n//  2. The rows are reshaped into `{id, updateFields:[{fieldName, actionType, setValue}]}`.\n//     A row with the fields FLAT answers `{success: true, successCount: 0}` and writes\n//     NOTHING — success true with a zero count is the signature of a malformed row, so\n//     the shape is not a detail (notes/runtime-facts.md, 2026-08-25).\n//\n// The credit ids were minted in n_Calc, which is what lets a rollup credit carry its\n// parent's id in `sourceCreditId` inside the SAME batch.\n\ndef rows(v) { return (v instanceof List) ? v : [] }\n\nString runRecordId = runId == null ? '' : String.valueOf(runId).trim()\nList out = []\n\nfor (Map c : rows(credits)) {\n    List fields = []\n    def set = { String name, Object v -> if (v != null) fields << [fieldName: 'properties.' + name, actionType: 'SET', setValue: v] }\n\n    set('creditId', c.creditId)\n    set('runId', runRecordId.isEmpty() ? null : runRecordId)\n    set('transactionId', c.transactionId)\n    set('employeeId', c.employeeId)\n    set('positionId', c.positionId)\n    set('creditRuleId', c.creditRuleId)\n    set('creditTypeId', c.creditTypeId)\n    set('amount', c.amount)\n    // Credit has no `isRollup` column. A rolled credit is the one carrying a parent,\n    // and `sourceCreditId` is that parent — which is why the ids are minted upstream.\n    set('sourceCreditId', c.sourceCreditId)\n    set('triggerFired', Boolean.TRUE)\n\n    // `creditId`, not `id`: n_Calc's response projection RENAMES the minted id on its way\n    // out, and reading the old name here sent every row with an empty id. The server then\n    // minted its own, `properties.creditId` was never set on any of them, and the second\n    // row collided with the first on that unique index - which fails the rest of the batch\n    // with it. One row landed, five did not, and nothing about the shape looked wrong.\n    out << [id: c.creditId, updateFields: fields]\n}\n\nreturn [updates: out, expected: out.size()]\n",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "runId": "{{ n_CrRun.outputs.id }}",
+          "credits": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Calc.outputs.result.credits }}",
+            "items": "{{ n_Calc.outputs.result.credits[0] }}"
+          }
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Stamp the run id and build updateFields - a flat row writes nothing",
+      "title": "Shape the credit rows",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceVersion": 864,
+        "resourceName": "storage_by_unifyapps_bulk_upsert_records_by_id",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfDry@n_IfCalc@n_IfPer@root_id-1@n@n@n",
+      "id": "n_WrCr",
+      "index": 32,
+      "inputs": {
+        "object_type": "Credit",
+        "skipIfBlank": false,
+        "skipSchemaValidation": true,
+        "updates": "{{ n_Stamp.outputs.result.updates }}",
+        "unsetIfNull": false
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Every credit, by its minted id, in one call",
+      "title": "Bulk upsert records by id",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfDry@n_IfCalc@n_IfPer@root_id-1@n@n@n",
+      "id": "n_RunEnd",
+      "index": 33,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "ok": {
+              "type": "boolean",
+              "title": "ok"
+            },
+            "landed": {
+              "type": "integer",
+              "title": "landed"
+            },
+            "message": {
+              "type": "string",
+              "title": "message"
+            },
+            "updates": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {}
+              },
+              "title": "updates"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "runRecordId": {
+              "type": "string",
+              "title": "runRecordId"
+            },
+            "successCount": {
+              "type": "integer",
+              "title": "successCount"
+            },
+            "expected": {
+              "type": "integer",
+              "title": "expected"
+            }
+          }
+        },
+        "code": "// Close the run out, and decide whether the write actually landed.\n//\n// `bulk_upsert_records_by_id` answers `success: true` with `successCount: 0` when every\n// row was malformed, and a bulk create can insert NOTHING and still leave its node\n// `ok`. The COUNT is the only honest signal, so it is compared against what the fold\n// meant to write and the run is stamped with the answer.\n//\n// The run row was created as `Running` BEFORE the credits, so a crash between the two\n// leaves a run that plainly says it never finished — which is the state somebody can\n// act on, rather than a `Succeeded` run with no credits under it.\n\nlong landed = successCount == null ? 0L : ((Number) successCount).longValue()\nlong meant  = expected == null ? 0L : ((Number) expected).longValue()\nboolean ok  = landed == meant\n\nreturn [\n    ok     : ok,\n    landed : landed,\n    updates: [[id: String.valueOf(runRecordId), updateFields: [\n        [fieldName: 'properties.status', actionType: 'SET', setValue: ok ? 'Succeeded' : 'Failed'],\n    ]]],\n    message: ok ? '' : \"meant to write ${meant} credits, ${landed} landed\".toString(),\n]\n",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "runRecordId": "{{ n_CrRun.outputs.id }}",
+          "successCount": "{{ n_WrCr.outputs.successCount }}",
+          "expected": "{{ n_Stamp.outputs.result.expected }}"
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Compare what landed against what was meant, and stamp the run with the answer",
+      "title": "Close the run",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceVersion": 864,
+        "resourceName": "storage_by_unifyapps_bulk_upsert_records_by_id",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfDry@n_IfCalc@n_IfPer@root_id-1@n@n@n",
+      "id": "n_UpRun",
+      "index": 34,
+      "inputs": {
+        "object_type": "CalculationRun",
+        "skipIfBlank": false,
+        "skipSchemaValidation": true,
+        "updates": "{{ n_RunEnd.outputs.result.updates }}",
+        "unsetIfNull": false
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Succeeded, or Failed - by the run's own id, so no filter can miss it",
+      "title": "Bulk upsert records by id",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfDry@n_IfCalc@n_IfPer@root_id-1@n@n@n",
+      "id": "n_IfWr",
+      "index": 35,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_RunEnd.outputs.result.ok }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": false
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Did every credit actually land?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfWr@n_IfDry@n_IfCalc@n_IfPer@root_id-1@n@n@n@y",
+      "id": "n_RespPart",
+      "index": 36,
+      "inputs": {
+        "result": {
+          "status": "CREDIT_WRITE_INCOMPLETE",
+          "message": "{{ n_RunEnd.outputs.result.message }}",
+          "runId": "{{ n_Calc.outputs.result.runId }}",
+          "periodName": "{{ n_Calc.outputs.result.periodName }}",
+          "windowStart": "{{ n_Calc.outputs.result.windowStart }}",
+          "windowEnd": "{{ n_Calc.outputs.result.windowEnd }}",
+          "dryRun": "{{ n_Calc.outputs.result.dryRun }}",
+          "written": "{{ n_RunEnd.outputs.result.landed }}",
+          "credits": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Calc.outputs.result.credits }}",
+            "items": "{{ n_Calc.outputs.result.credits[0] }}"
+          },
+          "exceptions": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Calc.outputs.result.exceptions }}",
+            "items": "{{ n_Calc.outputs.result.exceptions[0] }}"
+          },
+          "stats": "{{ n_Calc.outputs.result.stats }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Some credits did not land - say so, with the run left Failed",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfWr@n_IfDry@n_IfCalc@n_IfPer@root_id-1@n@n@n@n",
+      "id": "n_RespOk",
+      "index": 37,
+      "inputs": {
+        "result": {
+          "status": "OK",
+          "message": "{{ n_Calc.outputs.result.message }}",
+          "runId": "{{ n_Calc.outputs.result.runId }}",
+          "periodName": "{{ n_Calc.outputs.result.periodName }}",
+          "windowStart": "{{ n_Calc.outputs.result.windowStart }}",
+          "windowEnd": "{{ n_Calc.outputs.result.windowEnd }}",
+          "dryRun": "{{ n_Calc.outputs.result.dryRun }}",
+          "written": "{{ n_RunEnd.outputs.result.landed }}",
+          "credits": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Calc.outputs.result.credits }}",
+            "items": "{{ n_Calc.outputs.result.credits[0] }}"
+          },
+          "exceptions": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Calc.outputs.result.exceptions }}",
+            "items": "{{ n_Calc.outputs.result.exceptions[0] }}"
+          },
+          "stats": "{{ n_Calc.outputs.result.stats }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Credits written, run marked Succeeded",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 435691,
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 6
+}

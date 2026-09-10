@@ -128,7 +128,11 @@ function lint(def, knownRes, knownApps) {
   };
   for (const n of nodes.values()) {
     if (n.type === "IF_ELSE") checkFilterList(n.id, "R2", n.inputs, "IF_ELSE inputs");
-    if (n.type === "BRANCH_CONDITION") checkFilterList(n.id, "R2", n.inputs?.conditions, "branch condition");
+    // A BRANCH_CONDITION with NO conditions is legal and is how an unconditional
+    // parallel fan-out is expressed - see R3 below for the source that settles it. Only
+    // a MALFORMED condition block is a finding.
+    if (n.type === "BRANCH_CONDITION" && n.inputs?.conditions !== undefined)
+      checkFilterList(n.id, "R2", n.inputs?.conditions, "branch condition");
   }
 
   // ---------- R3/R4: BRANCH structure (uacode BranchNodeRuntime) ----------
@@ -138,8 +142,21 @@ function lint(def, knownRes, knownApps) {
     if (!branches.some((b) => b.id === "default")) F(n.id, "R3", `branches[] has no "default" entry`);
     for (const b of branches) {
       if (b.id === "default") continue;
+      // "empty filters means the arm never spawns" was WRONG, and it was wrong in the
+      // expensive direction: it fires on the one pattern twelve parallel bulk reads
+      // actually want. BranchNodeRuntime.internalTrigger picks arms with
+      // findOutgoingEdgesMatchingConstraint, which reads `boolean applicable = filter
+      // == null` - and WorkflowTreeBuilderImpl.createEdge only calls setFilter when the
+      // BRANCH_CONDITION node carries `conditions`. So NO conditions means NO filter
+      // means ALWAYS applicable. Proven live on ICM | Calculate Credits: four
+      // condition-less arms, all four returned {"result": true} in one run.
+      //
+      // What IS worth flagging is MIXED intent - some arms gated and others not, which
+      // usually means somebody meant to gate them all and stopped halfway.
       const fl = b.inputs?.conditions?.filters;
-      if (!Array.isArray(fl) || !fl.length) F(n.id, "R3", `branch "${b.id}" has empty filters - the arm never spawns`);
+      const gated = branches.filter((x) => x.id !== "default").map((x) => Array.isArray(x.inputs?.conditions?.filters) && x.inputs.conditions.filters.length);
+      if (!(Array.isArray(fl) && fl.length) && gated.some(Boolean))
+        F(n.id, "R3", `branch "${b.id}" has no conditions while a sibling arm is gated - it will ALWAYS fire; gate it or ungate the others`);
     }
     const branchEdges = (out.get(n.id) ?? []).filter((e) => e.type === "branch");
     const joinEdge = branchEdges.find((e) => e.name === "default");
