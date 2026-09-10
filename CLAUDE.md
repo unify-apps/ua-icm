@@ -229,6 +229,14 @@ missing one.
 `scripts/ua-write.mjs` — direct workflow-definition update. Orbit only; refuses
 production outright.
 
+`scripts/clean-orphan-assignments.mjs` — **DELETES** `PlanAssignment` rows whose
+parent `Plan` is gone. Dry run unless `--yes`. It re-derives the orphan set live
+rather than trusting a captured id list, deletes only rows whose `planId` matches
+no live plan by record id or business key, refuses to run if zero plans read
+back (an empty read is likelier a bad query than an empty object), and asserts
+the read afterwards. The leak it cleans up is prevented at source by each
+suite cleaning its own assignment rows.
+
 `scripts/sync-node-schemas.mjs` — rewrites a script node's DECLARED schemas
 (`inputs.input`, `inputs.output`) to match what it actually binds and returns.
 Those two bind nothing at runtime; only `inputs.parameters` does. Types come
