@@ -1,0 +1,444 @@
+{
+  "appsUsed": [],
+  "createdTime": 1788972469360,
+  "deleted": false,
+  "description": "The periods a plan can be attached to. Period.name is the object's unique key, so it is what a plan stores - not a record id.",
+  "edges": [
+    {
+      "fromNodeId": "n_sTaRt",
+      "id": "next@n_sTaRt@n_Norm",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Norm",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Norm",
+      "id": "next@n_Norm@n_Ft",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Ft",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Ft",
+      "id": "next@n_Ft@n_Shape",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Shape",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Shape",
+      "id": "next@n_Shape@n_IfBad",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfBad",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "if@n_IfBad@n_StBad",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StBad",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "next@n_IfBad@n_StOk",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StOk",
+      "type": "next"
+    }
+  ],
+  "id": "6aa18db5cab06d30bad86183",
+  "lastModifiedBy": 435691,
+  "lastPlatformUpdateBy": 435691,
+  "lastPlatformUpdateOn": 1788972492388,
+  "lcName": "icm | list periods",
+  "modifiedTime": 1788972492388,
+  "name": "ICM | List Periods",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_sTaRt",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "success",
+            "message"
+          ],
+          "properties": {
+            "status": {
+              "type": "string"
+            },
+            "success": {
+              "type": "boolean"
+            },
+            "message": {
+              "type": "string"
+            },
+            "total": {
+              "type": "integer"
+            },
+            "hasMore": {
+              "type": "boolean"
+            },
+            "offset": {
+              "type": "integer"
+            },
+            "limit": {
+              "type": "integer"
+            },
+            "periods": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {}
+              }
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "search": {
+              "type": "string",
+              "title": "Search"
+            },
+            "periodType": {
+              "type": "string",
+              "title": "Period Type"
+            },
+            "limit": {
+              "type": "string",
+              "title": "Limit"
+            },
+            "offset": {
+              "type": "string",
+              "title": "Offset"
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Norm",
+      "index": 2,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "valid": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "filter": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "pageLimit": {
+              "type": "integer"
+            },
+            "pageOffset": {
+              "type": "integer"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "search": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "ruleType": {
+              "type": "string"
+            },
+            "limit": {
+              "type": "string"
+            },
+            "offset": {
+              "type": "string"
+            }
+          }
+        },
+        "compile_static": false,
+        "code": "\ndef opt = { String k -> if (!binding.hasVariable(k)) return ''\n                        def v = binding.getVariable(k); return (v == null) ? '' : v.toString().trim() }\ndef s = opt('search'); def pt = opt('periodType')\ndef lim = opt('limit'); def off = opt('offset')\n\nboolean valid = true; String reason = ''\nint pageLimit = 50\nif (!lim.isEmpty()) { if (lim ==~ /^\\d+$/) pageLimit = Integer.parseInt(lim) else { valid=false; reason='limit must be a whole number, got: ' + lim } }\nif (pageLimit < 1) pageLimit = 1\nif (pageLimit > 200) pageLimit = 200\nint pageOffset = 0\nif (!off.isEmpty()) { if (off ==~ /^\\d+$/) pageOffset = Integer.parseInt(off) else { valid=false; reason='offset must be a whole number, got: ' + off } }\n\ndef leaves = []\nif (!s.isEmpty()) leaves << [property:'properties.name', filter:[operator:'ICONTAINS', value:s]]\nif (!pt.isEmpty()) leaves << [property:'properties.periodType', filter:[operator:'EQUAL', value:pt]]\nif (!valid) leaves = [[property:'id', filter:[operator:'EQUAL', value:'__invalid_input__']]]\nreturn [valid: valid, reason: reason, filter: [operator:'AND', filters: leaves],\n        pageLimit: pageLimit, pageOffset: pageOffset]\n",
+        "captureStdOutput": false,
+        "parameters": {
+          "search": "{{ n_sTaRt.outputs.search }}",
+          "periodType": "{{ n_sTaRt.outputs.periodType }}",
+          "limit": "{{ n_sTaRt.outputs.limit }}",
+          "offset": "{{ n_sTaRt.outputs.offset }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Apply the defaults and build the filter",
+      "title": "Execute Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Ft",
+      "index": 3,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.filter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Period",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}"
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.name",
+          "properties.periodType",
+          "properties.startDate",
+          "properties.endDate",
+          "properties.status"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The page of rules the caller asked for",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Shape",
+      "index": 4,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            "total": {
+              "type": "integer"
+            },
+            "hasMore": {
+              "type": "boolean"
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rows": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            "total": {
+              "type": "integer"
+            },
+            "pageOffset": {
+              "type": "integer"
+            }
+          }
+        },
+        "compile_static": false,
+        "code": "\n// name IS the key a plan stores, so it leads. A record id would be a second\n// identity for a thing that already has one.\ndef out = []\nif (rows != null) rows.each { r ->\n    def p = r.properties\n    out << [name: p?.name ?: '', recordId: String.valueOf(r.id),\n            periodType: p?.periodType ?: '', status: p?.status ?: '',\n            startDate: p?.startDate, endDate: p?.endDate]\n}\nint tot = (total == null) ? out.size() : Integer.valueOf(String.valueOf(total))\nreturn [periods: out, total: tot, hasMore: (pageOffset + out.size()) < tot,\n        message: out.size() + ' period' + (out.size() == 1 ? '' : 's') + ' on this page']\n",
+        "captureStdOutput": false,
+        "parameters": {
+          "rows": "{{ n_Ft.outputs.objects }}",
+          "total": "{{ n_Ft.outputs.total }}",
+          "pageOffset": "{{ n_Norm.outputs.result.pageOffset }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "One row per rule, with the list sizes a table can show",
+      "title": "Execute Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_IfBad",
+      "index": 5,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Norm.outputs.result.valid }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": false
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Was the request itself unusable?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@y",
+      "id": "n_StBad",
+      "index": 6,
+      "inputs": {
+        "result": {
+          "status": "INVALID_INPUT",
+          "success": false,
+          "message": "{{ n_Norm.outputs.result.reason }}",
+          "total": 0,
+          "periods": []
+        }
+      },
+      "skip": false,
+      "subTitle": "Caller sent an unusable limit or offset",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_StOk",
+      "index": 7,
+      "inputs": {
+        "result": {
+          "status": "OK",
+          "success": true,
+          "message": "{{ n_Shape.outputs.result.message }}",
+          "total": "{{ n_Shape.outputs.result.total }}",
+          "hasMore": "{{ n_Shape.outputs.result.hasMore }}",
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "periods": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Shape.outputs.result.periods }}",
+            "items": "{{ n_Shape.outputs.result.periods[0] }}"
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "The page of rules",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 435691,
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 1
+}

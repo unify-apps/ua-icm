@@ -1,0 +1,467 @@
+{
+  "appsUsed": [],
+  "createdTime": 1788972458578,
+  "deleted": false,
+  "description": "One plan in full, by planId: every field, the rule id lists, and its title and position assignments. The list returns counts; this is what the edit form reads.",
+  "edges": [
+    {
+      "fromNodeId": "n_sTaRt",
+      "id": "next@n_sTaRt@n_Norm",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Norm",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Norm",
+      "id": "next@n_Norm@n_Ft",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Ft",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Shape",
+      "id": "next@n_Shape@n_IfBad",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfBad",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "if@n_IfBad@n_StBad",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StBad",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "next@n_IfBad@n_StOk",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StOk",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Ft",
+      "id": "next@n_Ft@n_FtAsg",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtAsg",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtAsg",
+      "id": "next@n_FtAsg@n_Shape",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Shape",
+      "type": "next"
+    }
+  ],
+  "id": "6aa18daaff41994689752982",
+  "lastModifiedBy": 435691,
+  "lastPlatformUpdateBy": 435691,
+  "lastPlatformUpdateOn": 1788972578548,
+  "lcName": "icm | get plan",
+  "modifiedTime": 1788972578548,
+  "name": "ICM | Get Plan",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_sTaRt",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "success",
+            "message"
+          ],
+          "properties": {
+            "status": {
+              "type": "string"
+            },
+            "success": {
+              "type": "boolean"
+            },
+            "message": {
+              "type": "string"
+            },
+            "plan": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "planId"
+          ],
+          "properties": {
+            "planId": {
+              "type": "string",
+              "title": "Plan Id"
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Norm",
+      "index": 2,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "valid": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "filter": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "pageLimit": {
+              "type": "integer"
+            },
+            "pageOffset": {
+              "type": "integer"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "search": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "ruleType": {
+              "type": "string"
+            },
+            "limit": {
+              "type": "string"
+            },
+            "offset": {
+              "type": "string"
+            }
+          }
+        },
+        "compile_static": false,
+        "code": "\ndef opt = { String k -> if (!binding.hasVariable(k)) return ''\n                        def v = binding.getVariable(k); return (v == null) ? '' : v.toString().trim() }\ndef pid = opt('planId')\nboolean valid = !pid.isEmpty()\nString reason = valid ? '' : 'planId is required'\n// A blank id must not fall through to an unfiltered fetch that returns whatever is\n// first - that would show one plan while claiming to be another.\ndef leaves = valid ? [[property:'properties.planId', filter:[operator:'EQUAL', value: pid]]]\n                   : [[property:'id', filter:[operator:'EQUAL', value:'__invalid_input__']]]\nreturn [valid: valid, reason: reason, planId: pid,\n        filter: [operator:'AND', filters: leaves], pageLimit: 1, pageOffset: 0,\n        asgFilter: [operator:'AND', filters: [[property:'properties.planId', filter:[operator:'EQUAL', value: (valid ? pid : '__invalid_input__')]]]]]\n",
+        "captureStdOutput": false,
+        "parameters": {
+          "planId": "{{ n_sTaRt.outputs.planId }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Apply the defaults and build the filter",
+      "title": "Execute Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Ft",
+      "index": 3,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.filter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Plan",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": "{{ n_Norm.outputs.result.pageLimit }}",
+          "offset": "{{ n_Norm.outputs.result.pageOffset }}"
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.planId",
+          "properties.name",
+          "properties.description",
+          "properties.periodId",
+          "properties.status",
+          "properties.version",
+          "properties.startDate",
+          "properties.endDate",
+          "properties.creditRuleIds",
+          "properties.payoutRuleIds"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The page of rules the caller asked for",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtAsg",
+      "index": 4,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.asgFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "PlanAssignment",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 500,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.assignmentId",
+          "properties.planId",
+          "properties.targetType",
+          "properties.targetId",
+          "properties.startDate",
+          "properties.endDate"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The page of rules the caller asked for",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Shape",
+      "index": 5,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            "total": {
+              "type": "integer"
+            },
+            "hasMore": {
+              "type": "boolean"
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rows": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            "total": {
+              "type": "integer"
+            },
+            "pageOffset": {
+              "type": "integer"
+            }
+          }
+        },
+        "compile_static": false,
+        "code": "\n// A missing planId and a planId that matches nothing are DIFFERENT answers. Both\n// return no rows, so validity has to be read here rather than inferred from emptiness.\nboolean ok = (wasValid == null) ? true : Boolean.valueOf(String.valueOf(wasValid))\ndef r = (rows == null || rows.isEmpty()) ? null : rows[0]\nif (!ok) return [status:'INVALID_INPUT', found:false, plan:null, message:String.valueOf(reason)]\nif (r == null) return [status:'NOT_FOUND', found:false, plan:null, message:'no plan with that id']\ndef p = r.properties\ndef cr = (p?.creditRuleIds instanceof Map) ? (p.creditRuleIds.get('items') ?: []) : []\ndef pr = (p?.payoutRuleIds instanceof Map) ? (p.payoutRuleIds.get('items') ?: []) : []\n\n// One PlanAssignment row per title or position, split back into the two lists the\n// form edits. targetType is what separates them; nothing else does.\ndef titles = []; def positions = []\nif (asgRows != null) asgRows.each { a ->\n    def ap = a.properties\n    def row = [assignmentId: ap?.assignmentId ?: '', recordId: String.valueOf(a.id),\n               targetId: ap?.targetId ?: '', effectiveStart: ap?.startDate, effectiveEnd: ap?.endDate]\n    def t = String.valueOf(ap?.targetType ?: '').toUpperCase()\n    if (t == 'TITLE') titles << row else if (t == 'POSITION') positions << row\n}\ndef plan = [planId: p?.planId ?: '', recordId: String.valueOf(r.id),\n            name: p?.name ?: '', description: p?.description ?: '',\n            periodId: p?.periodId ?: '', status: p?.status ?: '',\n            version: p?.version, startDate: p?.startDate, endDate: p?.endDate,\n            creditRuleIds: cr, payoutRuleIds: pr,\n            assignments: [titles: titles, positions: positions]]\nreturn [status:'OK', found:true, plan: plan, message:'plan ' + plan.planId]\n",
+        "captureStdOutput": false,
+        "parameters": {
+          "rows": "{{ n_Ft.outputs.objects }}",
+          "asgRows": "{{ n_FtAsg.outputs.objects }}",
+          "wasValid": "{{ n_Norm.outputs.result.valid }}",
+          "reason": "{{ n_Norm.outputs.result.reason }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "One row per rule, with the list sizes a table can show",
+      "title": "Execute Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_IfBad",
+      "index": 6,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Shape.outputs.result.found }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": false
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Was the request itself unusable?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@y",
+      "id": "n_StBad",
+      "index": 7,
+      "inputs": {
+        "result": {
+          "status": "{{ n_Shape.outputs.result.status }}",
+          "success": false,
+          "message": "{{ n_Shape.outputs.result.message }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Caller sent an unusable limit or offset",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_StOk",
+      "index": 8,
+      "inputs": {
+        "result": {
+          "status": "OK",
+          "success": true,
+          "message": "{{ n_Shape.outputs.result.message }}",
+          "plan": "{{ n_Shape.outputs.result.plan }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "The page of rules",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 435691,
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 1
+}

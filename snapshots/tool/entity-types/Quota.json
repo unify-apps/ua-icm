@@ -1,5 +1,5 @@
 {
-  "columnCounts": 6,
+  "columnCounts": 14,
   "createdTime": 1788769609089,
   "deleted": false,
   "description": "",
@@ -44,8 +44,26 @@
         "measureId",
         "periodId",
         "amount",
-        "targetIncentive"
-      ]
+        "targetIncentive",
+        "name",
+        "quotaType",
+        "unitType",
+        "currencyId",
+        "description",
+        "tags",
+        "effectiveStart",
+        "effectiveEnd"
+      ],
+      "currencyId": {
+        "ui:widget": "LookupWidget",
+        "ui:options": {
+          "ua:payload": {
+            "lookupType": "ENTITY_ID:Currency",
+            "type": "ByQuery"
+          },
+          "multiple": false
+        }
+      }
     },
     "schema": {
       "type": "object",
@@ -90,23 +108,103 @@
           "foreignKeyConstraintEnforced": false
         },
         "amount": {
-          "type": "integer",
-          "title": "Amount (minor units)",
+          "type": "number",
+          "title": "Amount",
           "filterable": true,
           "sortable": true
         },
         "targetIncentive": {
+          "type": "number",
+          "title": "Target Incentive",
+          "filterable": true,
+          "sortable": true
+        },
+        "name": {
+          "type": "string",
+          "title": "Name",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true
+        },
+        "quotaType": {
+          "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "PLAN",
+              "title": "PLAN"
+            },
+            {
+              "const": "POSITION",
+              "title": "POSITION"
+            }
+          ],
+          "title": "Quota Type",
+          "filterable": true,
+          "sortable": true
+        },
+        "unitType": {
+          "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "CURRENCY",
+              "title": "CURRENCY"
+            },
+            {
+              "const": "QUANTITY",
+              "title": "QUANTITY"
+            }
+          ],
+          "title": "Unit Type",
+          "filterable": true,
+          "sortable": true
+        },
+        "currencyId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Currency",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Currency"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "description": {
+          "type": "string",
+          "title": "Description",
+          "filterable": true,
+          "sortable": true
+        },
+        "tags": {
+          "type": "array",
+          "title": "Tags",
+          "items": {
+            "type": "string"
+          }
+        },
+        "effectiveStart": {
           "type": "integer",
-          "title": "Target Incentive (minor units)",
+          "format": "date",
+          "dateFormat": "epoch",
+          "title": "Effective Start",
+          "filterable": true,
+          "sortable": true
+        },
+        "effectiveEnd": {
+          "type": "integer",
+          "format": "date",
+          "dateFormat": "epoch",
+          "title": "Effective End",
           "filterable": true,
           "sortable": true
         }
       }
     }
   },
-  "lastModifiedBy": 435691,
-  "lastPlatformUpdateBy": 435691,
-  "lastPlatformUpdateOn": 1788769688175,
+  "lastModifiedBy": 475503,
+  "lastPlatformUpdateBy": 475503,
+  "lastPlatformUpdateOn": 1788870788732,
   "lcName": "quota",
   "metadata": {
     "auditable": true,
@@ -115,7 +213,10 @@
     "captureActivity": true,
     "captureReferences": false,
     "captureReporting": true,
-    "dateFields": [],
+    "dateFields": [
+      "effectiveStart",
+      "effectiveEnd"
+    ],
     "deployable": false,
     "encryptedFields": [],
     "external": false,
@@ -125,7 +226,15 @@
       "measureId",
       "periodId",
       "amount",
-      "targetIncentive"
+      "targetIncentive",
+      "name",
+      "quotaType",
+      "unitType",
+      "currencyId",
+      "description",
+      "tags",
+      "effectiveStart",
+      "effectiveEnd"
     ],
     "graphType": "LEGACY_MDM",
     "hasTimeSeriesRecords": true,
@@ -148,13 +257,18 @@
       {
         "key": "properties.periodId",
         "referenceType": "Period"
+      },
+      {
+        "key": "properties.currencyId",
+        "referenceType": "Currency"
       }
     ],
     "scdType2Enabled": false,
     "schemaValidationEnabled": true,
     "searchableFields": [
       "quotaId",
-      "quotaId"
+      "quotaId",
+      "name"
     ],
     "sessionBackedStorageEnabled": false,
     "skipConfigSyncIfModified": false,
@@ -184,7 +298,7 @@
     "vectorFields": [],
     "versioningEnabled": true
   },
-  "modifiedTime": 1788769688175,
+  "modifiedTime": 1788870788732,
   "name": "Quota",
   "ownerUserId": 435691,
   "packaged": false,
@@ -235,14 +349,94 @@
           "foreignKeyConstraintEnforced": false
         },
         "amount": {
-          "type": "integer",
-          "title": "Amount (minor units)",
+          "type": "number",
+          "title": "Amount",
           "filterable": true,
           "sortable": true
         },
         "targetIncentive": {
+          "type": "number",
+          "title": "Target Incentive",
+          "filterable": true,
+          "sortable": true
+        },
+        "name": {
+          "type": "string",
+          "title": "Name",
+          "filterable": true,
+          "sortable": true,
+          "searchable": true
+        },
+        "quotaType": {
+          "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "PLAN",
+              "title": "PLAN"
+            },
+            {
+              "const": "POSITION",
+              "title": "POSITION"
+            }
+          ],
+          "title": "Quota Type",
+          "filterable": true,
+          "sortable": true
+        },
+        "unitType": {
+          "type": "string",
+          "format": "single-select",
+          "oneOf": [
+            {
+              "const": "CURRENCY",
+              "title": "CURRENCY"
+            },
+            {
+              "const": "QUANTITY",
+              "title": "QUANTITY"
+            }
+          ],
+          "title": "Unit Type",
+          "filterable": true,
+          "sortable": true
+        },
+        "currencyId": {
+          "type": "string",
+          "format": "single-select",
+          "title": "Currency",
+          "filterable": true,
+          "foreignKey": {
+            "reference": "ENTITY_ID:Currency"
+          },
+          "foreignKeyConstraintEnforced": false
+        },
+        "description": {
+          "type": "string",
+          "title": "Description",
+          "filterable": true,
+          "sortable": true
+        },
+        "tags": {
+          "type": "array",
+          "title": "Tags",
+          "items": {
+            "type": "string"
+          }
+        },
+        "effectiveStart": {
           "type": "integer",
-          "title": "Target Incentive (minor units)",
+          "format": "date",
+          "dateFormat": "epoch",
+          "title": "Effective Start",
+          "filterable": true,
+          "sortable": true
+        },
+        "effectiveEnd": {
+          "type": "integer",
+          "format": "date",
+          "dateFormat": "epoch",
+          "title": "Effective End",
           "filterable": true,
           "sortable": true
         }
@@ -253,5 +447,5 @@
   "tags": [
     "icm"
   ],
-  "version": 1
+  "version": 2
 }

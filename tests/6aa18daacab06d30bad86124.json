@@ -1,0 +1,221 @@
+{
+  "name": "ICM | Create Plan",
+  "note": "A plan and its assignment rows are written in one run, so the cases that matter are the ones where the two could disagree: a plan with no assignments at all (does a bulk create of an empty list succeed?), and a refusal that must leave NOTHING behind rather than a plan with no rows. Every check runs before the first write for exactly that reason.",
+  "cases": [
+    {
+      "name": "pre-clean plans",
+      "entityDelete": {
+        "entityType": "Plan",
+        "filters": {
+          "name": "KITFIX-Plan A"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-clean plans B",
+      "entityDelete": {
+        "entityType": "Plan",
+        "filters": {
+          "name": "KITFIX-Plan B"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "INVALID_INPUT - no name",
+      "payload": {
+        "name": "",
+        "periodId": "YEAR-2026",
+        "description": "",
+        "status": "",
+        "creditRuleIds": [],
+        "payoutRuleIds": [],
+        "assignments": {}
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - a plan with no period has no window to pay in",
+      "payload": {
+        "name": "KITFIX-Plan X",
+        "periodId": "",
+        "description": "",
+        "status": "",
+        "creditRuleIds": [],
+        "payoutRuleIds": [],
+        "assignments": {}
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - a title assignment without a titleId",
+      "payload": {
+        "name": "KITFIX-Plan X",
+        "periodId": "YEAR-2026",
+        "description": "",
+        "status": "",
+        "creditRuleIds": [],
+        "payoutRuleIds": [],
+        "assignments": {
+          "titles": [
+            {
+              "effectiveStart": "2026-02-01"
+            }
+          ]
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - effectiveEnd before effectiveStart",
+      "payload": {
+        "name": "KITFIX-Plan X",
+        "periodId": "YEAR-2026",
+        "description": "",
+        "status": "",
+        "creditRuleIds": [],
+        "payoutRuleIds": [],
+        "assignments": {
+          "positions": [
+            {
+              "positionId": "pos_1",
+              "effectiveStart": "2026-08-01",
+              "effectiveEnd": "2026-01-01"
+            }
+          ]
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        }
+      ]
+    },
+    {
+      "name": "OK - a plan with NO assignments at all (the empty bulk write)",
+      "payload": {
+        "name": "KITFIX-Plan B",
+        "periodId": "YEAR-2026",
+        "description": "no targets yet",
+        "status": "",
+        "creditRuleIds": [],
+        "payoutRuleIds": [],
+        "assignments": {}
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "titleCount",
+          "equals": 0
+        },
+        {
+          "path": "positionCount",
+          "equals": 0
+        }
+      ]
+    },
+    {
+      "name": "OK - the payload from the spec, titles and positions together",
+      "payload": {
+        "name": "KITFIX-Plan A",
+        "description": "Standard AE plan, EU region",
+        "periodId": "YEAR-2026",
+        "status": "",
+        "creditRuleIds": [
+          "rule_dc_booked",
+          "rule_dc_shipped"
+        ],
+        "payoutRuleIds": [
+          "rule_c_htd_shipped",
+          "rule_c_exception_bonus"
+        ],
+        "assignments": {
+          "titles": [
+            {
+              "titleId": "title_ae_eu",
+              "effectiveStart": "2026-02-01",
+              "effectiveEnd": "2027-01-31"
+            }
+          ],
+          "positions": [
+            {
+              "positionId": "pos_10482",
+              "effectiveStart": "2026-08-01",
+              "effectiveEnd": null
+            }
+          ]
+        }
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "titleCount",
+          "equals": 1
+        },
+        {
+          "path": "positionCount",
+          "equals": 1
+        }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - a status outside the object's own enum",
+      "payload": {
+        "name": "KITFIX-Plan X",
+        "periodId": "YEAR-2026",
+        "description": "",
+        "status": "LIVE",
+        "creditRuleIds": [],
+        "payoutRuleIds": [],
+        "assignments": {}
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        }
+      ]
+    },
+    {
+      "name": "clean up plan A",
+      "entityDelete": {
+        "entityType": "Plan",
+        "filters": {
+          "name": "KITFIX-Plan A"
+        }
+      }
+    },
+    {
+      "name": "clean up plan B",
+      "entityDelete": {
+        "entityType": "Plan",
+        "filters": {
+          "name": "KITFIX-Plan B"
+        }
+      }
+    }
+  ]
+}

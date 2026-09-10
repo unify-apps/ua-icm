@@ -1,5 +1,5 @@
 {
-  "columnCounts": 6,
+  "columnCounts": 10,
   "createdTime": 1788769605951,
   "deleted": false,
   "description": "",
@@ -14,7 +14,11 @@
         "version",
         "startDate",
         "endDate",
-        "status"
+        "status",
+        "description",
+        "periodId",
+        "creditRuleIds",
+        "payoutRuleIds"
       ]
     },
     "schema": {
@@ -78,13 +82,41 @@
           "title": "Status",
           "filterable": true,
           "sortable": true
+        },
+        "description": {
+          "type": "string",
+          "title": "Description",
+          "filterable": true,
+          "sortable": true
+        },
+        "periodId": {
+          "type": "string",
+          "title": "Period Id",
+          "filterable": true,
+          "sortable": true
+        },
+        "creditRuleIds": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {},
+          "title": "Credit Rule Ids",
+          "filterable": true,
+          "sortable": true
+        },
+        "payoutRuleIds": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {},
+          "title": "Payout Rule Ids",
+          "filterable": true,
+          "sortable": true
         }
       }
     }
   },
   "lastModifiedBy": 435691,
   "lastPlatformUpdateBy": 435691,
-  "lastPlatformUpdateOn": 1788769605973,
+  "lastPlatformUpdateOn": 1788972447505,
   "lcName": "plan",
   "metadata": {
     "auditable": true,
@@ -106,7 +138,11 @@
       "version",
       "startDate",
       "endDate",
-      "status"
+      "status",
+      "description",
+      "periodId",
+      "creditRuleIds",
+      "payoutRuleIds"
     ],
     "graphType": "LEGACY_MDM",
     "hasTimeSeriesRecords": true,
@@ -153,7 +189,7 @@
     "vectorFields": [],
     "versioningEnabled": true
   },
-  "modifiedTime": 1788769605973,
+  "modifiedTime": 1788972447505,
   "name": "Plan",
   "ownerUserId": 435691,
   "packaged": false,
@@ -222,6 +258,34 @@
           "title": "Status",
           "filterable": true,
           "sortable": true
+        },
+        "description": {
+          "type": "string",
+          "title": "Description",
+          "filterable": true,
+          "sortable": true
+        },
+        "periodId": {
+          "type": "string",
+          "title": "Period Id",
+          "filterable": true,
+          "sortable": true
+        },
+        "creditRuleIds": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {},
+          "title": "Credit Rule Ids",
+          "filterable": true,
+          "sortable": true
+        },
+        "payoutRuleIds": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {},
+          "title": "Payout Rule Ids",
+          "filterable": true,
+          "sortable": true
         }
       }
     }
@@ -230,5 +294,5 @@
   "tags": [
     "icm"
   ],
-  "version": 0
+  "version": 1
 }

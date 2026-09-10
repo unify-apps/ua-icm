@@ -1,0 +1,579 @@
+{
+  "appsUsed": [],
+  "createdTime": 1788972458687,
+  "deleted": false,
+  "description": "Creates a plan and, in the same run, the PlanAssignment row for every title and position it is attached to. Every check runs before the first write, so a refusal never leaves a half-made plan.",
+  "edges": [
+    {
+      "fromNodeId": "n_sTaRt",
+      "id": "next@n_sTaRt@n_Norm",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Norm",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Norm",
+      "id": "next@n_Norm@n_IfBad",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfBad",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "if@n_IfBad@n_StBad",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StBad",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "next@n_IfBad@n_FtDup",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtDup",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtDup",
+      "id": "next@n_FtDup@n_IfDup",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfDup",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfDup",
+      "id": "if@n_IfDup@n_StDup",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StDup",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfDup",
+      "id": "next@n_IfDup@n_Cr",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Cr",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Cr",
+      "id": "next@n_Cr@n_CrAsg",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_CrAsg",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_CrAsg",
+      "id": "next@n_CrAsg@n_StOk",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StOk",
+      "type": "next"
+    }
+  ],
+  "id": "6aa18daacab06d30bad86124",
+  "lastModifiedBy": 435691,
+  "lastPlatformUpdateBy": 435691,
+  "lastPlatformUpdateOn": 1788972814556,
+  "lcName": "icm | create plan",
+  "modifiedTime": 1788972814556,
+  "name": "ICM | Create Plan",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_sTaRt",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "success",
+            "message"
+          ],
+          "properties": {
+            "status": {
+              "type": "string"
+            },
+            "success": {
+              "type": "boolean"
+            },
+            "message": {
+              "type": "string"
+            },
+            "planId": {
+              "type": "string"
+            },
+            "recordId": {
+              "type": "string"
+            },
+            "titleCount": {
+              "type": "integer"
+            },
+            "positionCount": {
+              "type": "integer"
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "title": "Name"
+            },
+            "description": {
+              "type": "string",
+              "title": "Description"
+            },
+            "periodId": {
+              "type": "string",
+              "title": "Period"
+            },
+            "status": {
+              "type": "string",
+              "title": "Status"
+            },
+            "creditRuleIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "title": "Credit Rule Ids"
+            },
+            "payoutRuleIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "title": "Payout Rule Ids"
+            },
+            "assignments": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {},
+              "title": "Assignments"
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Norm",
+      "index": 2,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "valid": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "ruleId": {
+              "type": "string"
+            },
+            "nm": {
+              "type": "string"
+            },
+            "rt": {
+              "type": "string"
+            },
+            "desc": {
+              "type": "string"
+            },
+            "tg": {
+              "type": "string"
+            },
+            "extra": {
+              "type": "string"
+            },
+            "activeStart": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "activeEnd": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "conditions": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "results": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            },
+            "conditionCount": {
+              "type": "integer"
+            },
+            "resultCount": {
+              "type": "integer"
+            },
+            "dupFilter": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {}
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "ruleType": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "activeStart": {
+              "type": "string"
+            },
+            "activeEnd": {
+              "type": "string"
+            },
+            "tags": {
+              "type": "string"
+            },
+            "conditionsJson": {
+              "type": "string"
+            },
+            "resultsJson": {
+              "type": "string"
+            },
+            "rollableOnReporting": {
+              "type": "string"
+            }
+          }
+        },
+        "compile_static": false,
+        "code": "\ndef opt = { String k -> if (!binding.hasVariable(k)) return ''\n                        def v = binding.getVariable(k); return (v == null) ? '' : v.toString().trim() }\ndef raw = { String k -> binding.hasVariable(k) ? binding.getVariable(k) : null }\ndef nm = opt('name'); def desc = opt('description')\ndef per = opt('periodId'); def stat = opt('status')\ndef cr = raw('creditRuleIds'); def pr = raw('payoutRuleIds'); def asg = raw('assignments')\n\nboolean valid = true; String reason = ''\n// Plan.status is a single-select of exactly these three, title-cased. Passing a\n// caller's string straight through fails the entity validator at WRITE time with\n// \"oneOf fail\", which is a late and unhelpful place to learn it.\ndef STATUSES = ['Draft','Active','Retired']\nString statSel = 'Draft'\nif (!stat.isEmpty()) {\n    def hit = STATUSES.find { it.equalsIgnoreCase(stat) }\n    if (hit == null) { valid = false; reason = 'status must be Draft, Active or Retired, got: ' + stat }\n    else statSel = hit\n}\nif (nm.isEmpty()) { valid = false; reason = 'name is required' }\nelse if (per.isEmpty()) { valid = false; reason = 'periodId is required - a plan without a period has no window to pay in' }\n\ndef ids = { v -> (v instanceof List) ? v.collect { String.valueOf(it).trim() }.findAll { !it.isEmpty() } : [] }\ndef crIds = ids(cr); def prIds = ids(pr)\n\n// A date arrives as YYYY-MM-DD or epoch millis, and null means open-ended - the\n// payload uses it for a position with no end date, which is a real state, not a gap.\ndef parseDate = { v, String where ->\n    if (v == null) return null\n    def t = String.valueOf(v).trim()\n    if (t.isEmpty()) return null\n    if (t ==~ /^\\d+$/) return Long.valueOf(t)\n    try { return java.time.LocalDate.parse(t).toEpochDay() * 86400000L }\n    catch (Exception e) { valid = false; reason = where + ': not a date: ' + t; return null }\n}\n\n// One PlanAssignment row per target. targetType is the only thing separating a title\n// assignment from a position one, so it is set here rather than inferred later.\ndef rows = []\ndef take = { List src, String kind, String idKey ->\n    src.eachWithIndex { a, i ->\n        if (!(a instanceof Map)) { valid = false; reason = kind + '[' + i + ']: must be an object'; return }\n        def tid = String.valueOf(a.get(idKey) ?: '').trim()\n        if (tid.isEmpty()) { valid = false; reason = kind + '[' + i + ']: ' + idKey + ' is required'; return }\n        def sEp = parseDate(a.get('effectiveStart'), kind + '[' + i + '].effectiveStart')\n        def eEp = parseDate(a.get('effectiveEnd'),   kind + '[' + i + '].effectiveEnd')\n        if (sEp != null && eEp != null && eEp < sEp) { valid = false; reason = kind + '[' + i + ']: effectiveEnd is before effectiveStart' }\n        rows << [targetType: kind.toUpperCase(), targetId: tid, startDate: sEp, endDate: eEp]\n    }\n}\ndef titlesIn    = (asg instanceof Map && asg.get('titles')    instanceof List) ? asg.get('titles')    : []\ndef positionsIn = (asg instanceof Map && asg.get('positions') instanceof List) ? asg.get('positions') : []\ntake(titlesIn, 'title', 'titleId')\ntake(positionsIn, 'position', 'positionId')\n\ndef pid = 'PLAN-' + System.currentTimeMillis() + '-' + new Random().nextInt(9000).plus(1000)\n\n// The assignment payload carries the planId that does not exist yet - it is minted\n// here and the same value is written on both records, so the rows are linked without\n// a second read.\ndef asgPayload = rows.collect { r ->\n    [assignmentId: pid + '-' + r.targetType + '-' + r.targetId,\n     planId: pid, targetType: r.targetType, targetId: r.targetId,\n     startDate: r.startDate, endDate: r.endDate]\n}\n\n// A bare ARRAY in a json property is dropped on write, so every ordered list goes in\n// under 'items'.\nreturn [valid: valid, reason: reason, planId: pid, nm: nm, desc: desc, per: per,\n        stat: statSel,\n        creditRuleIds: [items: crIds], payoutRuleIds: [items: prIds],\n        asgPayload: asgPayload, hasAssignments: !asgPayload.isEmpty(),\n        titleCount: titlesIn.size(), positionCount: positionsIn.size(),\n        dupFilter: [operator:'AND', filters:[[property:'properties.planId', filter:[operator:'EQUAL', value: pid]]]]]\n",
+        "captureStdOutput": false,
+        "parameters": {
+          "name": "{{ n_sTaRt.outputs.name }}",
+          "description": "{{ n_sTaRt.outputs.description }}",
+          "periodId": "{{ n_sTaRt.outputs.periodId }}",
+          "status": "{{ n_sTaRt.outputs.status }}",
+          "creditRuleIds": "{{ n_sTaRt.outputs.creditRuleIds }}",
+          "payoutRuleIds": "{{ n_sTaRt.outputs.payoutRuleIds }}",
+          "assignments": "{{ n_sTaRt.outputs.assignments }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Validate the request, parse the lists and mint the id",
+      "title": "Execute Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_IfBad",
+      "index": 3,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Norm.outputs.result.valid }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": false
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Was the request itself unusable?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@y",
+      "id": "n_StBad",
+      "index": 4,
+      "inputs": {
+        "result": {
+          "status": "INVALID_INPUT",
+          "success": false,
+          "message": "{{ n_Norm.outputs.result.reason }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Refused before writing anything",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_FtDup",
+      "index": 5,
+      "inputs": {
+        "triggerInputCondition": "{{ n_Norm.outputs.result.dupFilter }}",
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Plan",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 1,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.planId"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Could the minted id already exist?",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_IfDup",
+      "index": 6,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_FtDup.outputs.total }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": 1
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "An id collision, however unlikely",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfDup@n_IfBad@root_id-1@n@y",
+      "id": "n_StDup",
+      "index": 7,
+      "inputs": {
+        "result": {
+          "status": "DUPLICATE_PLAN_ID",
+          "success": false,
+          "message": "the minted plan id collided; retry"
+        }
+      },
+      "skip": false,
+      "subTitle": "The minted id collided - the caller should simply retry",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceVersion": 864,
+        "resourceName": "storage_by_unifyapps_create_record",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfDup@n_IfBad@root_id-1@n@n",
+      "id": "n_Cr",
+      "index": 8,
+      "inputs": {
+        "writeThroughSessionVariables": false,
+        "object_type": "Plan",
+        "record": {
+          "planId": "{{ n_Norm.outputs.result.planId }}",
+          "name": "{{ n_Norm.outputs.result.nm }}",
+          "description": "{{ n_Norm.outputs.result.desc }}",
+          "periodId": "{{ n_Norm.outputs.result.per }}",
+          "status": "{{ n_Norm.outputs.result.stat }}",
+          "creditRuleIds": "{{ n_Norm.outputs.result.creditRuleIds }}",
+          "payoutRuleIds": "{{ n_Norm.outputs.result.payoutRuleIds }}"
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The plan itself",
+      "title": "Create record",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceVersion": 864,
+        "resourceName": "storage_by_unifyapps_bulk_create_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfDup@n_IfBad@root_id-1@n@n",
+      "id": "n_CrAsg",
+      "index": 9,
+      "inputs": {
+        "useRawPayload": true,
+        "writeThroughSessionVariables": false,
+        "rawPayload": "{{ n_Norm.outputs.result.asgPayload }}",
+        "object_type": "PlanAssignment",
+        "skipIfBlank": false,
+        "skipUpdate": false
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "One row per title and position",
+      "title": "Bulk create records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfDup@n_IfBad@root_id-1@n@n",
+      "id": "n_StOk",
+      "index": 10,
+      "inputs": {
+        "result": {
+          "status": "OK",
+          "success": true,
+          "message": "plan created",
+          "planId": "{{ n_Norm.outputs.result.planId }}",
+          "recordId": "{{ n_Cr.outputs.id }}",
+          "titleCount": "{{ n_Norm.outputs.result.titleCount }}",
+          "positionCount": "{{ n_Norm.outputs.result.positionCount }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Created",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 435691,
+  "schemaReferences": [],
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 2
+}

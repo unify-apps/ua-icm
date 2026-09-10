@@ -20,3 +20,7 @@ Rebuilt automatically by `scripts/ua.mjs snap`. One JSON file per automation, na
 | 6a9ee2fd3aa7845ea194eaa3 | ICM | List Attainment Measures | 7 | 2026-09-07 |
 | 6a9ee2fd8f78990409ff3fb5 | ICM | List Quotas | 7 | 2026-09-07 |
 | 6aa023713aa7845ea1ef4310 | ICM | Get Rule | 7 | 2026-09-08 |
+| 6aa18daa3c7f7b6b91c15ce6 | ICM | List Plans | 7 | 2026-09-09 |
+| 6aa18daacab06d30bad86124 | ICM | Create Plan | 10 | 2026-09-09 |
+| 6aa18daaff41994689752982 | ICM | Get Plan | 8 | 2026-09-09 |
+| 6aa18db5cab06d30bad86183 | ICM | List Periods | 7 | 2026-09-09 |
