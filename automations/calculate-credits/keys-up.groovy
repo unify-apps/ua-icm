@@ -1,4 +1,4 @@
-// One hop up the reporting line, and the frontier for the next.
+// One hop up the reporting line, and whether the rules need another.
 //
 // ONE FILE, FOUR NODES. Each hop binds one more `hier<N>` set and reads whatever is
 // there through `binding.hasVariable` - an unbound parameter is not null on this
@@ -7,12 +7,19 @@
 // WHY HOPS AND NOT ONE FETCH. Rollup climbs an unknown number of levels, and the seats
 // above a rep are not knowable from the rep's own row - each level has to be asked for.
 // Reading the WHOLE PositionHierarchy table instead would put org size back into the
-// cost, which is the thing this redesign removes. Four hops covers five levels of org
-// (AE -> RSM -> RVP -> SVP -> CRO); a deeper one is REPORTED, never truncated silently.
+// cost, which is the thing the staged design removes.
+//
+// WHY `next`. The walk only climbs as far as the rules' largest rollupLevels. A plan that
+// rolls up one level reads ONE hop; the branch in front of each later hop is closed by
+// this flag, so those fetches never execute. Four hops is still the ceiling, and a rule
+// asking for more than the tree the four hops read is REPORTED, never truncated.
 
 def opt = { String n -> binding.hasVariable(n) ? binding.getVariable(n) : null }
 def rows(v) { return (v instanceof List) ? v : [] }
 def p(row, String k) { return ((Map) row?.properties)?.get(k) }
+
+int hopNo = ((Number) hop).intValue()
+int want = ((Number) levels).intValue()
 
 Set seen = new LinkedHashSet()
 for (v in rows(opt('seatIds'))) if (v != null) seen << String.valueOf(v)
@@ -35,13 +42,15 @@ for (name in ['hier1', 'hier2', 'hier3', 'hier4']) {
     seen.addAll(ancestors)
 }
 
+// The parents this hop found are level-`hopNo` ancestors; their parents are level hopNo+1.
+boolean moreWanted = !frontier.isEmpty() && want > hopNo
 List front = frontier.isEmpty() ? ['__none__'] : new ArrayList(frontier)
 return [
     frontier   : front,
-    // Still something above us after the last hop: the walk did not finish. Reported by
-    // the fold as HIERARCHY_TOO_DEEP rather than quietly dropping the top of the tree.
-    deeper     : !frontier.isEmpty(),
+    next       : moreWanted && hopNo < 4,
+    // A rule wants a level beyond the fourth and the tree still climbs: the walk did not
+    // finish. Reported by the fold as HIERARCHY_TOO_DEEP rather than dropping the top.
+    deeper     : moreWanted && hopNo >= 4,
     ancestors  : ancestors.isEmpty() ? ['__none__'] : new ArrayList(ancestors),
-    allPositions: seen.isEmpty() ? ['__none__'] : new ArrayList(seen),
     count      : seen.size(),
 ]

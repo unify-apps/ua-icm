@@ -198,53 +198,95 @@ period touched them or not. That is wrong in the way that matters: the cost grew
 5,000 read ~25,000 rows to use ~1,500 of them, and past one page it stopped being slow
 and started being **wrong**.
 
-Each org-scale read is now keyed on the previous stage's actual keys:
+Each org-scale read is now keyed on the previous stage's actual keys, and every read
+after the rules is made **only if a rule needs it** (2026-09-11):
 
 ```
 Transaction (period window)
   -> distinct payee NAMES   -> Payee              by name IN
-  -> payee ids              -> assignments        by payeeId IN
+  -> payee ids              -> their seats        by payeeId IN
   -> the SEATS they held    -> attributes         by positionId IN
-                            -> hierarchy          by positionId IN, four hops
-  -> seats + ancestors      -> Position           by id IN
-                            -> managers' seats    by positionId IN
+                            -> Position codes     by id IN
   -> title ids              -> Title              by id IN
-  -> ids AND codes          -> PlanAssignment     three structured IN fetches
+  -> ids AND codes          -> PlanAssignment     ONE structured top-level OR over three columns
   -> plan ids               -> Plan               by id IN
   -> rule business keys     -> Rule               by ruleId IN
+  -> n_KNeed decides the rest, on a four-lane conditional branch:
+       lane 1  Territory     by id IN    only if a condition reads position.territory
+       lane 2  Currency      by id IN    only if a condition reads payee.currency
+       lane 3  CreditType    by code IN  only the codes the rules file under
+       lane 4  hierarchy     one hop per rollupLevels the rules ask for (max four),
+                             each later hop behind a one-lane branch the previous hop opens
+               managers      by positionId IN, the seats those hops found
 ```
+
+**Fetch calls per run, before -> after.** The fan-out and the first staged chain made
+**20 on every run** whatever the rules said. Now: **11** when no rule rolls up and none
+reads territory or currency; **13** for a one-level rollup; **18** at most (four-level
+rollup and both conditions). Measured 2026-09-11 on the same data at the same moment:
+NA period **20 -> 14** (its title also carries a two-level test rule, so two hops ran),
+synthetic SEP-2026 **20 -> 13**.
+
+**What each cut is, and why it is safe.**
+
+- **PlanAssignment 3 -> 1.** A flat top-level `OR` in `triggerInputCondition` is still a
+  structured tree, so the builder draws it and the index analyser reads it — the reason
+  the three fetches existed was a *Groovy-built* pill, not OR itself. The
+  `startDate <= windowEnd` trim was dropped to keep the OR flat: a seat has a handful of
+  assignments over its life and the fold judges every one by date anyway.
+- **Hierarchy 4 hops -> `rollupLevels` hops.** A walk only needs to climb as far as the
+  largest `rollupLevels` among the rules. `keys-up.groovy` emits `next` when the frontier
+  is non-empty AND a rule wants the next level; the one-lane branch in front of each later
+  hop is closed otherwise. `HIERARCHY_TOO_DEEP` is now raised only when a rule wants MORE
+  than four levels and the tree still climbs — the old guard also refused a deep org whose
+  rules only rolled up one level, which was a false refusal.
+- **Territory / Currency only when read.** They feed exactly one fact each. A rule set that
+  never asks never pays for them.
+- **CreditType keyed on the codes the rules name**, not whole-table.
+- **Position codes for the crediting seats only.** Codes are needed to match assignments
+  that name a seat as `POS-UK-AE-02`; ancestors are matched by id and never needed them.
+- **No lane runs -> no fetch.** A lane condition that is false is a round trip that never
+  happens. When no lane at all is open the branch follows its default edge straight to the
+  join (`BranchNodeRuntime`: no applicable edge -> NEXT).
+
+**Why not caching.** `options.cacheConfig` exists on action nodes, and Territory, Currency
+and CreditType are cacheable in principle. It is not used: a stale `CreditType` or `Title`
+code inside a pay calculation is a wrong credit, not a slow one, and a TTL is a guess at
+how long nobody edits reference data. Title `T-AE` was renamed to `T-AE1` on tool on this
+very day.
 
 **What it is deliberately NOT: a fetch per payee, or per transaction.** At 2,917 NA rows
 in one month that is roughly 12,000 round trips inside a single run — the N+1 that "no
 API call inside a per-item loop" exists to forbid. The dependency is real and it is
 honoured; it is expressed one **set** at a time instead of one **row** at a time.
 
-Of 20 fetches, **15 are keyed by the previous stage**. The three that are not —
-`Territory`, `Currency`, `CreditType` — are single-digit reference tables that do not
-grow with headcount, and making them dependent would add serial hops to save nothing;
-they sit on a parallel lane and the `hasMore` guard still covers them.
+Every read except the Transaction window is keyed by the previous stage, and every read
+after the rules is conditional. The `hasMore` guard covers all of them; a read that never
+ran binds nothing, and the fold reads every fetch input through `binding.hasVariable`.
 
-**Cost of the trade, stated rather than hidden:** the chain is serial, so a small period
-is slower in wall-clock than a twelve-way fan-out. A real one reads a fraction of the
-rows and cannot silently truncate. That is the right way round.
+**Cost of the trade, stated rather than hidden:** the chain is serial up to the rules, so
+a small period is slower in wall-clock than a fan-out. A real one reads a fraction of the
+rows, makes a fraction of the calls, and cannot silently truncate.
 
 **Why hops and not one hierarchy read.** Rollup climbs an unknown number of levels and
 the seats above a rep are not knowable from the rep's own row, so each level has to be
-asked for. Four hops covers five levels of org (AE → RSM → RVP → SVP → CRO); a deeper
-one is **refused** as `HIERARCHY_TOO_DEEP`, never truncated. One file, `keys-up.groovy`,
-serves all four nodes by reading its optional bindings through `binding.hasVariable`.
+asked for. Four hops is the ceiling (AE → RSM → RVP → SVP → CRO). One file,
+`keys-up.groovy`, serves all four hop nodes; `keys-line.groovy` unions whichever hops ran.
 
-**Why three PlanAssignment fetches.** `startDate <= end AND (targetId IN … OR positionId
-IN … OR titleId IN …)` is expressible, but only by building the whole filter in Groovy
-and passing it as one pill — and a whole-value template filter does not render in the
-builder **and** silently suppresses every missing-index warning for that node. These
-filters will need an index. Three structured fetches keep both the drawing and the
-warning; the fold unions and de-duplicates them by record id.
+**Two guards, because the honest failures of a set-based design are a set that got too
+big and a walk that did not finish.** `KEY_SET_TOO_LARGE` refuses a period touching more
+distinct payees or seats than `keyCap` (default 5000) — the fix is chunking, not a bigger
+`IN`. `HIERARCHY_TOO_DEEP` refuses when a rule wants more than four levels and the line is
+still climbing after hop four.
 
-**Two new guards, because the honest failures of a set-based design are a set that got
-too big and a walk that did not finish.** `KEY_SET_TOO_LARGE` refuses a period touching
-more distinct payees or seats than `keyCap` (default 5000) — the fix is chunking, not a
-bigger `IN`. `HIERARCHY_TOO_DEEP` refuses a reporting line still climbing after hop four.
+**Proven output-identical to the 20-call chain (2026-09-11).** Both definitions were
+dry-run on the same data within the same minute (old from commit `8bd92b6`, new as
+draft v9): NA period 28 credits / 57,956,650 minor units / 2 exceptions, synthetic
+SEP-2026 0 credits / 7 exceptions — credits, amounts, splits, rollup parents, exceptions
+and stats identical in both. **The data was not the reconciled data any more** — see
+State: the TEST-NA hierarchy, one TEST payee and the `T-AE` title code were changed on
+tool outside this work, which is also why the suite reads red. The A/B is the proof the
+rewrite changed no answer; the suite goes green again once the fixtures are restored.
 
 **Proven output-identical.** The staged chain and the old fan-out produce
 **byte-for-byte identical** credits on the real NA period: 39 credits, 11 rolled,

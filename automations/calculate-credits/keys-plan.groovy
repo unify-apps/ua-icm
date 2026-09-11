@@ -9,8 +9,5 @@ def rows(v) { return (v instanceof List) ? v : [] }
 def p(row, String k) { return ((Map) row?.properties)?.get(k) }
 
 Set ids = new LinkedHashSet()
-for (name in ['asgT', 'asgP', 'asgL']) {
-    def bound = binding.hasVariable(name) ? binding.getVariable(name) : null
-    for (r in rows(bound)) { def v = p(r, 'planId'); if (v != null) ids << String.valueOf(v) }
-}
+for (r in rows(asgRows)) { def v = p(r, 'planId'); if (v != null) ids << String.valueOf(v) }
 return [planIds: ids.isEmpty() ? ['__none__'] : new ArrayList(ids), count: ids.size()]

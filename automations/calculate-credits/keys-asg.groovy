@@ -5,12 +5,11 @@
 // the string "POS-UK-AE-02" in a column typed as a foreign key to Position. So the key
 // set is ids AND codes, and the fold accepts both.
 //
-// WHY THREE FETCHES AND NOT ONE. "startDate <= end AND (targetId IN .. OR positionId IN
-// .. OR titleId IN ..)" is expressible, but only by building the whole filter in Groovy
-// and passing it as one pill - and a whole-value template filter does not render in the
-// builder AND silently suppresses every missing-index warning for that node. These
-// filters WILL need an index. Three structured fetches keep both the drawing and the
-// warning; the fold unions and de-duplicates them by record id.
+// ONE FETCH, NOT THREE. The read is a STRUCTURED top-level OR -
+// `targetId IN all OR positionId IN seats OR titleId IN titles` - which the builder draws
+// and the index analyser reads, unlike a Groovy-built pill. The `startDate <= windowEnd`
+// trim is dropped to keep it one flat OR: a seat has a handful of assignments over its
+// life, and the fold judges every one of them by date anyway.
 
 def rows(v) { return (v instanceof List) ? v : [] }
 def p(row, String k) { return ((Map) row?.properties)?.get(k) }

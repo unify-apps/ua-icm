@@ -1381,3 +1381,43 @@ settled it in two queries:
 after a change, check the INPUTS still exist before reading the diff as a regression —
 and keep seeders idempotent by business key so restoring is one command. Both seeders
 here re-created exactly the missing rows and nothing else.
+
+**It happened again, wider (2026-09-11).** On tool: every TEST-NA `PositionHierarchy` row
+gone, Payee `Carlouie Salas` gone, and the shared Title "Account Executive" re-coded
+`T-AE` -> `T-AE1` (neighbouring titles show "Channel Manager1", market "Global2" - someone
+exercising edit pages). The seeders now refuse (`Title titleCode=T-AE not found`), which is
+correct: a seeder must not rewrite shared reference data. The way to separate "my change
+broke it" from "the data moved" was an A/B dry run of the OLD definition (from git) against
+the NEW one in the same minute - see the next section.
+
+## Proving a rewrite changed no answer: A/B the old definition in a test run (ICM, 2026-09-11)
+
+`POST /api/test-workflow/initiate-test/{id}` takes the whole `workflowDefinition` in its
+body, so ANY definition - including one checked out of git - can be run against today's
+data without pushing it. Run old and new with the same payload at the same moment and diff
+the fold's output (normalise minted ids: map `sourceCreditId` to the parent's index). When
+fixtures have drifted, that is the only comparison that means anything; a baseline file
+from yesterday compares against yesterday's data.
+
+## Conditional reads: a closed branch lane is a fetch that never runs (ICM, 2026-09-11)
+
+Proven on `ICM | Calculate Credits` draft v9:
+
+- A lane condition whose pill points at a node that **never executed** evaluates FALSE and
+  the run continues; it does not fail. (`n_BrH4`'s lane reads `n_KUp3.next`; on the NA run
+  hop 3 never ran, the lane stayed closed, the run answered OK.)
+- With **no** applicable lane, `BranchNodeRuntime` follows the NEXT (default) edge to the
+  join. With exactly **one**, it runs that lane inline instead of spawning a child. Either
+  way sequential one-lane branches (`n_BrH2 -> n_BrH3 -> n_BrH4`, each lane ending with a
+  `next` edge to the following branch) form a "do up to N more hops" ladder with no join
+  nodes of their own.
+- A pill from the join node to a node in a closed lane leaves the Groovy binding MISSING,
+  the same as any unresolved pill. Read every such input through `binding.hasVariable`.
+- A flat top-level `OR` in `fetch_records.triggerInputCondition`
+  (`{operator:"OR", filters:[IN a, IN b, IN c]}`) returns the union - one call where three
+  structured fetches were used before, and still drawable (it is not a Groovy-built pill).
+- `debugrun.mjs` cuts every value at 500 characters, so a fold's full inputs cannot be
+  read from it; the lookup API (`TEST_WORKFLOW_VARIABLE`, key `runId.runId.nodeId`)
+  returns the whole payload. Nodes inside a lane that ran as a CHILD instance still show
+  "not reached"; the join node's inputs (which `*Rows` keys are bound) are the record of
+  which lanes ran.

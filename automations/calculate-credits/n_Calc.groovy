@@ -8,13 +8,18 @@ def rows(v) { return (v instanceof List) ? v : [] }
 def p(row, String k) { return ((Map) row?.properties)?.get(k) }
 def truthy(v) { return v instanceof Boolean ? v : String.valueOf(v) == 'true' }
 
+// Most reads after the rules are CONDITIONAL: Territory, Currency, CreditType and each
+// hierarchy hop run only when a rule needs them. A pill to a node that never ran leaves
+// the binding MISSING rather than null, so every fetch input is read through here.
+def opt = { String n -> binding.hasVariable(n) ? binding.getVariable(n) : null }
+def R = { String n -> rows(opt(n + 'Rows')) }
+
 /** Union several fetches into one list, de-duplicated by RECORD id.
  *
- *  Needed because the reads are now STAGED: the reporting line arrives as four hops,
- *  the occupants as the crediting seats plus the ancestor seats, and the plan
- *  assignments as three structured fetches instead of one undrawable OR. Overlap
- *  between them is normal - one manager is the parent of many seats - so de-duplicating
- *  by id is what stops the same row being counted twice in the fold. */
+ *  Needed because the reads are STAGED: the reporting line arrives as up to four hops
+ *  and the occupants as the crediting seats plus the ancestor seats. Overlap between
+ *  them is normal - one manager is the parent of many seats - so de-duplicating by id
+ *  is what stops the same row being counted twice in the fold. */
 def merge(List... parts) {
     Map byId = [:]
     for (part in parts) for (r in rows(part)) if (r?.id != null) byId[r.id] = r
@@ -37,17 +42,16 @@ def group(List src, String byField, Closure shape) {
 // first, and the only defence that scales is to refuse rather than to compute on a
 // prefix. Pagination is the fix; this is what makes its absence loud meanwhile.
 List truncated = []
-def bound = { String label, v -> if (truthy(v)) truncated << label }
-bound('Transaction', txnMore); bound('Payee', payeeMore)
-bound('PayeePositionAssignment (seats)', occMore)
-bound('PayeePositionAssignment (managers)', occUpMore)
-bound('PositionAttribute', attrMore); bound('Position', posMore)
-bound('PositionHierarchy hop 1', hier1More); bound('PositionHierarchy hop 2', hier2More)
-bound('PositionHierarchy hop 3', hier3More); bound('PositionHierarchy hop 4', hier4More)
-bound('PlanAssignment by targetId', asgTMore); bound('PlanAssignment by positionId', asgPMore)
-bound('PlanAssignment by titleId', asgLMore)
-bound('Plan', planMore); bound('Rule', ruleMore); bound('Title', titleMore)
-bound('Territory', terrMore); bound('Currency', ccyMore); bound('CreditType', ctMore)
+def bound = { String label, String param -> if (truthy(opt(param + 'More'))) truncated << label }
+bound('Transaction', 'txn'); bound('Payee', 'payee')
+bound('PayeePositionAssignment (seats)', 'occ')
+bound('PayeePositionAssignment (managers)', 'occUp')
+bound('PositionAttribute', 'attr'); bound('Position', 'pos')
+bound('PositionHierarchy hop 1', 'hier1'); bound('PositionHierarchy hop 2', 'hier2')
+bound('PositionHierarchy hop 3', 'hier3'); bound('PositionHierarchy hop 4', 'hier4')
+bound('PlanAssignment', 'asg')
+bound('Plan', 'plan'); bound('Rule', 'rule'); bound('Title', 'title')
+bound('Territory', 'terr'); bound('Currency', 'ccy'); bound('CreditType', 'ct')
 
 def refuseRun = { String status, String message ->
     return [status: status, message: message, runId: runId, dryRun: truthy(dryRun),
@@ -70,7 +74,7 @@ if (truthy(nameOverflow) || truthy(seatOverflow)) {
          + " than one filter should carry. The fix is to calculate it in chunks, not to send a "
          + "larger IN list.").toString())
 }
-if (truthy(hierDeeper)) {
+if (truthy(opt('hierDeeper'))) {
     return refuseRun('HIERARCHY_TOO_DEEP',
         ("the reporting line is still climbing after four hops, so the top of the tree was not "
          + "read and rollup would be short. Add hops rather than accept a partial walk.").toString())
@@ -78,26 +82,26 @@ if (truthy(hierDeeper)) {
 
 // --- reference codes ---------------------------------------------------------
 Map currencyCodeById = [:]
-for (c in rows(ccyRows)) currencyCodeById[c.id] = p(c, 'code')
+for (c in R('ccy')) currencyCodeById[c.id] = p(c, 'code')
 
 Map titleCodeById = [:]
-for (t in rows(titleRows)) titleCodeById[t.id] = p(t, 'titleCode')
+for (t in R('title')) titleCodeById[t.id] = p(t, 'titleCode')
 
 Map territoryCodeById = [:]
-for (t in rows(terrRows)) territoryCodeById[t.id] = p(t, 'territoryCode')
+for (t in R('terr')) territoryCodeById[t.id] = p(t, 'territoryCode')
 
 Map positionCodeById = [:]
-for (t in rows(posRows)) positionCodeById[t.id] = p(t, 'positionCode')
+for (t in R('pos')) positionCodeById[t.id] = p(t, 'positionCode')
 
 // creditType is authored as a CODE and stored as a record id. Resolving one to the
 // other here is what keeps a rule readable and the column a real foreign key.
 Map creditTypeIdByCode = [:]
-for (t in rows(ctRows)) { def c = p(t, 'creditTypeCode'); if (c != null) creditTypeIdByCode[String.valueOf(c)] = t.id }
+for (t in R('ct')) { def c = p(t, 'creditTypeCode'); if (c != null) creditTypeIdByCode[String.valueOf(c)] = t.id }
 
 // --- people ------------------------------------------------------------------
 Map payeeById = [:]
 Map payeeIdsByName = [:]
-for (pay in rows(payeeRows)) {
+for (pay in R('payee')) {
     payeeById[pay.id] = [currencyCode: currencyCodeById[p(pay, 'currencyId')],
                          hireDate: p(pay, 'hireDate'), name: p(pay, 'name'), status: p(pay, 'status')]
     String k = CreditPass.key((String) p(pay, 'name'))
@@ -109,7 +113,7 @@ for (pay in rows(payeeRows)) {
 // business key (what a human reads). Indexing both costs nothing and removes a class
 // of "matches nothing, says nothing" bug.
 Map plansById = [:]
-for (pl in rows(planRows)) {
+for (pl in R('plan')) {
     Map v = [planId: p(pl, 'planId'), status: p(pl, 'status'),
              startDate: p(pl, 'startDate'), endDate: p(pl, 'endDate'),
              creditRules: p(pl, 'creditRules') ?: []]
@@ -118,7 +122,7 @@ for (pl in rows(planRows)) {
 }
 
 Map rulesByRuleId = [:]
-for (r in rows(ruleRows)) {
+for (r in R('rule')) {
     def rk = p(r, 'ruleId')
     if (rk == null) continue                      // a half-written Rule row indexes as nothing
     if (p(r, 'stage') != 'credit') continue       // the payout pass reads the others
@@ -127,7 +131,7 @@ for (r in rows(ruleRows)) {
                                          activeEnd: p(r, 'activeEnd')]
 }
 
-List assignments = merge(rows(asgTRows), rows(asgPRows), rows(asgLRows)).collect {
+List assignments = R('asg').collect {
     [planKey: p(it, 'planId'), targetType: p(it, 'targetType'), targetId: p(it, 'targetId'),
      titleId: p(it, 'titleId'), positionId: p(it, 'positionId'),
      startDate: p(it, 'startDate'), endDate: p(it, 'endDate')]
@@ -137,9 +141,9 @@ List assignments = merge(rows(asgTRows), rows(asgPRows), rows(asgLRows)).collect
 // ancestor-keyed one. `seatsByPayee` must see only the first - a manager is not a payee
 // this period unless they closed something - while `occupantByPosition` must see both, or
 // the rollup finds every manager seat vacant.
-List seatRows = rows(occRows)
-List allOccupants = merge(rows(occRows), rows(occUpRows))
-List hierAll = merge(rows(hier1Rows), rows(hier2Rows), rows(hier3Rows), rows(hier4Rows))
+List seatRows = R('occ')
+List allOccupants = merge(R('occ'), R('occUp'))
+List hierAll = merge(R('hier1'), R('hier2'), R('hier3'), R('hier4'))
 
 Map ctx = [
     seed              : ((Number) startedAt).longValue(),
@@ -149,7 +153,7 @@ Map ctx = [
                                                           effectiveStart: p(it, 'effectiveStart'), effectiveEnd: p(it, 'effectiveEnd')] }),
     occupantByPosition: group(allOccupants, 'positionId', { [payeeId: p(it, 'payeeId'),
                                                           effectiveStart: p(it, 'effectiveStart'), effectiveEnd: p(it, 'effectiveEnd')] }),
-    attrByPosition    : group(rows(attrRows), 'positionId', { [titleId: p(it, 'titleId'), territoryId: p(it, 'territoryId'),
+    attrByPosition    : group(R('attr'), 'positionId', { [titleId: p(it, 'titleId'), territoryId: p(it, 'territoryId'),
                                                           effectiveStart: p(it, 'effectiveStart'), effectiveEnd: p(it, 'effectiveEnd')] }),
     parentByPosition  : group(hierAll, 'positionId', { [parentPositionId: p(it, 'parentPositionId'),
                                                           effectiveStart: p(it, 'effectiveStart'), effectiveEnd: p(it, 'effectiveEnd')] }),
@@ -170,7 +174,7 @@ long winEnd   = ((Number) windowEnd).longValue()
 
 List txns = []
 List outOfWindow = []
-for (t in rows(txnRows)) {
+for (t in R('txn')) {
     Map attrs = (p(t, 'attrs') instanceof Map) ? (Map) p(t, 'attrs') : [:]
     def inc = p(t, 'incentiveDate') ?: p(t, 'closeDate')
     Map row = [
@@ -222,14 +226,14 @@ List credits = ordered.collect {
 
 Map stats = new LinkedHashMap((Map) out.stats)
 stats.put('outOfWindow', outOfWindow.size())
-stats.put('scanned', rows(txnRows).size())
+stats.put('scanned', R('txn').size())
 // The point of the redesign, in numbers: how many rows the period actually pulled. On a
 // real org these are the difference between a bounded read and a whole-table one.
-stats.put('rowsRead', [transactions: rows(txnRows).size(), payees: rows(payeeRows).size(),
-                       assignments: allOccupants.size(), attributes: rows(attrRows).size(),
-                       hierarchy: hierAll.size(), positions: rows(posRows).size(),
-                       planAssignments: assignments.size(), plans: rows(planRows).size(),
-                       rules: rows(ruleRows).size()])
+stats.put('rowsRead', [transactions: R('txn').size(), payees: R('payee').size(),
+                       assignments: allOccupants.size(), attributes: R('attr').size(),
+                       hierarchy: hierAll.size(), positions: R('pos').size(),
+                       planAssignments: assignments.size(), plans: R('plan').size(),
+                       rules: R('rule').size()])
 
 return [status: 'OK', message: '', runId: runId, dryRun: truthy(dryRun),
         periodName: periodName, windowStart: winStart, windowEnd: winEnd,
