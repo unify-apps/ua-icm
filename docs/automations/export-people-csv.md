@@ -268,6 +268,18 @@ deployed app and break Download on the live People page. The key set was not cha
 `ds_export_people_filtered` (`e_6aa3bc9d6dbbfa43d36b68ab`) is a second row against this automation, the same
 move `ds_titles_filtered` made for `ICM | Manage People`. Only the branch binds to it.
 
+### The row's `context` carries `type: "APPLICATION"`, and the caller's must too
+
+`ua-datasource.mjs` writes `type: "APPLICATION"` into every context it builds, and the
+executor matches a request's context against the STORED row's. The older hand-made rows
+(`ds_export_titles_csv`) do not carry it, so a binding copied from one of those to reach
+a script-made row answers HTTP 500 `forbidden datasource : invalid input` — which names
+neither the field nor the row, and looks exactly like a permissions problem.
+
+Cost a live bug: Download worked on People and 500'd on Titles, because the People
+binding already had the key and the Titles one did not. Confirmed 2026-09-11 by two
+otherwise-identical calls differing only in this key: 500 without, 200 with.
+
 ### Backward compatible
 
 A caller that sends no `filter` key at all — which is exactly what the old row does — is
