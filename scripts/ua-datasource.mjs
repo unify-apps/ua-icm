@@ -72,6 +72,14 @@ function build(spec, entityType) {
       },
       inputs: {
         automationId: spec.automationId,
+        // `version` and `runtimeConnections` are carried ONLY when the spec asks for
+        // them. Every row this kit has made by hand mirrors an existing one field for
+        // field, and the rows the app already calls have both - export-titles-csv.md
+        // recorded this builder omitting them as a cascade to watch. A row that is
+        // missing a field its siblings carry answers `forbidden datasource` at call
+        // time, which names nothing useful.
+        ...(spec.version === undefined ? {} : { version: spec.version }),
+        ...(spec.runtimeConnections === undefined ? {} : { runtimeConnections: spec.runtimeConnections }),
         synchronous: spec.synchronous !== false,
         parameters: spec.parameters ?? {},
       },

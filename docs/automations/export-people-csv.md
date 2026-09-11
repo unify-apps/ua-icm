@@ -233,3 +233,60 @@ Every First Name and Last Name column in the verification file was EMPTY. That i
 not a bug in this automation: it is the 11 pre-2026-09-10 rows that have a `name`
 and no `firstName`/`lastName`, and it is open question 2 in `manage-people.md`
 showing up in a file rather than in prose.
+
+## `filter` — the Download button follows the screen (2026-09-11)
+
+The button used to send nothing, so the file was always the whole roster even when the
+screen was showing four rows. It now sends the search box AND the filter block, and this
+automation ANDs them exactly as `ICM | Manage People` LIST does. **With neither set the file is still
+the whole roster** — "everything" is the absence of a question, not a second code path.
+
+### What changed
+
+| thing | change |
+|---|---|
+| `n_sTaRt` `setup` | `filter` added, `string`, matching how `ICM | Manage People` declares it |
+| `n_Norm` `inputs.parameters` | `filter: {{ n_sTaRt.outputs.filter }}` — **the edit that actually matters** |
+| `n_Norm` `inputs.input` | `filter` added to the node's own input schema |
+| `n_Norm` code | the wire→storage translator, ported from `ICM | Manage People` |
+
+**Declaring `filter` on the START node is NOT enough.** A Groovy node binds only what its
+own `parameters` map pipes in, so the first build had `filter` visible on `n_sTaRt`,
+absent inside the script, `binding.hasVariable('filter')` false, and the filter silently
+ignored — a run that answered `OK` with every row. Found by test run, not by reading.
+
+**`raw` was already taken.** The ported block declares `def raw = parsed.trim()`; this
+script's head binds `raw` to the parameter reader. `ICM | Manage People` had the name free. Groovy
+refuses the shadow at compile time, so the node failed startup until it was renamed
+`rawText`.
+
+### The data source, and why there is a second one
+
+`validateDataSourceContextAndInputs` compares a request's parameter KEYS against the
+stored row's, so adding `filter` to `ds_export_people_csv` would refuse every call from the
+deployed app and break Download on the live People page. The key set was not changed:
+`ds_export_people_filtered` (`e_6aa3bc9d6dbbfa43d36b68ab`) is a second row against this automation, the same
+move `ds_titles_filtered` made for `ICM | Manage People`. Only the branch binds to it.
+
+### Backward compatible
+
+A caller that sends no `filter` key at all — which is exactly what the old row does — is
+read through `binding.hasVariable` and gets the whole roster. Verified by test run below,
+so the old row and the new one can both point at this automation indefinitely.
+
+### Tested on tool, 2026-09-11, by `testrun.mjs`
+
+| payload | result |
+|---|---|
+| `filter` key ABSENT (the old caller) | `OK`, whole roster — unchanged |
+| `filter: ""` | `OK`, whole roster |
+| one `EQUAL` leaf | `OK`, the matching subset, translated to `properties.<field>` |
+| search + one leaf | `OK`, ANDed — narrower than either alone |
+| unknown field | `INVALID_INPUT`, naming the field, refused before the fetch |
+
+Still untested: `OR` at the root, `EXISTS`/`MISSING`, and a nested group — the same three
+`ICM | Manage People` still owes.
+
+**Ordering when deploying.** Deploy this BEFORE the app that sends `filter`. Against the
+old deployed definition the key is ignored rather than refused, so Download would quietly
+return the whole roster while the screen shows a filtered table — wrong, and silent.
