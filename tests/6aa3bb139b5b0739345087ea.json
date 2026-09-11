@@ -1,0 +1,1307 @@
+{
+  "name": "ICM | Update Position",
+  "environment": "tool",
+  "note": "WRITES on tool, to fixtures it creates and deletes itself. Every row is named KITTEST-UPDPOS-* and dated 2030 or later, so no real seat, period or payout is touched. The position is created through ICM | Create Position, and every dated change is re-read through ICM | List Positions on BOTH sides of its date: the store is the evidence, not the automation's own status. Cases run in order and depend on each other.",
+  "cases": [
+    {
+      "name": "fixture: USD",
+      "entityFind": {
+        "entityType": "Currency",
+        "filters": {
+          "code": "USD"
+        }
+      }
+    },
+    {
+      "name": "pre-cleanup: assignments named KITTEST-UPDPOS Seat",
+      "entityDelete": {
+        "entityType": "PayeePositionAssignment",
+        "filters": {
+          "name": "KITTEST-UPDPOS Seat assignment"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-cleanup: title rows named KITTEST-UPDPOS Seat",
+      "entityDelete": {
+        "entityType": "PositionAttribute",
+        "filters": {
+          "name": "KITTEST-UPDPOS Seat attributes"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-cleanup: assignments named KITTEST-UPDPOS Seat renamed",
+      "entityDelete": {
+        "entityType": "PayeePositionAssignment",
+        "filters": {
+          "name": "KITTEST-UPDPOS Seat renamed assignment"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-cleanup: title rows named KITTEST-UPDPOS Seat renamed",
+      "entityDelete": {
+        "entityType": "PositionAttribute",
+        "filters": {
+          "name": "KITTEST-UPDPOS Seat renamed attributes"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-cleanup: the position",
+      "entityDelete": {
+        "entityType": "Position",
+        "filters": {
+          "positionCode": "KITTEST-UPDPOS-01"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-cleanup: title TA",
+      "entityDelete": {
+        "entityType": "Title",
+        "filters": {
+          "titleCode": "KITTEST-UPDPOS-TA"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-cleanup: title TB",
+      "entityDelete": {
+        "entityType": "Title",
+        "filters": {
+          "titleCode": "KITTEST-UPDPOS-TB"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-cleanup: person P1",
+      "entityDelete": {
+        "entityType": "Payee",
+        "filters": {
+          "employeeId": "KITTEST-UPDPOS-P1"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-cleanup: person P2",
+      "entityDelete": {
+        "entityType": "Payee",
+        "filters": {
+          "employeeId": "KITTEST-UPDPOS-P2"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "fixture: title A",
+      "entityCreate": {
+        "entityType": "Title",
+        "properties": {
+          "titleCode": "KITTEST-UPDPOS-TA",
+          "name": "KITTEST-UPDPOS Title A"
+        }
+      }
+    },
+    {
+      "name": "fixture: title B",
+      "entityCreate": {
+        "entityType": "Title",
+        "properties": {
+          "titleCode": "KITTEST-UPDPOS-TB",
+          "name": "KITTEST-UPDPOS Title B"
+        }
+      }
+    },
+    {
+      "name": "fixture: person one",
+      "entityCreate": {
+        "entityType": "Payee",
+        "properties": {
+          "employeeId": "KITTEST-UPDPOS-P1",
+          "name": "KITTEST-UPDPOS Person One",
+          "currencyId": "{{case:fixture: USD:id}}",
+          "status": "ACTIVE"
+        }
+      }
+    },
+    {
+      "name": "fixture: person two",
+      "entityCreate": {
+        "entityType": "Payee",
+        "properties": {
+          "employeeId": "KITTEST-UPDPOS-P2",
+          "name": "KITTEST-UPDPOS Person Two",
+          "currencyId": "{{case:fixture: USD:id}}",
+          "status": "ACTIVE"
+        }
+      }
+    },
+    {
+      "name": "fixture: create the position through Create Position",
+      "workflowId": "6a9bfdeac4f2d5527e4c9a63",
+      "payload": {
+        "positionCode": "KITTEST-UPDPOS-01",
+        "name": "KITTEST-UPDPOS Seat",
+        "titleId": "{{case:fixture: title A:id}}",
+        "payeeId": "",
+        "effectiveStart": "2030-01-01"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "positionId",
+          "type": "string",
+          "minLen": 3
+        }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - every input blank, the payload real callers send",
+      "payload": {
+        "positionId": "",
+        "name": "",
+        "titleId": "",
+        "payeeId": "",
+        "clearPayee": "",
+        "active": "",
+        "effectiveStart": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        },
+        {
+          "path": "success",
+          "equals": false
+        },
+        {
+          "path": "changedFields",
+          "type": "array",
+          "maxLen": 0
+        },
+        {
+          "path": "positionCode",
+          "equals": ""
+        }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - every key OMITTED (unbound in Groovy, not blank)",
+      "payload": {},
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        },
+        {
+          "path": "success",
+          "equals": false
+        },
+        {
+          "path": "changedFields",
+          "type": "array",
+          "maxLen": 0
+        }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - a position and nothing to change",
+      "payload": {
+        "positionId": "{{case:fixture: create the position through Create Position:positionId}}",
+        "name": "",
+        "titleId": "",
+        "payeeId": "",
+        "clearPayee": "",
+        "active": "",
+        "effectiveStart": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        },
+        {
+          "path": "success",
+          "equals": false
+        },
+        {
+          "path": "changedFields",
+          "type": "array",
+          "maxLen": 0
+        }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - payeeId and clearPayee disagree",
+      "payload": {
+        "positionId": "{{case:fixture: create the position through Create Position:positionId}}",
+        "name": "",
+        "titleId": "",
+        "payeeId": "{{case:fixture: person one:id}}",
+        "clearPayee": "true",
+        "active": "",
+        "effectiveStart": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        },
+        {
+          "path": "success",
+          "equals": false
+        },
+        {
+          "path": "changedFields",
+          "type": "array",
+          "maxLen": 0
+        }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - a date that is not on the calendar",
+      "payload": {
+        "positionId": "{{case:fixture: create the position through Create Position:positionId}}",
+        "name": "x",
+        "titleId": "",
+        "payeeId": "",
+        "clearPayee": "",
+        "active": "",
+        "effectiveStart": "2030-02-30"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        },
+        {
+          "path": "success",
+          "equals": false
+        },
+        {
+          "path": "changedFields",
+          "type": "array",
+          "maxLen": 0
+        }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - active that is not a boolean",
+      "payload": {
+        "positionId": "{{case:fixture: create the position through Create Position:positionId}}",
+        "name": "",
+        "titleId": "",
+        "payeeId": "",
+        "clearPayee": "",
+        "active": "yes",
+        "effectiveStart": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        },
+        {
+          "path": "success",
+          "equals": false
+        },
+        {
+          "path": "changedFields",
+          "type": "array",
+          "maxLen": 0
+        }
+      ]
+    },
+    {
+      "name": "POSITION_NOT_FOUND - an id that matches nothing",
+      "payload": {
+        "positionId": "e_000000000000000000000000",
+        "name": "x",
+        "titleId": "",
+        "payeeId": "",
+        "clearPayee": "",
+        "active": "",
+        "effectiveStart": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "POSITION_NOT_FOUND"
+        },
+        {
+          "path": "success",
+          "equals": false
+        },
+        {
+          "path": "changedFields",
+          "type": "array",
+          "maxLen": 0
+        }
+      ]
+    },
+    {
+      "name": "TITLE_NOT_FOUND - refused before anything is written",
+      "payload": {
+        "positionId": "{{case:fixture: create the position through Create Position:positionId}}",
+        "name": "KITTEST-UPDPOS Seat renamed",
+        "titleId": "e_000000000000000000000000",
+        "payeeId": "",
+        "clearPayee": "",
+        "active": "",
+        "effectiveStart": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "TITLE_NOT_FOUND"
+        },
+        {
+          "path": "success",
+          "equals": false
+        },
+        {
+          "path": "changedFields",
+          "type": "array",
+          "maxLen": 0
+        },
+        {
+          "path": "positionCode",
+          "equals": "KITTEST-UPDPOS-01"
+        }
+      ]
+    },
+    {
+      "name": "store: TITLE_NOT_FOUND wrote nothing, the rename in the same request did not land",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-UPDPOS-01",
+        "asOfDate": "2030-01-15",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.name",
+          "equals": "KITTEST-UPDPOS Seat"
+        },
+        {
+          "path": "positions.0.titleName",
+          "equals": "KITTEST-UPDPOS Title A"
+        }
+      ]
+    },
+    {
+      "name": "PAYEE_NOT_FOUND - refused",
+      "payload": {
+        "positionId": "{{case:fixture: create the position through Create Position:positionId}}",
+        "name": "",
+        "titleId": "",
+        "payeeId": "e_000000000000000000000000",
+        "clearPayee": "",
+        "active": "",
+        "effectiveStart": "2030-03-01"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "PAYEE_NOT_FOUND"
+        },
+        {
+          "path": "success",
+          "equals": false
+        },
+        {
+          "path": "changedFields",
+          "type": "array",
+          "maxLen": 0
+        }
+      ]
+    },
+    {
+      "name": "OK - assign person one from 2030-03-01 (no row in force, a new one opens)",
+      "payload": {
+        "positionId": "{{case:fixture: create the position through Create Position:positionId}}",
+        "name": "",
+        "titleId": "",
+        "payeeId": "{{case:fixture: person one:id}}",
+        "clearPayee": "",
+        "active": "",
+        "effectiveStart": "2030-03-01"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "success",
+          "equals": true
+        },
+        {
+          "path": "positionCode",
+          "equals": "KITTEST-UPDPOS-01"
+        },
+        {
+          "path": "personChanged",
+          "equals": true
+        },
+        {
+          "path": "titleChanged",
+          "equals": false
+        },
+        {
+          "path": "changedFields",
+          "equals": [
+            "payeeId"
+          ]
+        },
+        {
+          "path": "assignmentId",
+          "type": "string",
+          "minLen": 3
+        },
+        {
+          "path": "effectiveStart",
+          "equals": "2030-03-01"
+        }
+      ]
+    },
+    {
+      "name": "OK - the same payload again changes nothing",
+      "payload": {
+        "positionId": "{{case:fixture: create the position through Create Position:positionId}}",
+        "name": "",
+        "titleId": "",
+        "payeeId": "{{case:fixture: person one:id}}",
+        "clearPayee": "",
+        "active": "",
+        "effectiveStart": "2030-03-01"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "success",
+          "equals": true
+        },
+        {
+          "path": "positionCode",
+          "equals": "KITTEST-UPDPOS-01"
+        },
+        {
+          "path": "personChanged",
+          "equals": false
+        },
+        {
+          "path": "changedFields",
+          "type": "array",
+          "maxLen": 0
+        },
+        {
+          "path": "assignmentId",
+          "equals": ""
+        }
+      ]
+    },
+    {
+      "name": "store: 2030-02-28 is still vacant",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-UPDPOS-01",
+        "asOfDate": "2030-02-28",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.occupancy",
+          "equals": "VACANT"
+        }
+      ]
+    },
+    {
+      "name": "store: 2030-03-01 is person one",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-UPDPOS-01",
+        "asOfDate": "2030-03-01",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.occupancy",
+          "equals": "OCCUPIED"
+        },
+        {
+          "path": "positions.0.payeeName",
+          "equals": "KITTEST-UPDPOS Person One"
+        },
+        {
+          "path": "positions.0.matchCount",
+          "equals": 1
+        }
+      ]
+    },
+    {
+      "name": "OK - title B from 2030-06-01 (the row in force is split)",
+      "payload": {
+        "positionId": "{{case:fixture: create the position through Create Position:positionId}}",
+        "name": "",
+        "titleId": "{{case:fixture: title B:id}}",
+        "payeeId": "",
+        "clearPayee": "",
+        "active": "",
+        "effectiveStart": "2030-06-01"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "success",
+          "equals": true
+        },
+        {
+          "path": "positionCode",
+          "equals": "KITTEST-UPDPOS-01"
+        },
+        {
+          "path": "titleChanged",
+          "equals": true
+        },
+        {
+          "path": "changedFields",
+          "equals": [
+            "titleId"
+          ]
+        },
+        {
+          "path": "attributeId",
+          "type": "string",
+          "minLen": 3
+        }
+      ]
+    },
+    {
+      "name": "store: 2030-05-31 still carries title A",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-UPDPOS-01",
+        "asOfDate": "2030-05-31",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.titleName",
+          "equals": "KITTEST-UPDPOS Title A"
+        }
+      ]
+    },
+    {
+      "name": "store: 2030-06-01 carries title B",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-UPDPOS-01",
+        "asOfDate": "2030-06-01",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.titleName",
+          "equals": "KITTEST-UPDPOS Title B"
+        }
+      ]
+    },
+    {
+      "name": "OK - person two from 2030-09-01 (person one is closed the day before)",
+      "payload": {
+        "positionId": "{{case:fixture: create the position through Create Position:positionId}}",
+        "name": "",
+        "titleId": "",
+        "payeeId": "{{case:fixture: person two:id}}",
+        "clearPayee": "",
+        "active": "",
+        "effectiveStart": "2030-09-01"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "success",
+          "equals": true
+        },
+        {
+          "path": "positionCode",
+          "equals": "KITTEST-UPDPOS-01"
+        },
+        {
+          "path": "personChanged",
+          "equals": true
+        },
+        {
+          "path": "assignmentId",
+          "type": "string",
+          "minLen": 3
+        }
+      ]
+    },
+    {
+      "name": "store: 2030-08-31 is still person one",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-UPDPOS-01",
+        "asOfDate": "2030-08-31",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.payeeName",
+          "equals": "KITTEST-UPDPOS Person One"
+        },
+        {
+          "path": "positions.0.matchCount",
+          "equals": 1
+        }
+      ]
+    },
+    {
+      "name": "store: 2030-09-01 is person two, and nothing overlaps",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-UPDPOS-01",
+        "asOfDate": "2030-09-01",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.payeeName",
+          "equals": "KITTEST-UPDPOS Person Two"
+        },
+        {
+          "path": "positions.0.matchCount",
+          "equals": 1
+        }
+      ]
+    },
+    {
+      "name": "OK - same-day correction, back to person one on 2030-09-01 edits that row in place",
+      "payload": {
+        "positionId": "{{case:fixture: create the position through Create Position:positionId}}",
+        "name": "",
+        "titleId": "",
+        "payeeId": "{{case:fixture: person one:id}}",
+        "clearPayee": "",
+        "active": "",
+        "effectiveStart": "2030-09-01"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "success",
+          "equals": true
+        },
+        {
+          "path": "positionCode",
+          "equals": "KITTEST-UPDPOS-01"
+        },
+        {
+          "path": "personChanged",
+          "equals": true
+        },
+        {
+          "path": "assignmentId",
+          "type": "string",
+          "minLen": 3
+        }
+      ]
+    },
+    {
+      "name": "store: 2030-09-01 is person one, still one row",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-UPDPOS-01",
+        "asOfDate": "2030-09-01",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.payeeName",
+          "equals": "KITTEST-UPDPOS Person One"
+        },
+        {
+          "path": "positions.0.matchCount",
+          "equals": 1
+        }
+      ]
+    },
+    {
+      "name": "OK - empty the seat from 2030-12-01",
+      "payload": {
+        "positionId": "{{case:fixture: create the position through Create Position:positionId}}",
+        "name": "",
+        "titleId": "",
+        "payeeId": "",
+        "clearPayee": "true",
+        "active": "",
+        "effectiveStart": "2030-12-01"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "success",
+          "equals": true
+        },
+        {
+          "path": "positionCode",
+          "equals": "KITTEST-UPDPOS-01"
+        },
+        {
+          "path": "personChanged",
+          "equals": true
+        },
+        {
+          "path": "assignmentId",
+          "equals": ""
+        }
+      ]
+    },
+    {
+      "name": "store: 2030-11-30 is still held",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-UPDPOS-01",
+        "asOfDate": "2030-11-30",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.occupancy",
+          "equals": "OCCUPIED"
+        }
+      ]
+    },
+    {
+      "name": "store: 2030-12-01 is vacant",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-UPDPOS-01",
+        "asOfDate": "2030-12-01",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.occupancy",
+          "equals": "VACANT"
+        },
+        {
+          "path": "positions.0.matchCount",
+          "equals": 0
+        }
+      ]
+    },
+    {
+      "name": "OK - assign person two from 2031-02-01",
+      "payload": {
+        "positionId": "{{case:fixture: create the position through Create Position:positionId}}",
+        "name": "",
+        "titleId": "",
+        "payeeId": "{{case:fixture: person two:id}}",
+        "clearPayee": "",
+        "active": "",
+        "effectiveStart": "2031-02-01"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "success",
+          "equals": true
+        },
+        {
+          "path": "positionCode",
+          "equals": "KITTEST-UPDPOS-01"
+        },
+        {
+          "path": "personChanged",
+          "equals": true
+        }
+      ]
+    },
+    {
+      "name": "OK - empty it the SAME day, the assignment is removed rather than closed before it began",
+      "payload": {
+        "positionId": "{{case:fixture: create the position through Create Position:positionId}}",
+        "name": "",
+        "titleId": "",
+        "payeeId": "",
+        "clearPayee": "true",
+        "active": "",
+        "effectiveStart": "2031-02-01"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "success",
+          "equals": true
+        },
+        {
+          "path": "positionCode",
+          "equals": "KITTEST-UPDPOS-01"
+        },
+        {
+          "path": "personChanged",
+          "equals": true
+        }
+      ]
+    },
+    {
+      "name": "store: 2031-02-01 is vacant with no matching row",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-UPDPOS-01",
+        "asOfDate": "2031-02-01",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.occupancy",
+          "equals": "VACANT"
+        },
+        {
+          "path": "positions.0.matchCount",
+          "equals": 0
+        }
+      ]
+    },
+    {
+      "name": "OK - assign person one from 2031-05-01",
+      "payload": {
+        "positionId": "{{case:fixture: create the position through Create Position:positionId}}",
+        "name": "",
+        "titleId": "",
+        "payeeId": "{{case:fixture: person one:id}}",
+        "clearPayee": "",
+        "active": "",
+        "effectiveStart": "2031-05-01"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "success",
+          "equals": true
+        },
+        {
+          "path": "positionCode",
+          "equals": "KITTEST-UPDPOS-01"
+        }
+      ]
+    },
+    {
+      "name": "fixture: plant an overlapping assignment for person two",
+      "entityCreate": {
+        "entityType": "PayeePositionAssignment",
+        "properties": {
+          "name": "KITTEST-UPDPOS Seat assignment",
+          "payeeId": "{{case:fixture: person two:id}}",
+          "positionId": "{{case:fixture: create the position through Create Position:positionId}}",
+          "effectiveStart": 1935360000000,
+          "allocationPct": 100
+        }
+      }
+    },
+    {
+      "name": "store: the overlap reads as CONFLICT",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-UPDPOS-01",
+        "asOfDate": "2031-06-01",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.occupancy",
+          "equals": "CONFLICT"
+        },
+        {
+          "path": "positions.0.matchCount",
+          "equals": 2
+        }
+      ]
+    },
+    {
+      "name": "CONFLICT - a person change over an overlap is refused",
+      "payload": {
+        "positionId": "{{case:fixture: create the position through Create Position:positionId}}",
+        "name": "",
+        "titleId": "",
+        "payeeId": "{{case:fixture: person two:id}}",
+        "clearPayee": "",
+        "active": "",
+        "effectiveStart": "2031-06-01"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "CONFLICT"
+        },
+        {
+          "path": "success",
+          "equals": false
+        },
+        {
+          "path": "changedFields",
+          "type": "array",
+          "maxLen": 0
+        },
+        {
+          "path": "positionCode",
+          "equals": "KITTEST-UPDPOS-01"
+        }
+      ]
+    },
+    {
+      "name": "store: CONFLICT wrote nothing",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-UPDPOS-01",
+        "asOfDate": "2031-06-01",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.occupancy",
+          "equals": "CONFLICT"
+        },
+        {
+          "path": "positions.0.matchCount",
+          "equals": 2
+        }
+      ]
+    },
+    {
+      "name": "OK - rename and deactivate (not dated)",
+      "payload": {
+        "positionId": "{{case:fixture: create the position through Create Position:positionId}}",
+        "name": "KITTEST-UPDPOS Seat renamed",
+        "titleId": "",
+        "payeeId": "",
+        "clearPayee": "",
+        "active": "false",
+        "effectiveStart": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "success",
+          "equals": true
+        },
+        {
+          "path": "positionCode",
+          "equals": "KITTEST-UPDPOS-01"
+        },
+        {
+          "path": "changedFields",
+          "equals": [
+            "name",
+            "active"
+          ]
+        },
+        {
+          "path": "titleChanged",
+          "equals": false
+        },
+        {
+          "path": "personChanged",
+          "equals": false
+        }
+      ]
+    },
+    {
+      "name": "OK - the same rename again changes nothing",
+      "payload": {
+        "positionId": "{{case:fixture: create the position through Create Position:positionId}}",
+        "name": "KITTEST-UPDPOS Seat renamed",
+        "titleId": "",
+        "payeeId": "",
+        "clearPayee": "",
+        "active": "false",
+        "effectiveStart": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "success",
+          "equals": true
+        },
+        {
+          "path": "positionCode",
+          "equals": "KITTEST-UPDPOS-01"
+        },
+        {
+          "path": "changedFields",
+          "type": "array",
+          "maxLen": 0
+        }
+      ]
+    },
+    {
+      "name": "store: the name and active flag landed",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-UPDPOS-01",
+        "asOfDate": "2030-01-15",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.name",
+          "equals": "KITTEST-UPDPOS Seat renamed"
+        },
+        {
+          "path": "positions.0.active",
+          "equals": false
+        }
+      ]
+    },
+    {
+      "name": "post-cleanup: every assignment of the position",
+      "entityDelete": {
+        "entityType": "PayeePositionAssignment",
+        "filters": {
+          "positionId": "{{case:fixture: create the position through Create Position:positionId}}"
+        }
+      }
+    },
+    {
+      "name": "post-cleanup: every title row of the position",
+      "entityDelete": {
+        "entityType": "PositionAttribute",
+        "filters": {
+          "positionId": "{{case:fixture: create the position through Create Position:positionId}}"
+        }
+      }
+    },
+    {
+      "name": "post-cleanup: the position",
+      "entityDelete": {
+        "entityType": "Position",
+        "filters": {
+          "positionCode": "KITTEST-UPDPOS-01"
+        }
+      }
+    },
+    {
+      "name": "post-cleanup: title TA",
+      "entityDelete": {
+        "entityType": "Title",
+        "filters": {
+          "titleCode": "KITTEST-UPDPOS-TA"
+        }
+      }
+    },
+    {
+      "name": "post-cleanup: title TB",
+      "entityDelete": {
+        "entityType": "Title",
+        "filters": {
+          "titleCode": "KITTEST-UPDPOS-TB"
+        }
+      }
+    },
+    {
+      "name": "post-cleanup: person P1",
+      "entityDelete": {
+        "entityType": "Payee",
+        "filters": {
+          "employeeId": "KITTEST-UPDPOS-P1"
+        }
+      }
+    },
+    {
+      "name": "post-cleanup: person P2",
+      "entityDelete": {
+        "entityType": "Payee",
+        "filters": {
+          "employeeId": "KITTEST-UPDPOS-P2"
+        }
+      }
+    }
+  ]
+}

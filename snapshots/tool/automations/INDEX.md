@@ -10,4 +10,8 @@ Rebuilt automatically by `scripts/ua.mjs snap`. One JSON file per automation, na
 | 6aa27c908f78990409f2b9ea | ICM | Probe Condition Matcher (KIT TEST - safe to delete) | 3 | 2026-09-10 |
 | 6aa28be5ff41994689aa1410 | ICM | Probe Credit Pass (KIT TEST - safe to delete) | 3 | 2026-09-10 |
 | 6aa28e9c3c7f7b6b9108c281 | ICM | Calculate Period (credit pass) | 15 | 2026-09-10 |
-| 6aa2ab9e4f1e1040ac32d181 | ICM | Calculate Credits | 37 | 2026-09-10 |
+| 6aa2ab9e4f1e1040ac32d181 | ICM | Calculate Credits | 60 | 2026-09-11 |
+| 6aa2c0793c7f7b6b9117ea02 | ICM | Bulk Manage Titles | 7 | 2026-09-11 |
+| 6aa3bb139b5b0739345087ea | ICM | Update Position | 20 | 2026-09-11 |
+| 6aa3e58f162e4c15ae2f60a5 | ICM | Bulk Manage Positions | 16 | 2026-09-11 |
+| 6aa3ee0faf79f85169481670 | ICM | Calculate Payouts | 47 | 2026-09-11 |

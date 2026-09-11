@@ -1421,3 +1421,19 @@ Proven on `ICM | Calculate Credits` draft v9:
   returns the whole payload. Nodes inside a lane that ran as a CHILD instance still show
   "not reached"; the join node's inputs (which `*Rows` keys are bound) are the record of
   which lanes ran.
+
+## Three storage facts from building Calculate Payouts (ICM, 2026-09-11)
+
+- **An ARRAY written to an untyped `object` column is stored as `{}`, silently.**
+  `AttainmentMeasure.creditTypes` is `{type: object, properties: {}, additionalProperties: true}`.
+  Creating a record with `creditTypes: ["NEW_BOOKING"]` answered success and read back as
+  `creditTypes: {}`. Every tiered attainment then summed to 0 and every payee landed in the
+  lowest tier - no error anywhere. Store an object (`{codes: [...]}`) and read back.
+- **`bulk_upsert_records_by_id` with an EMPTY `updates` list does not throw**: it answers
+  `{success: false, successCount: 0, failedCount: 0}` (uacode `StorageBulkUpsertAction`).
+  Compare counts, never the success flag, and an empty batch needs no IF in front of it.
+- **Partial record update from the kit**: `POST /api/entity/create-update-or-delete/hierarchical`
+  with `{entity: {entityType, id}, requestType: "UPDATE_FIELDS", updateFields: [{fieldName:
+  "properties.x", actionType: "SET", setValue}]}` touches only those fields (uacode
+  `EntityServiceImpl.createUpdateOrDeleteEntity`). `UPDATED` replaces the entity. Proven on
+  `Plan.payoutRules` and `AttainmentMeasure.creditTypes`, both read back.

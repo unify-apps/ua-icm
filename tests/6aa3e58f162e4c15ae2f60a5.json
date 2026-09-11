@@ -1,0 +1,1060 @@
+{
+  "name": "ICM | Bulk Manage Positions",
+  "environment": "tool",
+  "note": "WRITES on tool, to fixtures it creates and deletes itself: every row is KITTEST-BULKPOS-* and dated 2030. The CSVs live in tests/fixtures/bulk-manage-positions/ and were put into storage with scripts/ua-upload.mjs; the fileDetails below point at those uploads. Every write is re-read through ICM | List Positions. Cases run in order and depend on each other.",
+  "cases": [
+    {
+      "name": "fixture: USD",
+      "entityFind": {
+        "entityType": "Currency",
+        "filters": {
+          "code": "USD"
+        }
+      }
+    },
+    {
+      "name": "pre-cleanup: assignment named KITTEST-BULKPOS Seat 01 assignment",
+      "entityDelete": {
+        "entityType": "PayeePositionAssignment",
+        "filters": {
+          "name": "KITTEST-BULKPOS Seat 01 assignment"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-cleanup: assignment named KITTEST-BULKPOS Seat 02 renamed assignment",
+      "entityDelete": {
+        "entityType": "PayeePositionAssignment",
+        "filters": {
+          "name": "KITTEST-BULKPOS Seat 02 renamed assignment"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-cleanup: assignment named KITTEST-BULKPOS Seat 06 assignment",
+      "entityDelete": {
+        "entityType": "PayeePositionAssignment",
+        "filters": {
+          "name": "KITTEST-BULKPOS Seat 06 assignment"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-cleanup: title row named KITTEST-BULKPOS Seat 01 attributes",
+      "entityDelete": {
+        "entityType": "PositionAttribute",
+        "filters": {
+          "name": "KITTEST-BULKPOS Seat 01 attributes"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-cleanup: title row named KITTEST-BULKPOS Seat 02 attributes",
+      "entityDelete": {
+        "entityType": "PositionAttribute",
+        "filters": {
+          "name": "KITTEST-BULKPOS Seat 02 attributes"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-cleanup: title row named KITTEST-BULKPOS Seat 06 attributes",
+      "entityDelete": {
+        "entityType": "PositionAttribute",
+        "filters": {
+          "name": "KITTEST-BULKPOS Seat 06 attributes"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-cleanup: position KITTEST-BULKPOS-01",
+      "entityDelete": {
+        "entityType": "Position",
+        "filters": {
+          "positionCode": "KITTEST-BULKPOS-01"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-cleanup: position KITTEST-BULKPOS-02",
+      "entityDelete": {
+        "entityType": "Position",
+        "filters": {
+          "positionCode": "KITTEST-BULKPOS-02"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-cleanup: position KITTEST-BULKPOS-03",
+      "entityDelete": {
+        "entityType": "Position",
+        "filters": {
+          "positionCode": "KITTEST-BULKPOS-03"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-cleanup: position KITTEST-BULKPOS-04",
+      "entityDelete": {
+        "entityType": "Position",
+        "filters": {
+          "positionCode": "KITTEST-BULKPOS-04"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-cleanup: position KITTEST-BULKPOS-05",
+      "entityDelete": {
+        "entityType": "Position",
+        "filters": {
+          "positionCode": "KITTEST-BULKPOS-05"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-cleanup: position KITTEST-BULKPOS-06",
+      "entityDelete": {
+        "entityType": "Position",
+        "filters": {
+          "positionCode": "KITTEST-BULKPOS-06"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-cleanup: title TA",
+      "entityDelete": {
+        "entityType": "Title",
+        "filters": {
+          "titleCode": "KITTEST-BULKPOS-TA"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-cleanup: title TB",
+      "entityDelete": {
+        "entityType": "Title",
+        "filters": {
+          "titleCode": "KITTEST-BULKPOS-TB"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-cleanup: person P1",
+      "entityDelete": {
+        "entityType": "Payee",
+        "filters": {
+          "employeeId": "KITTEST-BULKPOS-P1"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "pre-cleanup: person P2",
+      "entityDelete": {
+        "entityType": "Payee",
+        "filters": {
+          "employeeId": "KITTEST-BULKPOS-P2"
+        },
+        "allowZero": true
+      }
+    },
+    {
+      "name": "fixture: title A",
+      "entityCreate": {
+        "entityType": "Title",
+        "properties": {
+          "titleCode": "KITTEST-BULKPOS-TA",
+          "name": "KITTEST-BULKPOS Title A"
+        }
+      }
+    },
+    {
+      "name": "fixture: title B",
+      "entityCreate": {
+        "entityType": "Title",
+        "properties": {
+          "titleCode": "KITTEST-BULKPOS-TB",
+          "name": "KITTEST-BULKPOS Title B"
+        }
+      }
+    },
+    {
+      "name": "fixture: person one",
+      "entityCreate": {
+        "entityType": "Payee",
+        "properties": {
+          "employeeId": "KITTEST-BULKPOS-P1",
+          "name": "KITTEST-BULKPOS Person One",
+          "currencyId": "{{case:fixture: USD:id}}",
+          "status": "ACTIVE"
+        }
+      }
+    },
+    {
+      "name": "fixture: person two",
+      "entityCreate": {
+        "entityType": "Payee",
+        "properties": {
+          "employeeId": "KITTEST-BULKPOS-P2",
+          "name": "KITTEST-BULKPOS Person Two",
+          "currencyId": "{{case:fixture: USD:id}}",
+          "status": "ACTIVE"
+        }
+      }
+    },
+    {
+      "name": "PARTIAL dry run - two rows would create, four are refused, nothing is written",
+      "payload": {
+        "fileDetails": {
+          "id": "upload-6aa3e559f0d2b924f5acc4f8",
+          "name": "create.csv",
+          "url": "/api/file/download/__UNIFY_ENCR_AWS__V0__AQICAHj3MpgJ1tFCWGV%2FPUywmXQpk3wr2bYvv6CcZDqwEHY9%2FAHp4MB8m7Z5HgysJ9%2FeqOP7AAAAhzCBhAYJKoZIhvcNAQcGoHcwdQIBADBwBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDMd6rDZjMi%2Frr4qcbQIBEIBDk%2FnBstrq75G6E1UnSaeNfz6zE8hVZz1IOm%2BUcZMXqWEJat7wX%2FQsARAmeSj01YjE5drSeK3XIQiepI%2FzeY7%2B52Q0nw%3D%3D",
+          "sourceType": "CLOUD_STORAGE",
+          "source": "user-uploads/90/1789125977128/create.csv",
+          "fileType": "csv",
+          "size": 503,
+          "type": "FILE",
+          "mimeType": "text/csv",
+          "progress": 100,
+          "isUploaded": true,
+          "meta": {
+            "accessScope": "ALL_USERS",
+            "name": "create.csv",
+            "type": "text/csv",
+            "publicAcl": false,
+            "useExternalApi": false
+          },
+          "hasError": false
+        },
+        "batchId": "KITTEST-BULKPOS",
+        "dryRun": "true"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "PARTIAL"
+        },
+        {
+          "path": "applied",
+          "equals": 2
+        },
+        {
+          "path": "written",
+          "equals": 0
+        },
+        {
+          "path": "message",
+          "equals": "Preview only - nothing was written."
+        },
+        {
+          "path": "rows.0.line",
+          "equals": 2
+        },
+        {
+          "path": "rows.0.outcome",
+          "equals": "created"
+        },
+        {
+          "path": "rows.1.line",
+          "equals": 3
+        },
+        {
+          "path": "rows.1.outcome",
+          "equals": "created"
+        },
+        {
+          "path": "rows.2.outcome",
+          "equals": "error"
+        },
+        {
+          "path": "rows.2.error",
+          "equals": "name is required for a new position"
+        },
+        {
+          "path": "rows.3.outcome",
+          "equals": "error"
+        },
+        {
+          "path": "rows.3.error",
+          "equals": "title_code is not a known title: NOPE-TITLE"
+        },
+        {
+          "path": "rows.4.outcome",
+          "equals": "error"
+        },
+        {
+          "path": "rows.4.error",
+          "equals": "position_code KITTEST-BULKPOS-01 is already on line 2 of this file"
+        },
+        {
+          "path": "rows.5.outcome",
+          "equals": "error"
+        },
+        {
+          "path": "rows.5.error",
+          "equals": "effective_start must be yyyy-MM-dd: 2030-02-30; employee_id is not a known person: NOPE-EMP"
+        },
+        {
+          "path": "rows",
+          "type": "array",
+          "minLen": 6,
+          "maxLen": 6
+        }
+      ]
+    },
+    {
+      "name": "wait for search to catch up (after the dry run)",
+      "sleepMs": 15000
+    },
+    {
+      "name": "store: the dry run wrote no position",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-BULKPOS",
+        "asOfDate": "2030-01-15",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 0
+        }
+      ]
+    },
+    {
+      "name": "PARTIAL - apply the same file: two created, the four refusals unchanged",
+      "payload": {
+        "fileDetails": {
+          "id": "upload-6aa3e559f0d2b924f5acc4f8",
+          "name": "create.csv",
+          "url": "/api/file/download/__UNIFY_ENCR_AWS__V0__AQICAHj3MpgJ1tFCWGV%2FPUywmXQpk3wr2bYvv6CcZDqwEHY9%2FAHp4MB8m7Z5HgysJ9%2FeqOP7AAAAhzCBhAYJKoZIhvcNAQcGoHcwdQIBADBwBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDMd6rDZjMi%2Frr4qcbQIBEIBDk%2FnBstrq75G6E1UnSaeNfz6zE8hVZz1IOm%2BUcZMXqWEJat7wX%2FQsARAmeSj01YjE5drSeK3XIQiepI%2FzeY7%2B52Q0nw%3D%3D",
+          "sourceType": "CLOUD_STORAGE",
+          "source": "user-uploads/90/1789125977128/create.csv",
+          "fileType": "csv",
+          "size": 503,
+          "type": "FILE",
+          "mimeType": "text/csv",
+          "progress": 100,
+          "isUploaded": true,
+          "meta": {
+            "accessScope": "ALL_USERS",
+            "name": "create.csv",
+            "type": "text/csv",
+            "publicAcl": false,
+            "useExternalApi": false
+          },
+          "hasError": false
+        },
+        "batchId": "KITTEST-BULKPOS",
+        "dryRun": "false"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "PARTIAL"
+        },
+        {
+          "path": "applied",
+          "equals": 2
+        },
+        {
+          "path": "written",
+          "equals": 2
+        },
+        {
+          "path": "rows.0.line",
+          "equals": 2
+        },
+        {
+          "path": "rows.0.outcome",
+          "equals": "created"
+        },
+        {
+          "path": "rows.1.line",
+          "equals": 3
+        },
+        {
+          "path": "rows.1.outcome",
+          "equals": "created"
+        },
+        {
+          "path": "rows.2.outcome",
+          "equals": "error"
+        },
+        {
+          "path": "rows.2.error",
+          "equals": "name is required for a new position"
+        },
+        {
+          "path": "rows.3.outcome",
+          "equals": "error"
+        },
+        {
+          "path": "rows.3.error",
+          "equals": "title_code is not a known title: NOPE-TITLE"
+        },
+        {
+          "path": "rows.4.outcome",
+          "equals": "error"
+        },
+        {
+          "path": "rows.4.error",
+          "equals": "position_code KITTEST-BULKPOS-01 is already on line 2 of this file"
+        },
+        {
+          "path": "rows.5.outcome",
+          "equals": "error"
+        },
+        {
+          "path": "rows.5.error",
+          "equals": "effective_start must be yyyy-MM-dd: 2030-02-30; employee_id is not a known person: NOPE-EMP"
+        },
+        {
+          "path": "rows",
+          "type": "array",
+          "minLen": 6,
+          "maxLen": 6
+        }
+      ]
+    },
+    {
+      "name": "wait for search to catch up (after the apply)",
+      "sleepMs": 15000
+    },
+    {
+      "name": "store: only the two valid rows became positions",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-BULKPOS",
+        "asOfDate": "2030-01-15",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 2
+        }
+      ]
+    },
+    {
+      "name": "store: 01 carries title A and is held by person one",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-BULKPOS-01",
+        "asOfDate": "2030-01-15",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.name",
+          "equals": "KITTEST-BULKPOS Seat 01"
+        },
+        {
+          "path": "positions.0.titleName",
+          "equals": "KITTEST-BULKPOS Title A"
+        },
+        {
+          "path": "positions.0.occupancy",
+          "equals": "OCCUPIED"
+        },
+        {
+          "path": "positions.0.payeeName",
+          "equals": "KITTEST-BULKPOS Person One"
+        }
+      ]
+    },
+    {
+      "name": "store: 02 matched its title code case-insensitively, and is an open seat",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-BULKPOS-02",
+        "asOfDate": "2030-01-15",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.titleName",
+          "equals": "KITTEST-BULKPOS Title B"
+        },
+        {
+          "path": "positions.0.occupancy",
+          "equals": "VACANT"
+        }
+      ]
+    },
+    {
+      "name": "store: 2029-12-31 is before either position's rows",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-BULKPOS-01",
+        "asOfDate": "2029-12-31",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.occupancy",
+          "equals": "VACANT"
+        },
+        {
+          "path": "positions.0.titleName",
+          "equals": ""
+        }
+      ]
+    },
+    {
+      "name": "PARTIAL - the same file a THIRD time changes nothing",
+      "payload": {
+        "fileDetails": {
+          "id": "upload-6aa3e559f0d2b924f5acc4f8",
+          "name": "create.csv",
+          "url": "/api/file/download/__UNIFY_ENCR_AWS__V0__AQICAHj3MpgJ1tFCWGV%2FPUywmXQpk3wr2bYvv6CcZDqwEHY9%2FAHp4MB8m7Z5HgysJ9%2FeqOP7AAAAhzCBhAYJKoZIhvcNAQcGoHcwdQIBADBwBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDMd6rDZjMi%2Frr4qcbQIBEIBDk%2FnBstrq75G6E1UnSaeNfz6zE8hVZz1IOm%2BUcZMXqWEJat7wX%2FQsARAmeSj01YjE5drSeK3XIQiepI%2FzeY7%2B52Q0nw%3D%3D",
+          "sourceType": "CLOUD_STORAGE",
+          "source": "user-uploads/90/1789125977128/create.csv",
+          "fileType": "csv",
+          "size": 503,
+          "type": "FILE",
+          "mimeType": "text/csv",
+          "progress": 100,
+          "isUploaded": true,
+          "meta": {
+            "accessScope": "ALL_USERS",
+            "name": "create.csv",
+            "type": "text/csv",
+            "publicAcl": false,
+            "useExternalApi": false
+          },
+          "hasError": false
+        },
+        "batchId": "KITTEST-BULKPOS",
+        "dryRun": "false"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "PARTIAL"
+        },
+        {
+          "path": "applied",
+          "equals": 0
+        },
+        {
+          "path": "written",
+          "equals": 0
+        },
+        {
+          "path": "rows.0.outcome",
+          "equals": "unchanged"
+        },
+        {
+          "path": "rows.1.outcome",
+          "equals": "unchanged"
+        }
+      ]
+    },
+    {
+      "name": "store: still exactly two positions, still one assignment on 01",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-BULKPOS-01",
+        "asOfDate": "2030-01-15",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.matchCount",
+          "equals": 1
+        }
+      ]
+    },
+    {
+      "name": "PARTIAL - update file: a different title is refused, a rename plus holder applies, a new position is created",
+      "payload": {
+        "fileDetails": {
+          "id": "upload-6aa3e55905b3127ed694d62f",
+          "name": "update.csv",
+          "url": "/api/file/download/__UNIFY_ENCR_AWS__V0__AQICAHj3MpgJ1tFCWGV%2FPUywmXQpk3wr2bYvv6CcZDqwEHY9%2FAGXIvSwSSUOgqAWiuI5b%2FRVAAAAhzCBhAYJKoZIhvcNAQcGoHcwdQIBADBwBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDO750lCzvXojLZ9nDAIBEIBDmY%2Bs9XuR9xjf6A8LYkx4JVio6rOHXnYDaPy2wLjJAHcez7DOknZZ1diHbs%2Bx8cy09cIbIlqaYovMb0d8iESLg%2F7gMg%3D%3D",
+          "sourceType": "CLOUD_STORAGE",
+          "source": "user-uploads/90/1789125977907/update.csv",
+          "fileType": "csv",
+          "size": 283,
+          "type": "FILE",
+          "mimeType": "text/csv",
+          "progress": 100,
+          "isUploaded": true,
+          "meta": {
+            "accessScope": "ALL_USERS",
+            "name": "update.csv",
+            "type": "text/csv",
+            "publicAcl": false,
+            "useExternalApi": false
+          },
+          "hasError": false
+        },
+        "batchId": "KITTEST-BULKPOS",
+        "dryRun": "false"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "PARTIAL"
+        },
+        {
+          "path": "applied",
+          "equals": 2
+        },
+        {
+          "path": "written",
+          "equals": 2
+        },
+        {
+          "path": "rows.0.outcome",
+          "equals": "error"
+        },
+        {
+          "path": "rows.0.error",
+          "equals": "position KITTEST-BULKPOS-01 already has a different title on 2030-06-01 - change it from the Positions drawer, where the change is dated"
+        },
+        {
+          "path": "rows.1.outcome",
+          "equals": "updated"
+        },
+        {
+          "path": "rows.2.outcome",
+          "equals": "created"
+        }
+      ]
+    },
+    {
+      "name": "store: 01 kept title A - the refused row wrote nothing",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-BULKPOS-01",
+        "asOfDate": "2030-07-01",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "positions.0.titleName",
+          "equals": "KITTEST-BULKPOS Title A"
+        },
+        {
+          "path": "positions.0.name",
+          "equals": "KITTEST-BULKPOS Seat 01"
+        }
+      ]
+    },
+    {
+      "name": "store: 02 is renamed and still open on 2030-02-28",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-BULKPOS-02",
+        "asOfDate": "2030-02-28",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "positions.0.name",
+          "equals": "KITTEST-BULKPOS Seat 02 renamed"
+        },
+        {
+          "path": "positions.0.occupancy",
+          "equals": "VACANT"
+        }
+      ]
+    },
+    {
+      "name": "store: 02 is held by person two from 2030-03-01",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-BULKPOS-02",
+        "asOfDate": "2030-03-01",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "positions.0.occupancy",
+          "equals": "OCCUPIED"
+        },
+        {
+          "path": "positions.0.payeeName",
+          "equals": "KITTEST-BULKPOS Person Two"
+        },
+        {
+          "path": "positions.0.matchCount",
+          "equals": 1
+        }
+      ]
+    },
+    {
+      "name": "store: 06 was created with title B and person one",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-BULKPOS-06",
+        "asOfDate": "2030-01-15",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 1
+        },
+        {
+          "path": "positions.0.titleName",
+          "equals": "KITTEST-BULKPOS Title B"
+        },
+        {
+          "path": "positions.0.payeeName",
+          "equals": "KITTEST-BULKPOS Person One"
+        }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - a wrong header names the missing columns once",
+      "payload": {
+        "fileDetails": {
+          "id": "upload-6aa3e55af0d2b924f5acc501",
+          "name": "bad-header.csv",
+          "url": "/api/file/download/__UNIFY_ENCR_AWS__V0__AQICAHj3MpgJ1tFCWGV%2FPUywmXQpk3wr2bYvv6CcZDqwEHY9%2FAFE%2FfZkGEUoXOTARfAvh7vAAAAAizCBiAYJKoZIhvcNAQcGoHsweQIBADB0BgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDH3mb2oksspQNHwOWgIBEIBHl83nzKUpylwrojGFJtdtn9kk6vfZUtmOF06zyO0odo2Y%2BUJyHQcGPU2%2BsxCgp%2FI56Cun3hO%2FhABZYAKFICq3lgmmDfeTQDo%3D",
+          "sourceType": "CLOUD_STORAGE",
+          "source": "user-uploads/90/1789125978628/bad-header.csv",
+          "fileType": "csv",
+          "size": 53,
+          "type": "FILE",
+          "mimeType": "text/csv",
+          "progress": 100,
+          "isUploaded": true,
+          "meta": {
+            "accessScope": "ALL_USERS",
+            "name": "bad-header.csv",
+            "type": "text/csv",
+            "publicAcl": false,
+            "useExternalApi": false
+          },
+          "hasError": false
+        },
+        "batchId": "KITTEST-BULKPOS",
+        "dryRun": "false"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        },
+        {
+          "path": "applied",
+          "equals": 0
+        },
+        {
+          "path": "written",
+          "equals": 0
+        },
+        {
+          "path": "message",
+          "equals": "The file is missing the position_code, title_code columns. Start from the template."
+        }
+      ]
+    },
+    {
+      "name": "INVALID_INPUT - a header-only file still answers with a status",
+      "payload": {
+        "fileDetails": {
+          "id": "upload-6aa3e55bf0d2b924f5acc507",
+          "name": "empty.csv",
+          "url": "/api/file/download/__UNIFY_ENCR_AWS__V0__AQICAHj3MpgJ1tFCWGV%2FPUywmXQpk3wr2bYvv6CcZDqwEHY9%2FAHCmw8m4wK7g6xpuB3DL%2ByDAAAAhjCBgwYJKoZIhvcNAQcGoHYwdAIBADBvBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDDb1ylUjAqTjxDvA0QIBEIBCO4MU9p7DWtWTZs3zCxqshA4E9vckddg5zEst8lPxOC55dhssuk%2BsSovbl0LWq4upmhsaal89bAPs6R5wj9GSXAgf",
+          "sourceType": "CLOUD_STORAGE",
+          "source": "user-uploads/90/1789125979382/empty.csv",
+          "fileType": "csv",
+          "size": 58,
+          "type": "FILE",
+          "mimeType": "text/csv",
+          "progress": 100,
+          "isUploaded": true,
+          "meta": {
+            "accessScope": "ALL_USERS",
+            "name": "empty.csv",
+            "type": "text/csv",
+            "publicAcl": false,
+            "useExternalApi": false
+          },
+          "hasError": false
+        },
+        "batchId": "KITTEST-BULKPOS",
+        "dryRun": "false"
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "INVALID_INPUT"
+        },
+        {
+          "path": "message",
+          "equals": "The file has no positions in it."
+        },
+        {
+          "path": "rows",
+          "type": "array",
+          "maxLen": 0
+        },
+        {
+          "path": "written",
+          "equals": 0
+        }
+      ]
+    },
+    {
+      "name": "store: neither refused file created anything",
+      "workflowId": "6a9bcafbc4f2d5527e3c324c",
+      "payload": {
+        "search": "KITTEST-BULKPOS",
+        "asOfDate": "2030-01-15",
+        "limit": "",
+        "offset": "",
+        "includeOccupancy": ""
+      },
+      "checks": [
+        {
+          "path": "status",
+          "equals": "OK"
+        },
+        {
+          "path": "total",
+          "equals": 3
+        }
+      ]
+    },
+    {
+      "name": "post-cleanup: find KITTEST-BULKPOS-01",
+      "entityFind": {
+        "entityType": "Position",
+        "filters": {
+          "positionCode": "KITTEST-BULKPOS-01"
+        }
+      }
+    },
+    {
+      "name": "post-cleanup: find KITTEST-BULKPOS-02",
+      "entityFind": {
+        "entityType": "Position",
+        "filters": {
+          "positionCode": "KITTEST-BULKPOS-02"
+        }
+      }
+    },
+    {
+      "name": "post-cleanup: find KITTEST-BULKPOS-06",
+      "entityFind": {
+        "entityType": "Position",
+        "filters": {
+          "positionCode": "KITTEST-BULKPOS-06"
+        }
+      }
+    },
+    {
+      "name": "post-cleanup: assignments of KITTEST-BULKPOS-01",
+      "entityDelete": {
+        "entityType": "PayeePositionAssignment",
+        "filters": {
+          "positionId": "{{case:post-cleanup: find KITTEST-BULKPOS-01:id}}"
+        }
+      }
+    },
+    {
+      "name": "post-cleanup: title rows of KITTEST-BULKPOS-01",
+      "entityDelete": {
+        "entityType": "PositionAttribute",
+        "filters": {
+          "positionId": "{{case:post-cleanup: find KITTEST-BULKPOS-01:id}}"
+        }
+      }
+    },
+    {
+      "name": "post-cleanup: position KITTEST-BULKPOS-01",
+      "entityDelete": {
+        "entityType": "Position",
+        "filters": {
+          "positionCode": "KITTEST-BULKPOS-01"
+        }
+      }
+    },
+    {
+      "name": "post-cleanup: assignments of KITTEST-BULKPOS-02",
+      "entityDelete": {
+        "entityType": "PayeePositionAssignment",
+        "filters": {
+          "positionId": "{{case:post-cleanup: find KITTEST-BULKPOS-02:id}}"
+        }
+      }
+    },
+    {
+      "name": "post-cleanup: title rows of KITTEST-BULKPOS-02",
+      "entityDelete": {
+        "entityType": "PositionAttribute",
+        "filters": {
+          "positionId": "{{case:post-cleanup: find KITTEST-BULKPOS-02:id}}"
+        }
+      }
+    },
+    {
+      "name": "post-cleanup: position KITTEST-BULKPOS-02",
+      "entityDelete": {
+        "entityType": "Position",
+        "filters": {
+          "positionCode": "KITTEST-BULKPOS-02"
+        }
+      }
+    },
+    {
+      "name": "post-cleanup: assignments of KITTEST-BULKPOS-06",
+      "entityDelete": {
+        "entityType": "PayeePositionAssignment",
+        "filters": {
+          "positionId": "{{case:post-cleanup: find KITTEST-BULKPOS-06:id}}"
+        }
+      }
+    },
+    {
+      "name": "post-cleanup: title rows of KITTEST-BULKPOS-06",
+      "entityDelete": {
+        "entityType": "PositionAttribute",
+        "filters": {
+          "positionId": "{{case:post-cleanup: find KITTEST-BULKPOS-06:id}}"
+        }
+      }
+    },
+    {
+      "name": "post-cleanup: position KITTEST-BULKPOS-06",
+      "entityDelete": {
+        "entityType": "Position",
+        "filters": {
+          "positionCode": "KITTEST-BULKPOS-06"
+        }
+      }
+    },
+    {
+      "name": "post-cleanup: title TA",
+      "entityDelete": {
+        "entityType": "Title",
+        "filters": {
+          "titleCode": "KITTEST-BULKPOS-TA"
+        }
+      }
+    },
+    {
+      "name": "post-cleanup: title TB",
+      "entityDelete": {
+        "entityType": "Title",
+        "filters": {
+          "titleCode": "KITTEST-BULKPOS-TB"
+        }
+      }
+    },
+    {
+      "name": "post-cleanup: person P1",
+      "entityDelete": {
+        "entityType": "Payee",
+        "filters": {
+          "employeeId": "KITTEST-BULKPOS-P1"
+        }
+      }
+    },
+    {
+      "name": "post-cleanup: person P2",
+      "entityDelete": {
+        "entityType": "Payee",
+        "filters": {
+          "employeeId": "KITTEST-BULKPOS-P2"
+        }
+      }
+    }
+  ]
+}

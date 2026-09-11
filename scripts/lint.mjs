@@ -54,6 +54,7 @@ const UACODE_VERIFIED_RESOURCES = new Set([
   "loop_while",                              // uacode configs/workflow-nodes/loop/loop_while.json
   "variable_by_unifyapps_create_variables",  // uacode configs/workflow-nodes/variable_by_unifyapps/variable_by_unifyapps_create_variables.json
   "variable_by_unifyapps_update_variables",  // uacode configs/workflow-nodes/variable_by_unifyapps/variable_by_unifyapps_update_variables.json
+  "storage_by_unifyapps_delete_records",     // uacode configs/workflow-nodes/storage_by_unifyapps/storage_by_unifyapps_delete_records.json (ICM | Update Position, 2026-09-11)
 ]);
 
 function knownResourceNames() {

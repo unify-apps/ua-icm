@@ -1,0 +1,455 @@
+{
+ "name": "ICM | Calculate Payouts",
+ "note": "EVERY CASE IS A DRY RUN - the write path is proved by hand (see docs/automations/calculate-payouts.md, Built state). Cases run against TEST-NA-JUL-2026, whose Succeeded credit run RUN-1789049445958-81a256 holds 39 credits, and the payout config seeded by scripts/seed-payouts-na.mjs. Index checks are legitimate because n_Calc SORTS earnings (componentKey, employeeId, creditId) and exceptions (code, ruleId, employeeId, creditId). A new wet credit run for this period becomes the one paid and will move these numbers - a true failure, not a flake.",
+ "cases": [
+  {
+   "name": "OK_DRY_RUN - NA credit run pays flat and tiered, nothing written",
+   "payload": {
+    "periodId": "e_6aa2b98a35cc1f4f3c87919c",
+    "dryRun": true,
+    "pageLimit": 2000
+   },
+   "checks": [
+    {
+     "path": "status",
+     "equals": "OK_DRY_RUN"
+    },
+    {
+     "path": "written",
+     "equals": 0
+    },
+    {
+     "path": "periodName",
+     "equals": "TEST-NA-JUL-2026"
+    },
+    {
+     "path": "creditRunId",
+     "equals": "RUN-1789049445958-81a256"
+    },
+    {
+     "path": "stats.credits",
+     "equals": 39
+    },
+    {
+     "path": "stats.flatEarnings",
+     "equals": 11
+    },
+    {
+     "path": "stats.tieredEarnings",
+     "equals": 9
+    },
+    {
+     "path": "stats.measureResults",
+     "equals": 9
+    },
+    {
+     "path": "stats.refused",
+     "equals": 18
+    },
+    {
+     "path": "stats.total",
+     "equals": 3345972
+    },
+    {
+     "path": "earnings",
+     "type": "array",
+     "minLen": 20,
+     "maxLen": 20
+    },
+    {
+     "path": "measureResults",
+     "type": "array",
+     "minLen": 9,
+     "maxLen": 9
+    }
+   ]
+  },
+  {
+   "name": "tiered, payee quota - 9,833 bps lands in tier 2 (500 bps): 491,651",
+   "payload": {
+    "periodId": "e_6aa2b98a35cc1f4f3c87919c",
+    "dryRun": true,
+    "pageLimit": 2000
+   },
+   "checks": [
+    {
+     "path": "earnings.16.componentKey",
+     "equals": "TEST-NA-PR-TIER-NB"
+    },
+    {
+     "path": "earnings.16.positionId",
+     "equals": "e_6aa2b98d35cc1f4f3c8791d6"
+    },
+    {
+     "path": "earnings.16.base",
+     "equals": 9833027
+    },
+    {
+     "path": "earnings.16.attainmentPct",
+     "equals": 9833
+    },
+    {
+     "path": "earnings.16.bandHit",
+     "equals": "At plan"
+    },
+    {
+     "path": "earnings.16.rateApplied",
+     "equals": 500
+    },
+    {
+     "path": "earnings.16.amount",
+     "equals": 491651
+    }
+   ]
+  },
+  {
+   "name": "tiered - 19,666 bps is above the top tier and stays in it (800 bps): 1,573,284",
+   "payload": {
+    "periodId": "e_6aa2b98a35cc1f4f3c87919c",
+    "dryRun": true,
+    "pageLimit": 2000
+   },
+   "checks": [
+    {
+     "path": "earnings.17.componentKey",
+     "equals": "TEST-NA-PR-TIER-NB"
+    },
+    {
+     "path": "earnings.17.positionId",
+     "equals": "e_6aa2b98e35cc1f4f3c8791e4"
+    },
+    {
+     "path": "earnings.17.base",
+     "equals": 19666053
+    },
+    {
+     "path": "earnings.17.attainmentPct",
+     "equals": 19666
+    },
+    {
+     "path": "earnings.17.bandHit",
+     "equals": "Above plan"
+    },
+    {
+     "path": "earnings.17.rateApplied",
+     "equals": 800
+    },
+    {
+     "path": "earnings.17.amount",
+     "equals": 1573284
+    }
+   ]
+  },
+  {
+   "name": "tiered - exactly 5,000 bps: fromPct is INCLUSIVE, tier 2 not tier 1",
+   "payload": {
+    "periodId": "e_6aa2b98a35cc1f4f3c87919c",
+    "dryRun": true,
+    "pageLimit": 2000
+   },
+   "checks": [
+    {
+     "path": "earnings.18.componentKey",
+     "equals": "TEST-NA-PR-TIER-NB"
+    },
+    {
+     "path": "earnings.18.positionId",
+     "equals": "e_6aa2b98e35cc1f4f3c8791ee"
+    },
+    {
+     "path": "earnings.18.base",
+     "equals": 9833027
+    },
+    {
+     "path": "earnings.18.attainmentPct",
+     "equals": 5000
+    },
+    {
+     "path": "earnings.18.bandHit",
+     "equals": "At plan"
+    },
+    {
+     "path": "earnings.18.rateApplied",
+     "equals": 500
+    },
+    {
+     "path": "earnings.18.amount",
+     "equals": 491651
+    }
+   ]
+  },
+  {
+   "name": "tiered - exactly 10,000 bps: the top tier starts at its fromPct (800 bps)",
+   "payload": {
+    "periodId": "e_6aa2b98a35cc1f4f3c87919c",
+    "dryRun": true,
+    "pageLimit": 2000
+   },
+   "checks": [
+    {
+     "path": "earnings.19.componentKey",
+     "equals": "TEST-NA-PR-TIER-NB"
+    },
+    {
+     "path": "earnings.19.positionId",
+     "equals": "e_6aa2b99335cc1f4f3c87924f"
+    },
+    {
+     "path": "earnings.19.base",
+     "equals": 844369
+    },
+    {
+     "path": "earnings.19.attainmentPct",
+     "equals": 10000
+    },
+    {
+     "path": "earnings.19.bandHit",
+     "equals": "Above plan"
+    },
+    {
+     "path": "earnings.19.rateApplied",
+     "equals": 800
+    },
+    {
+     "path": "earnings.19.amount",
+     "equals": 67550
+    }
+   ]
+  },
+  {
+   "name": "tiered, the RULE quota TEST-Q-NA-CH wins over the seat - 9,414 bps, tier 2: 235,347",
+   "payload": {
+    "periodId": "e_6aa2b98a35cc1f4f3c87919c",
+    "dryRun": true,
+    "pageLimit": 2000
+   },
+   "checks": [
+    {
+     "path": "earnings.14.componentKey",
+     "equals": "TEST-NA-PR-TIER-CH"
+    },
+    {
+     "path": "earnings.14.positionId",
+     "equals": "e_6aa2b99135cc1f4f3c879224"
+    },
+    {
+     "path": "earnings.14.base",
+     "equals": 4706940
+    },
+    {
+     "path": "earnings.14.attainmentPct",
+     "equals": 9414
+    },
+    {
+     "path": "earnings.14.bandHit",
+     "equals": "At plan"
+    },
+    {
+     "path": "earnings.14.rateApplied",
+     "equals": 500
+    },
+    {
+     "path": "earnings.14.amount",
+     "equals": 235347
+    }
+   ]
+  },
+  {
+   "name": "flat rate - 500 bps of a 415,439 renewal credit is 20,772 (HALF_UP once)",
+   "payload": {
+    "periodId": "e_6aa2b98a35cc1f4f3c87919c",
+    "dryRun": true,
+    "pageLimit": 2000
+   },
+   "checks": [
+    {
+     "path": "earnings.7.componentKey",
+     "equals": "TEST-NA-PR-FLAT"
+    },
+    {
+     "path": "earnings.7.rateType",
+     "equals": "Flat rate"
+    },
+    {
+     "path": "earnings.7.base",
+     "equals": 415439
+    },
+    {
+     "path": "earnings.7.rateApplied",
+     "equals": 500
+    },
+    {
+     "path": "earnings.7.amount",
+     "equals": 20772
+    },
+    {
+     "path": "earnings.7.creditType",
+     "equals": "RENEWAL"
+    }
+   ]
+  },
+  {
+   "name": "flat rate - a NEGATIVE renewal credit earns a negative amount, not zero",
+   "payload": {
+    "periodId": "e_6aa2b98a35cc1f4f3c87919c",
+    "dryRun": true,
+    "pageLimit": 2000
+   },
+   "checks": [
+    {
+     "path": "earnings.2.amount",
+     "equals": -21828
+    },
+    {
+     "path": "earnings.2.base",
+     "equals": -436559
+    }
+   ]
+  },
+  {
+   "name": "refusals keep their own names - AMBIGUOUS_QUOTA, NO_QUOTA, NO_TIER, NO_PLAN",
+   "payload": {
+    "periodId": "e_6aa2b98a35cc1f4f3c87919c",
+    "dryRun": true,
+    "pageLimit": 2000
+   },
+   "checks": [
+    {
+     "path": "exceptions.0.code",
+     "equals": "AMBIGUOUS_QUOTA"
+    },
+    {
+     "path": "exceptions.17.code",
+     "equals": "NO_TIER"
+    },
+    {
+     "path": "exceptions.12.code",
+     "equals": "NO_QUOTA"
+    },
+    {
+     "path": "exceptions.1.code",
+     "equals": "NO_PLAN"
+    },
+    {
+     "path": "exceptions",
+     "type": "array",
+     "minLen": 18,
+     "maxLen": 18
+    }
+   ]
+  },
+  {
+   "name": "PERIOD_NOT_OPEN - JAN-2026 is PAID",
+   "payload": {
+    "periodId": "e_6a9bd4b7a397f67f706c5d3d",
+    "dryRun": true
+   },
+   "checks": [
+    {
+     "path": "status",
+     "equals": "PERIOD_NOT_OPEN"
+    },
+    {
+     "path": "written",
+     "equals": 0
+    }
+   ]
+  },
+  {
+   "name": "NO_CREDIT_RUN - OCT-2026 is open but was never credited",
+   "payload": {
+    "periodId": "e_6aa001b735cc1f4f3c704db0",
+    "dryRun": true
+   },
+   "checks": [
+    {
+     "path": "status",
+     "equals": "NO_CREDIT_RUN"
+    },
+    {
+     "path": "periodName",
+     "equals": "OCT-2026"
+    },
+    {
+     "path": "written",
+     "equals": 0
+    }
+   ]
+  },
+  {
+   "name": "the all-empty-strings payload every callable suite carries",
+   "payload": {
+    "periodId": "",
+    "dryRun": "",
+    "pageLimit": "",
+    "keyCap": ""
+   },
+   "checks": [
+    {
+     "path": "status",
+     "equals": "INVALID_INPUT"
+    },
+    {
+     "path": "dryRun",
+     "equals": true
+    },
+    {
+     "path": "written",
+     "equals": 0
+    }
+   ]
+  },
+  {
+   "name": "PERIOD_NOT_FOUND - a periodId no Period carries",
+   "payload": {
+    "periodId": "e_000000000000000000000000",
+    "dryRun": true
+   },
+   "checks": [
+    {
+     "path": "status",
+     "equals": "PERIOD_NOT_FOUND"
+    }
+   ]
+  },
+  {
+   "name": "FETCH_TRUNCATED - a page too small for the period run list refuses, instead of answering NO_CREDIT_RUN for a credited period",
+   "payload": {
+    "periodId": "e_6aa2b98a35cc1f4f3c87919c",
+    "dryRun": true,
+    "pageLimit": 1
+   },
+   "checks": [
+    {
+     "path": "status",
+     "equals": "FETCH_TRUNCATED"
+    },
+    {
+     "path": "written",
+     "equals": 0
+    }
+   ]
+  },
+  {
+   "name": "dryRun defaults to TRUE when omitted - writing pay is opt-in",
+   "payload": {
+    "periodId": "e_6aa2b98a35cc1f4f3c87919c",
+    "pageLimit": 2000
+   },
+   "checks": [
+    {
+     "path": "status",
+     "equals": "OK_DRY_RUN"
+    },
+    {
+     "path": "dryRun",
+     "equals": true
+    },
+    {
+     "path": "written",
+     "equals": 0
+    }
+   ]
+  }
+ ]
+}

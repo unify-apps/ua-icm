@@ -1,0 +1,526 @@
+{
+  "appsUsed": [],
+  "createdTime": 1789051001888,
+  "deleted": false,
+  "deployedVersion": 2,
+  "deploymentState": {
+    "deployedAt": 1789118777172,
+    "deployedBy": 388282,
+    "deployedDefinitionId": "6aa3c9393365b777b5ab4e7a",
+    "status": "DEPLOYED",
+    "version": 2,
+    "workflowVersion": 5
+  },
+  "description": "Bulk create and update job titles from a CSV. Every row is validated against the whole catalog before anything is written, matched on titleCode, and each row comes back with its own outcome and reason.",
+  "edges": [
+    {
+      "fromNodeId": "n_sTaRt",
+      "id": "next@n_sTaRt@n_FtEx",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtEx",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtEx",
+      "id": "next@n_FtEx@n_Loop",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Loop",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Loop",
+      "id": "loop@n_Loop@n_Plan",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Plan",
+      "type": "loop"
+    },
+    {
+      "fromNodeId": "n_Plan",
+      "id": "next@n_Plan@n_Ups",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Ups",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Ups",
+      "id": "next@n_Ups@n_Err",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Err",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Err",
+      "id": "next@n_Err@n_Loop",
+      "name": "loopback",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Loop",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Loop",
+      "id": "next@n_Loop@n_StDone",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StDone",
+      "type": "next"
+    }
+  ],
+  "id": "6aa2c0793c7f7b6b9117ea02",
+  "lastModifiedBy": 388282,
+  "lastPlatformUpdateBy": 388282,
+  "lastPlatformUpdateOn": 1789118777173,
+  "lcName": "icm | bulk manage titles",
+  "modifiedTime": 1789118777173,
+  "name": "ICM | Bulk Manage Titles",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_sTaRt",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "batchId",
+            "applied",
+            "rows"
+          ],
+          "properties": {
+            "status": {
+              "type": "string",
+              "title": "Status"
+            },
+            "batchId": {
+              "type": "string",
+              "title": "Batch Id"
+            },
+            "applied": {
+              "type": "integer",
+              "title": "Applied"
+            },
+            "written": {
+              "type": "integer",
+              "title": "Written"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            },
+            "rows": {
+              "type": "array",
+              "title": "Rows",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "line": {
+                    "type": "integer",
+                    "title": "Line"
+                  },
+                  "outcome": {
+                    "type": "string",
+                    "title": "Outcome"
+                  },
+                  "error": {
+                    "type": "string",
+                    "title": "Error"
+                  },
+                  "title_code": {
+                    "type": "string",
+                    "title": "Title_code"
+                  },
+                  "name": {
+                    "type": "string",
+                    "title": "Name"
+                  },
+                  "description": {
+                    "type": "string",
+                    "title": "Description"
+                  },
+                  "category": {
+                    "type": "string",
+                    "title": "Category"
+                  },
+                  "level": {
+                    "type": "string",
+                    "title": "Level"
+                  },
+                  "market": {
+                    "type": "string",
+                    "title": "Market"
+                  },
+                  "function": {
+                    "type": "string",
+                    "title": "Function"
+                  },
+                  "pay_period": {
+                    "type": "string",
+                    "title": "Pay_period"
+                  }
+                }
+              }
+            },
+            "resultFile": {
+              "type": "object",
+              "title": "Result File"
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "fileDetails": {
+              "title": "File",
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {}
+            },
+            "batchId": {
+              "title": "Batch Id",
+              "type": "string"
+            },
+            "dryRun": {
+              "title": "Dry Run",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_FtEx",
+      "index": 2,
+      "inputs": {
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Title",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 5000,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.titleCode",
+          "properties.name",
+          "properties.description",
+          "properties.category",
+          "properties.level",
+          "properties.market",
+          "properties.function",
+          "properties.payPeriod"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Every Title already stored, to match rows on the unique key",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "csv_by_unifyapps",
+        "resourceVersion": 27,
+        "resourceName": "csv_by_unifyapps_for_each_row_or_rows",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Loop",
+      "index": 3,
+      "inputs": {
+        "startFromRow": 1,
+        "file": "{{ n_sTaRt.outputs.fileDetails }}",
+        "headerRow": true,
+        "columns": [
+          "title_code",
+          "name",
+          "description",
+          "category",
+          "level",
+          "market",
+          "function",
+          "pay_period"
+        ],
+        "batch": true,
+        "batchSize": 5000,
+        "fileType": "csv"
+      },
+      "skip": false,
+      "subTitle": "Read the whole file in one batch",
+      "title": "Read the uploaded CSV, row by row",
+      "type": "LOOP"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Loop@root_id-1@l",
+      "id": "n_Plan",
+      "index": 4,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "status": {
+              "type": "string",
+              "title": "Status"
+            },
+            "updates": {
+              "type": "array",
+              "title": "Updates"
+            },
+            "rows": {
+              "type": "array",
+              "title": "Rows"
+            },
+            "applied": {
+              "type": "integer",
+              "title": "Applied"
+            },
+            "written": {
+              "type": "integer",
+              "title": "Written"
+            },
+            "message": {
+              "type": "string",
+              "title": "Message"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "rows": {
+              "type": "array",
+              "title": "Rows"
+            },
+            "existing": {
+              "type": "array",
+              "title": "Existing"
+            },
+            "dryRun": {
+              "type": "string",
+              "title": "Dry Run"
+            }
+          }
+        },
+        "code": "def txt = { v -> (v == null) ? '' : String.valueOf(v).trim() }\ndef md5hex = { String s -> java.security.MessageDigest.getInstance('MD5').digest(s.getBytes('UTF-8')).encodeHex().toString() }\n// A bulk upsert writes BY ID, so a brand-new record needs one before it exists. Minting\n// it from the unique key means the same row uploaded twice targets the same record\n// rather than minting a second one -- the idempotency the whole file depends on.\ndef mint = { String seed -> 'e_' + md5hex(seed).substring(0, 24) }\n\nboolean isDry = (txt(dryRun) == 'true')\n\n// ---- what is already stored, by unique key -------------------------------\ndef byKey = [:]\n(existing ?: []).each { r ->\n    def p = r.properties ?: [:]\n    String k = txt(p.titleCode).toLowerCase()\n    if (k != '') byKey[k] = [id: txt(r.id), props: p]\n}\n\n// Is the stored value and the file's value the same value?\n//\n// NOT String.valueOf on both, which is what this used to be. The storage hands numbers\n// back as `\"salary\":118000.0` on the wire, so the stored side stringifies to \"118000.0\"\n// while the file's cell parses to BigDecimal \"118000\". Never equal -- so every row\n// carrying a number was reported `updated` on every upload, re-uploading a file\n// unedited rewrote every record, and \"nothing to change\" was unreachable on any screen\n// with a numeric column. Titles hid this by having none.\n//\n// compareTo, not equals: BigDecimal.equals compares SCALE too, so 118000 and 118000.0\n// are unequal by it and this would have fixed nothing.\n//\n// null is handled before the elvis operator gets a chance: in Groovy `0 ?: ''` is '',\n// so a stored zero would have read as blank and never matched a file's \"0\".\ndef sameValue = { a, b ->\n    // NUMBERS ONLY, and only when BOTH sides really are numbers. Comparing any pair of\n    // strings that happen to parse numerically would make a text field holding \"007\"\n    // equal to one holding \"7\" and silently drop a real edit -- a worse bug than the one\n    // this fixes. `rec` carries a BigDecimal or a long for exactly the columns parsed as\n    // numbers and a String for every other, so the type IS the question being asked.\n    if (a instanceof Number && b instanceof Number) {\n        return new BigDecimal(String.valueOf(a)).compareTo(new BigDecimal(String.valueOf(b))) == 0\n    }\n    String sa = (a == null) ? '' : String.valueOf(a)\n    String sb = (b == null) ? '' : String.valueOf(b)\n    return sa == sb\n}\n\ndef parseDay = { String s ->\n    if (!(s ==~ /^\\d{4}-\\d{2}-\\d{2}$/)) return -1L\n    try { return java.time.LocalDate.parse(s).atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli() }\n    catch (Exception e) { return -1L }\n}\n\n// A CSV written for Excel carries a BOM, and the reader hands the first header back\n// mangled - 'title_code' arrives as '__title_code_'. Normalising every key means the\n// template stays Excel-safe without this automation caring how the header was spelled.\ndef cell = { row, String want ->\n    if (row == null) return ''\n    def hit = row.find { k, v -> String.valueOf(k).toLowerCase().replaceAll(/[^a-z_]/, '').replaceAll(/^_+|_+$/, '') == want }\n    return (hit == null) ? '' : txt(hit.value)\n}\n\ndef COLUMNS = [\"title_code\",\"name\",\"description\",\"category\",\"level\",\"market\",\"function\",\"pay_period\"]\n\ndef out = []       // one entry per file row, in file order\ndef updates = []   // what actually gets written\ndef seenKey = [:]  // unique key -> the earlier line that already claimed it\nint line = 1\n\n(rows ?: []).each { raw ->\n    line += 1\n    def problems = []\n    def rec = [:]\n    // title_code\n    def v_titleCode = cell(raw, 'title_code')\n    if (v_titleCode == '') problems << 'title_code is required'\n    rec['titleCode'] = v_titleCode\n    // name\n    def v_name = cell(raw, 'name')\n    if (v_name == '') problems << 'name is required'\n    rec['name'] = v_name\n    // description\n    def v_description = cell(raw, 'description')\n    rec['description'] = v_description\n    // category\n    def v_category = cell(raw, 'category')\n    rec['category'] = v_category\n    // level\n    def v_level = cell(raw, 'level')\n    rec['level'] = v_level\n    // market\n    def v_market = cell(raw, 'market')\n    rec['market'] = v_market\n    // function\n    def v_function = cell(raw, 'function')\n    rec['function'] = v_function\n    // pay_period\n    def v_payPeriod = cell(raw, 'pay_period')\n    rec['payPeriod'] = v_payPeriod\n\n    String key = txt(rec['titleCode'])\n    def prior = seenKey[key.toLowerCase()]\n    if (key != '' && prior != null) {\n        problems << ('the same title code appears on line ' + prior + ' of this file')\n    } else if (key != '') {\n        seenKey[key.toLowerCase()] = line\n    }\n\n    def hit = (key == '') ? null : byKey[key.toLowerCase()]\n\n    if (!problems.isEmpty()) {\n        out << [line: line, raw: raw, key: key, outcome: 'error', reason: problems.join('; ')]\n        return\n    }\n\n    // UNCHANGED is reported, not written. Re-uploading the template unedited should say\n    // \"nothing to change\" rather than bumping the version of every record in the catalog.\n    if (hit != null) {\n        boolean same = true\n        rec.each { f, v -> if (!sameValue(hit.props[f], v)) same = false }\n        if (same) {\n            out << [line: line, raw: raw, key: key, outcome: 'unchanged', reason: '']\n            return\n        }\n    }\n\n    String id = (hit != null) ? hit.id : mint('Title|' + key.toLowerCase())\n    // The bulk upsert takes {id, updateFields:[{fieldName, actionType, setValue}]} and\n    // NOT a flat property map. A flat map is accepted silently: the node answers\n    // success:true with successCount:0 and writes nothing, so the caller is told the\n    // file applied and no record moves. Cost one build cycle 2026-09-10.\n    //\n    // Only the file's own columns are SET, which is also what makes a column the file\n    // leaves out keep its stored value: a bulk upload is not a form, so an absent\n    // column means \"not mentioned\", never \"clear it\".\n    def fields = []\n    rec.each { f, v -> fields << [fieldName: 'properties.' + f, actionType: 'SET', setValue: v] }\n    updates << [id: id, updateFields: fields]\n    out << [line: line, raw: raw, key: key, outcome: (hit != null) ? 'updated' : 'created', reason: '']\n}\n\n// A file whose header is wrong produces rows with every required cell empty, which reads\n// as N identical errors. Naming the missing column once is the difference between a user\n// fixing a header and a user re-typing a file.\nif (!(rows ?: []).isEmpty()) {\n    def firstRow = rows[0]\n    def missing = COLUMNS.findAll { c -> (c == 'title_code') && cell(firstRow, c) == '' && !firstRow.any { k, v -> String.valueOf(k).toLowerCase().replaceAll(/[^a-z_]/, '').replaceAll(/^_+|_+$/, '') == c } }\n    if (!missing.isEmpty()) {\n        String msg = 'The file is missing the ' + missing.join(' and ') + ' column' + (missing.size() == 1 ? '' : 's') + '.'\n        out.each { it.outcome = 'error'; it.reason = msg }\n        updates = []\n    }\n}\n\nint errors = out.count { it.outcome == 'error' }\nint changed = out.count { it.outcome == 'created' || it.outcome == 'updated' }\nString status\nif (out.isEmpty()) status = 'INVALID_INPUT'\nelse if (errors == out.size()) status = 'REFUSED'\nelse if (errors > 0) status = 'PARTIAL'\nelse status = 'APPLIED'\n\nif (isDry) updates = []\n\n// Every row comes back, not just the failures: the result file is the user's own file\n// with two columns added, so it can be corrected and re-uploaded whole rather than\n// reassembled by hand.\ndef reported = out.collect { r ->\n    def m = [line: r.line, outcome: r.outcome, error: r.reason]\n    COLUMNS.each { c -> m[c] = cell(r.raw, c) }\n    return m\n}\n\nreturn [status: status, updates: updates, rows: reported,\n        applied: changed, written: updates.size(),\n        message: isDry ? 'Preview only - nothing was written.' : '']",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "rows": "{{ n_Loop.outputs.item }}",
+          "existing": "{{ n_FtEx.outputs.objects }}",
+          "dryRun": "{{ n_sTaRt.outputs.dryRun }}"
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Validate every row against the whole catalog and plan the write",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_bulk_upsert_records_by_id",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Loop@root_id-1@l",
+      "id": "n_Ups",
+      "index": 5,
+      "inputs": {
+        "object_type": "Title",
+        "skipIfBlank": false,
+        "skipSchemaValidation": true,
+        "updates": "{{ n_Plan.outputs.result.updates }}",
+        "unsetIfNull": false
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "One bulk upsert for the whole file - never a write per row",
+      "title": "Bulk upsert records by id",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "csv_by_unifyapps",
+        "resourceVersion": 2,
+        "resourceName": "csv_by_unifyapps_list_to_csv_file",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_Loop@root_id-1@l",
+      "id": "n_Err",
+      "index": 6,
+      "inputs": {
+        "fileName": "titles-result",
+        "delimiter": ",",
+        "staticHeaders": [
+          {
+            "key": "title_code",
+            "value": "{{ n_Plan.outputs.result.rows[0].title_code }}"
+          },
+          {
+            "key": "name",
+            "value": "{{ n_Plan.outputs.result.rows[0].name }}"
+          },
+          {
+            "key": "description",
+            "value": "{{ n_Plan.outputs.result.rows[0].description }}"
+          },
+          {
+            "key": "category",
+            "value": "{{ n_Plan.outputs.result.rows[0].category }}"
+          },
+          {
+            "key": "level",
+            "value": "{{ n_Plan.outputs.result.rows[0].level }}"
+          },
+          {
+            "key": "market",
+            "value": "{{ n_Plan.outputs.result.rows[0].market }}"
+          },
+          {
+            "key": "function",
+            "value": "{{ n_Plan.outputs.result.rows[0].function }}"
+          },
+          {
+            "key": "pay_period",
+            "value": "{{ n_Plan.outputs.result.rows[0].pay_period }}"
+          },
+          {
+            "key": "outcome",
+            "value": "{{ n_Plan.outputs.result.rows[0].outcome }}"
+          },
+          {
+            "key": "error",
+            "value": "{{ n_Plan.outputs.result.rows[0].error }}"
+          }
+        ],
+        "skipHeaderRow": false,
+        "headerType": "STATIC",
+        "encoding": "UTF-8",
+        "keepExactFileName": false,
+        "dataSource": "{{ n_Plan.outputs.result.rows }}",
+        "fileType": "csv"
+      },
+      "skip": false,
+      "subTitle": "The result file: every row with its outcome and reason",
+      "title": "Write the row-by-row result as a CSV",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_StDone",
+      "index": 7,
+      "inputs": {
+        "result": {
+          "status": "{{ n_Plan.outputs.result.status }}",
+          "batchId": "{{ n_sTaRt.outputs.batchId }}",
+          "applied": "{{ n_Plan.outputs.result.applied }}",
+          "written": "{{ n_Plan.outputs.result.written }}",
+          "rows": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Plan.outputs.result.rows }}",
+            "items": "{{ n_Plan.outputs.result.rows[0] }}"
+          },
+          "message": "{{ n_Plan.outputs.result.message }}",
+          "resultFile": "{{ n_Err.outputs.fileDetails }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Every row, with what happened to it",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 388282,
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 5
+}

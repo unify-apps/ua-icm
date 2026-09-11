@@ -1,0 +1,1460 @@
+{
+  "appsUsed": [],
+  "createdTime": 1789115155707,
+  "deleted": false,
+  "deployedVersion": 1,
+  "deploymentState": {
+    "deployedAt": 1789116206988,
+    "deployedBy": 435691,
+    "deployedDefinitionId": "6aa3bf2e9b5b07393451a80b",
+    "deploymentNotes": "New callable: edits a position's name/active and dated title/occupant changes. Suite 58/58 green on tool, validate+lint clean. Approved by the user in session 2026-09-11.",
+    "status": "DEPLOYED",
+    "version": 1,
+    "workflowVersion": 1
+  },
+  "description": "Edits one position: its name and active flag in place, and its title and occupant as DATED changes - the row in force is closed the millisecond before the effective date and a new one opens from it, so past periods keep resolving to what was true then. A change dated the day a row opened corrects that row instead. Every check runs before the first write, and the same request sent twice changes nothing the second time.",
+  "edges": [
+    {
+      "fromNodeId": "n_Start",
+      "id": "next@n_Start@n_Norm",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Norm",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Norm",
+      "id": "next@n_Norm@n_IfBad",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfBad",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "if@n_IfBad@n_StBad",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StBad",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfBad",
+      "id": "next@n_IfBad@n_FtPos",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtPos",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtPos",
+      "id": "next@n_FtPos@n_FtAttr",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtAttr",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtAttr",
+      "id": "next@n_FtAttr@n_FtAsg",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtAsg",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtAsg",
+      "id": "next@n_FtAsg@n_FtTitle",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtTitle",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtTitle",
+      "id": "next@n_FtTitle@n_FtPayee",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_FtPayee",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_FtPayee",
+      "id": "next@n_FtPayee@n_Plan",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Plan",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Plan",
+      "id": "next@n_Plan@n_IfBlk",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfBlk",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfBlk",
+      "id": "if@n_IfBlk@n_StBlk",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StBlk",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfBlk",
+      "id": "next@n_IfBlk@n_WrPos",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_WrPos",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_WrPos",
+      "id": "next@n_WrPos@n_WrAttr",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_WrAttr",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_WrAttr",
+      "id": "next@n_WrAttr@n_WrAsg",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_WrAsg",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_WrAsg",
+      "id": "next@n_WrAsg@n_DelAsg",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_DelAsg",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_DelAsg",
+      "id": "next@n_DelAsg@n_Done",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_Done",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_Done",
+      "id": "next@n_Done@n_IfWr",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_IfWr",
+      "type": "next"
+    },
+    {
+      "fromNodeId": "n_IfWr",
+      "id": "if@n_IfWr@n_StPart",
+      "name": "yes",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StPart",
+      "type": "if"
+    },
+    {
+      "fromNodeId": "n_IfWr",
+      "id": "next@n_IfWr@n_StOk",
+      "name": "no",
+      "priority": 0,
+      "skip": false,
+      "toNodeId": "n_StOk",
+      "type": "next"
+    }
+  ],
+  "id": "6aa3bb139b5b0739345087ea",
+  "lastModifiedBy": 435691,
+  "lastPlatformUpdateBy": 435691,
+  "lastPlatformUpdateOn": 1789116206989,
+  "lcName": "icm | update position",
+  "modifiedTime": 1789116206989,
+  "name": "ICM | Update Position",
+  "nodes": [
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_from_automation"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Start",
+      "index": 1,
+      "inputs": {
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "success",
+            "message"
+          ],
+          "properties": {
+            "status": {
+              "type": "string",
+              "title": "status"
+            },
+            "success": {
+              "type": "boolean",
+              "title": "success"
+            },
+            "message": {
+              "type": "string",
+              "title": "message"
+            },
+            "positionId": {
+              "type": "string",
+              "title": "positionId"
+            },
+            "positionCode": {
+              "type": "string",
+              "title": "positionCode"
+            },
+            "changedFields": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "title": "changedFields"
+            },
+            "titleChanged": {
+              "type": "boolean",
+              "title": "titleChanged"
+            },
+            "personChanged": {
+              "type": "boolean",
+              "title": "personChanged"
+            },
+            "attributeId": {
+              "type": "string",
+              "title": "attributeId"
+            },
+            "assignmentId": {
+              "type": "string",
+              "title": "assignmentId"
+            },
+            "effectiveStart": {
+              "type": "string",
+              "title": "effectiveStart"
+            }
+          }
+        },
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "positionId": {
+              "type": "string",
+              "title": "positionId"
+            },
+            "name": {
+              "type": "string",
+              "title": "name"
+            },
+            "titleId": {
+              "type": "string",
+              "title": "titleId"
+            },
+            "payeeId": {
+              "type": "string",
+              "title": "payeeId"
+            },
+            "clearPayee": {
+              "type": "string",
+              "title": "clearPayee"
+            },
+            "active": {
+              "type": "string",
+              "title": "active"
+            },
+            "effectiveStart": {
+              "type": "string",
+              "title": "effectiveStart"
+            }
+          }
+        }
+      },
+      "skip": false,
+      "subTitle": "Callable - one position's edit in, what changed out",
+      "title": "Trigger via automation",
+      "trigger": {
+        "type": "CALLABLE"
+      },
+      "type": "START"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_Norm",
+      "index": 2,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "valid": {
+              "type": "boolean",
+              "title": "valid"
+            },
+            "reason": {
+              "type": "string",
+              "title": "reason"
+            },
+            "positionId": {
+              "type": "string",
+              "title": "positionId"
+            },
+            "name": {
+              "type": "string",
+              "title": "name"
+            },
+            "titleId": {
+              "type": "string",
+              "title": "titleId"
+            },
+            "payeeId": {
+              "type": "string",
+              "title": "payeeId"
+            },
+            "clearPayee": {
+              "type": "boolean",
+              "title": "clearPayee"
+            },
+            "active": {
+              "type": "boolean",
+              "title": "active"
+            },
+            "wantName": {
+              "type": "boolean",
+              "title": "wantName"
+            },
+            "wantActive": {
+              "type": "boolean",
+              "title": "wantActive"
+            },
+            "wantTitle": {
+              "type": "boolean",
+              "title": "wantTitle"
+            },
+            "wantPerson": {
+              "type": "boolean",
+              "title": "wantPerson"
+            },
+            "effEpoch": {
+              "type": "integer",
+              "title": "effEpoch"
+            },
+            "effDay": {
+              "type": "string",
+              "title": "effDay"
+            },
+            "positionKey": {
+              "type": "string",
+              "title": "positionKey"
+            },
+            "titleKey": {
+              "type": "string",
+              "title": "titleKey"
+            },
+            "payeeKey": {
+              "type": "string",
+              "title": "payeeKey"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "positionId": {
+              "type": "string",
+              "title": "positionId"
+            },
+            "name": {
+              "type": "string",
+              "title": "name"
+            },
+            "titleId": {
+              "type": "string",
+              "title": "titleId"
+            },
+            "payeeId": {
+              "type": "string",
+              "title": "payeeId"
+            },
+            "clearPayee": {
+              "type": "string",
+              "title": "clearPayee"
+            },
+            "active": {
+              "type": "string",
+              "title": "active"
+            },
+            "effectiveStart": {
+              "type": "string",
+              "title": "effectiveStart"
+            }
+          }
+        },
+        "code": "// Validate the request and settle the effective date. Every default is applied HERE.\n//\n// An input the caller did not send is UNBOUND, not null - reading it directly throws\n// \"No such property\" before any validation runs (notes/runtime-facts.md, 2026-09-10).\n// A drawer legitimately omits the fields nobody touched, so every read goes through arg().\ndef arg = { String k -> binding.hasVariable(k) ? binding.getVariable(k) : null }\ndef sv = { v -> (v == null) ? '' : String.valueOf(v).trim() }\n\nString pid = sv(arg('positionId'))\nString nm = sv(arg('name'))\nString tid = sv(arg('titleId'))\nString payee = sv(arg('payeeId'))\nString clearRaw = sv(arg('clearPayee')).toLowerCase()\nString activeRaw = sv(arg('active')).toLowerCase()\nString effRaw = sv(arg('effectiveStart'))\n\nboolean valid = true\nString reason = ''\n\nif (pid.isEmpty()) { valid = false; reason = 'positionId is required - there is nothing to update without it.' }\nelse if (!(clearRaw in ['', 'true', 'false'])) { valid = false; reason = 'clearPayee must be true or false, got: ' + clearRaw }\nelse if (!(activeRaw in ['', 'true', 'false'])) { valid = false; reason = 'active must be true, false, or blank to leave it alone - got: ' + activeRaw }\n\nboolean clearPayee = clearRaw == 'true'\nif (valid && clearPayee && !payee.isEmpty()) {\n    valid = false\n    reason = 'send payeeId or clearPayee, not both - they disagree about who should hold the position.'\n}\n\n// Dates arrive as yyyy-MM-dd and are stored as epoch millis at UTC midnight, the same\n// rule Create Position applies, so a seat created and edited on one day agree on \"today\".\nlong effEpoch = 0L\nif (valid) {\n    if (effRaw.isEmpty()) {\n        effEpoch = java.time.LocalDate.now(java.time.ZoneOffset.UTC).atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli()\n    } else if (effRaw ==~ /^\\d{4}-\\d{2}-\\d{2}$/) {\n        try {\n            effEpoch = java.time.LocalDate.parse(effRaw).atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli()\n        } catch (Exception e) { valid = false; reason = 'effectiveStart is not a real calendar date: ' + effRaw }\n    } else {\n        valid = false; reason = 'effectiveStart must be yyyy-MM-dd, got: ' + effRaw\n    }\n}\nString effDay = java.time.Instant.ofEpochMilli(effEpoch).atZone(java.time.ZoneOffset.UTC).toLocalDate().toString()\n\nboolean wantName = !nm.isEmpty()\nboolean wantActive = !activeRaw.isEmpty()\nboolean wantTitle = !tid.isEmpty()\nboolean wantPerson = !payee.isEmpty() || clearPayee\n\nif (valid && !(wantName || wantActive || wantTitle || wantPerson)) {\n    valid = false\n    reason = 'nothing to update - every field was blank.'\n}\n\n// '__none__' keeps a lookup nobody asked for a clean no-match instead of an unfiltered scan.\nreturn [valid: valid, reason: reason, positionId: pid, name: nm, titleId: tid, payeeId: payee,\n        clearPayee: clearPayee, active: activeRaw == 'true',\n        wantName: wantName, wantActive: wantActive, wantTitle: wantTitle, wantPerson: wantPerson,\n        effEpoch: effEpoch, effDay: effDay,\n        positionKey: pid.isEmpty() ? '__none__' : pid,\n        titleKey: tid.isEmpty() ? '__none__' : tid,\n        payeeKey: payee.isEmpty() ? '__none__' : payee]\n",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "positionId": "{{ n_Start.outputs.positionId }}",
+          "name": "{{ n_Start.outputs.name }}",
+          "titleId": "{{ n_Start.outputs.titleId }}",
+          "payeeId": "{{ n_Start.outputs.payeeId }}",
+          "clearPayee": "{{ n_Start.outputs.clearPayee }}",
+          "active": "{{ n_Start.outputs.active }}",
+          "effectiveStart": "{{ n_Start.outputs.effectiveStart }}"
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Validate the request and settle the effective date",
+      "title": "Groovy code",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "root_id-1",
+      "id": "n_IfBad",
+      "index": 3,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Norm.outputs.result.valid }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": false
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Was the request itself unusable?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@y",
+      "id": "n_StBad",
+      "index": 4,
+      "inputs": {
+        "result": {
+          "status": "INVALID_INPUT",
+          "success": false,
+          "message": "{{ n_Norm.outputs.result.reason }}",
+          "positionId": "{{ n_Norm.outputs.result.positionId }}",
+          "positionCode": "",
+          "changedFields": [],
+          "titleChanged": false,
+          "personChanged": false,
+          "attributeId": "",
+          "assignmentId": "",
+          "effectiveStart": "{{ n_Norm.outputs.result.effDay }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Caller sent something that could not be written - nothing was read or written",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_FtPos",
+      "index": 5,
+      "inputs": {
+        "triggerInputCondition": {
+          "operator": "AND",
+          "filters": [
+            {
+              "property": "id",
+              "filter": {
+                "operator": "EQUAL",
+                "value": "{{ n_Norm.outputs.result.positionKey }}"
+              }
+            }
+          ]
+        },
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Position",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 1,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.positionCode",
+          "properties.name",
+          "properties.active"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The position being edited, read before anything is written",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_FtAttr",
+      "index": 6,
+      "inputs": {
+        "triggerInputCondition": {
+          "operator": "AND",
+          "filters": [
+            {
+              "property": "properties.positionId",
+              "filter": {
+                "operator": "EQUAL",
+                "value": "{{ n_Norm.outputs.result.positionKey }}"
+              }
+            }
+          ]
+        },
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "PositionAttribute",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 500,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.name",
+          "properties.positionId",
+          "properties.effectiveStart",
+          "properties.effectiveEnd",
+          "properties.titleId",
+          "properties.territoryId"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Every dated title row of this position, to find the one in force",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_FtAsg",
+      "index": 7,
+      "inputs": {
+        "triggerInputCondition": {
+          "operator": "AND",
+          "filters": [
+            {
+              "property": "properties.positionId",
+              "filter": {
+                "operator": "EQUAL",
+                "value": "{{ n_Norm.outputs.result.positionKey }}"
+              }
+            }
+          ]
+        },
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "PayeePositionAssignment",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 500,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.name",
+          "properties.positionId",
+          "properties.effectiveStart",
+          "properties.effectiveEnd",
+          "properties.payeeId",
+          "properties.allocationPct"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Every dated assignment of this position, to find who holds it",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_FtTitle",
+      "index": 8,
+      "inputs": {
+        "triggerInputCondition": {
+          "operator": "AND",
+          "filters": [
+            {
+              "property": "id",
+              "filter": {
+                "operator": "EQUAL",
+                "value": "{{ n_Norm.outputs.result.titleKey }}"
+              }
+            }
+          ]
+        },
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Title",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 1,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.titleCode",
+          "properties.name"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Does the requested title exist? A no-match when none was named",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_fetch_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_FtPayee",
+      "index": 9,
+      "inputs": {
+        "triggerInputCondition": {
+          "operator": "AND",
+          "filters": [
+            {
+              "property": "id",
+              "filter": {
+                "operator": "EQUAL",
+                "value": "{{ n_Norm.outputs.result.payeeKey }}"
+              }
+            }
+          ]
+        },
+        "shouldSearchInAnalyticsStore": false,
+        "object_type": "Payee",
+        "includeRoleMappings": false,
+        "includeCurrentUserPermissions": false,
+        "translationsOption": "DEFAULT",
+        "page": {
+          "paginateBy": "OFFSET",
+          "limit": 1,
+          "offset": 0
+        },
+        "numberOfRecordsToFetch": "MULTIPLE",
+        "includeTotalCount": true,
+        "readThroughSessionVariables": false,
+        "fields": [
+          "id",
+          "properties.employeeId",
+          "properties.name"
+        ]
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Does the requested person exist? A no-match when none was named",
+      "title": "Fetch records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_Plan",
+      "index": 10,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "ok": {
+              "type": "boolean",
+              "title": "ok"
+            },
+            "status": {
+              "type": "string",
+              "title": "status"
+            },
+            "message": {
+              "type": "string",
+              "title": "message"
+            },
+            "positionCode": {
+              "type": "string",
+              "title": "positionCode"
+            },
+            "posUpdates": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {}
+              },
+              "title": "posUpdates"
+            },
+            "attrUpdates": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {}
+              },
+              "title": "attrUpdates"
+            },
+            "asgUpdates": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {}
+              },
+              "title": "asgUpdates"
+            },
+            "deleteIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "title": "deleteIds"
+            },
+            "posExpected": {
+              "type": "integer",
+              "title": "posExpected"
+            },
+            "attrExpected": {
+              "type": "integer",
+              "title": "attrExpected"
+            },
+            "asgExpected": {
+              "type": "integer",
+              "title": "asgExpected"
+            },
+            "delExpected": {
+              "type": "integer",
+              "title": "delExpected"
+            },
+            "changedFields": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "title": "changedFields"
+            },
+            "titleChanged": {
+              "type": "boolean",
+              "title": "titleChanged"
+            },
+            "personChanged": {
+              "type": "boolean",
+              "title": "personChanged"
+            },
+            "attributeId": {
+              "type": "string",
+              "title": "attributeId"
+            },
+            "assignmentId": {
+              "type": "string",
+              "title": "assignmentId"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "posRows": {
+              "type": "array",
+              "title": "posRows",
+              "items": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            },
+            "attrRows": {
+              "type": "array",
+              "title": "attrRows",
+              "items": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            },
+            "asgRows": {
+              "type": "array",
+              "title": "asgRows",
+              "items": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            },
+            "titleRows": {
+              "type": "array",
+              "title": "titleRows",
+              "items": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            },
+            "payeeRows": {
+              "type": "array",
+              "title": "payeeRows",
+              "items": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            },
+            "attrMore": {
+              "type": "boolean",
+              "title": "attrMore"
+            },
+            "asgMore": {
+              "type": "boolean",
+              "title": "asgMore"
+            },
+            "historyLimit": {
+              "type": "integer",
+              "title": "historyLimit"
+            },
+            "positionId": {
+              "type": "string",
+              "title": "positionId"
+            },
+            "name": {
+              "type": "string",
+              "title": "name"
+            },
+            "titleId": {
+              "type": "string",
+              "title": "titleId"
+            },
+            "payeeId": {
+              "type": "string",
+              "title": "payeeId"
+            },
+            "clearPayee": {
+              "type": "boolean",
+              "title": "clearPayee"
+            },
+            "active": {
+              "type": "boolean",
+              "title": "active"
+            },
+            "wantName": {
+              "type": "boolean",
+              "title": "wantName"
+            },
+            "wantActive": {
+              "type": "boolean",
+              "title": "wantActive"
+            },
+            "wantTitle": {
+              "type": "boolean",
+              "title": "wantTitle"
+            },
+            "wantPerson": {
+              "type": "boolean",
+              "title": "wantPerson"
+            },
+            "effEpoch": {
+              "type": "integer",
+              "title": "effEpoch"
+            },
+            "effDay": {
+              "type": "string",
+              "title": "effDay"
+            }
+          }
+        },
+        "code": "// Decide every write for one position edit, from what the store holds right now.\n//\n// Nothing here does I/O. The five reads before it are the whole picture, and the write\n// nodes after it only ever carry what this returns - so every refusal happens before the\n// first write, and the same request sent twice plans nothing the second time.\n//\n// The as-of rule is the one List Positions and Resolve Position Occupant read with:\n// boundaries inclusive at both ends, a missing effectiveEnd means still in force. A write\n// that used any other rule would produce rows the read side interprets differently.\n\ndef rows = { v -> (v instanceof List) ? v : [] }\ndef sv = { v -> (v == null) ? '' : String.valueOf(v).trim() }\ndef B = { v -> String.valueOf(v) == 'true' }\n// Storage numbers come back as Integer, Long or Double depending on the VALUE\n// (notes/runtime-facts.md, 2026-09-03), so every epoch goes through one door.\ndef num = { v -> sv(v).isEmpty() ? null : new BigDecimal(sv(v)).longValue() }\n\nlong asOf = num(effEpoch) ?: 0L\nString day = sv(effDay)\nString pid = sv(positionId)\nString want = B(clearPayee) ? '' : sv(payeeId)\n\ndef inForce = { p ->\n    Long st = num(p?.effectiveStart)\n    Long en = num(p?.effectiveEnd)\n    return (st == null || st <= asOf) && (en == null || en >= asOf)\n}\n// The earliest row that starts AFTER the date - a new open-ended row must stop short of\n// it, or the edit would manufacture exactly the overlap the read side reports as CONFLICT.\ndef nextStartAfter = { List rs ->\n    rs.collect { num(it.properties?.effectiveStart) }.findAll { it != null && it > asOf }.min()\n}\n// Pre-minted so the response can name the row it created. Same \"e_\" + 24 hex shape the\n// server mints.\ndef mint = { -> 'e_' + UUID.randomUUID().toString().replace('-', '').substring(0, 24) }\n// `bulk_upsert_records_by_id` stores NOTHING from a flat row - it answers success with a\n// zero count (notes/runtime-facts.md, 2026-08-25). SET is per field, so an existing row\n// keeps every property this does not name.\ndef upsert = { String id, Map fields ->\n    [id: id, updateFields: fields.findAll { k, v -> v != null }.collect { k, v ->\n        [fieldName: 'properties.' + k, actionType: 'SET', setValue: v] }]\n}\n\nList pos = rows(posRows)\nList attrs = rows(attrRows)\nList asgs = rows(asgRows)\nMap pp = pos.isEmpty() ? [:] : (pos[0].properties ?: [:])\nString code = sv(pp.positionCode)\n// Dated rows are named after the seat's NAME, as Create Position names them - and after\n// the name this request leaves it with, so a rename and a re-title in one edit agree.\nString seatName = B(wantName) ? sv(name) : sv(pp.name)\n\nString status = 'OK'\nString message = ''\nList curAttr = attrs.findAll { inForce(it.properties) }\nList curAsg = asgs.findAll { inForce(it.properties) }\n\n// Ordered so the most useful refusal wins: a missing position makes every other check moot.\nif (pos.isEmpty()) {\n    status = 'POSITION_NOT_FOUND'\n    message = 'No position with id ' + pid + ' - it may have been deleted since the form was opened.'\n} else if (B(attrMore) || B(asgMore)) {\n    // A truncated history is a wrong picture, and a split planned from one would overlap\n    // the rows that were not read.\n    status = 'HISTORY_TOO_LONG'\n    message = 'Position ' + code + ' has more than ' + historyLimit + ' dated rows - too many to change safely in one request.'\n} else if (B(wantTitle) && rows(titleRows).isEmpty()) {\n    status = 'TITLE_NOT_FOUND'\n    message = 'No title with id ' + sv(titleId)\n} else if (B(wantPerson) && !want.isEmpty() && rows(payeeRows).isEmpty()) {\n    status = 'PAYEE_NOT_FOUND'\n    message = 'No payee with id ' + want\n} else if (B(wantTitle) && curAttr.size() > 1) {\n    status = 'CONFLICT'\n    message = curAttr.size() + ' title rows cover ' + day + ' for ' + code + '. Fix the overlap first - replacing one would leave the other in force.'\n} else if (B(wantPerson) && curAsg.size() > 1) {\n    status = 'CONFLICT'\n    message = curAsg.size() + ' assignments cover ' + day + ' for ' + code + '. Fix the overlap first - replacing one would leave the other in force.'\n}\n\nList posUpdates = []\nList attrUpdates = []\nList asgUpdates = []\nList deleteIds = []\nList changed = []\nboolean titleChanged = false\nboolean personChanged = false\nString attributeId = ''\nString assignmentId = ''\n\nif (status == 'OK') {\n    // ---- the seat's own fields: not dated, so a plain field update\n    Map posSet = [:]\n    if (B(wantName) && sv(name) != sv(pp.name)) { posSet.name = sv(name); changed << 'name' }\n    // a boolean never set is MISSING, so \"null\" never equals the requested value and gets written\n    if (B(wantActive) && String.valueOf(pp.active) != String.valueOf(B(active))) { posSet.active = B(active); changed << 'active' }\n    if (!posSet.isEmpty()) posUpdates << upsert(pid, posSet)\n\n    // ---- the title: dated. Close the row in force the day before, open a new one from it.\n    if (B(wantTitle)) {\n        String tid = sv(titleId)\n        def cur = curAttr.isEmpty() ? null : curAttr[0]\n        if (cur == null || sv(cur.properties?.titleId) != tid) {\n            titleChanged = true\n            changed << 'titleId'\n            if (cur != null && num(cur.properties?.effectiveStart) == asOf) {\n                // The row opened on this very day, so this is a correction, not history.\n                // Closing it at asOf - 1 would end it before it began, and such a row is\n                // invisible to every as-of read - silent damage.\n                attrUpdates << upsert(sv(cur.id), [titleId: tid])\n                attributeId = sv(cur.id)\n            } else {\n                Long end = null\n                if (cur != null) {\n                    // the new row inherits the old one's end, so a later dated row stays untouched\n                    end = num(cur.properties?.effectiveEnd)\n                    // one millisecond before, not a day: a day would overlap the two rows\n                    attrUpdates << upsert(sv(cur.id), [effectiveEnd: asOf - 1L])\n                } else {\n                    Long next = nextStartAfter(attrs)\n                    end = (next == null) ? null : next - 1L\n                }\n                attributeId = mint()\n                attrUpdates << upsert(attributeId, [\n                    name: sv(cur?.properties?.name) ?: (seatName + ' attributes'),\n                    positionId: pid,\n                    titleId: tid,\n                    territoryId: sv(cur?.properties?.territoryId) ?: null,\n                    effectiveStart: asOf,\n                    effectiveEnd: end])\n            }\n        }\n    }\n\n    // ---- the person: dated the same way. Blank `want` is an open seat.\n    if (B(wantPerson)) {\n        def cur = curAsg.isEmpty() ? null : curAsg[0]\n        String held = (cur == null) ? '' : sv(cur.properties?.payeeId)\n        if (held != want) {\n            personChanged = true\n            changed << 'payeeId'\n            if (cur != null && num(cur.properties?.effectiveStart) == asOf) {\n                // Same-day correction. Emptying a seat the person only took today removes\n                // the assignment outright - there is no day on which it was really held.\n                if (want.isEmpty()) {\n                    deleteIds << sv(cur.id)\n                } else {\n                    asgUpdates << upsert(sv(cur.id), [payeeId: want])\n                    assignmentId = sv(cur.id)\n                }\n            } else {\n                Long end = null\n                if (cur != null) {\n                    end = num(cur.properties?.effectiveEnd)\n                    asgUpdates << upsert(sv(cur.id), [effectiveEnd: asOf - 1L])\n                } else {\n                    Long next = nextStartAfter(asgs)\n                    end = (next == null) ? null : next - 1L\n                }\n                if (!want.isEmpty()) {\n                    def pct = cur?.properties?.allocationPct\n                    assignmentId = mint()\n                    asgUpdates << upsert(assignmentId, [\n                        name: seatName + ' assignment',\n                        payeeId: want,\n                        positionId: pid,\n                        effectiveStart: asOf,\n                        effectiveEnd: end,\n                        allocationPct: (pct == null ? 100 : pct)])\n                }\n            }\n        }\n    }\n\n    List said = []\n    if (changed.contains('name')) said << 'renamed'\n    if (changed.contains('active')) said << (B(active) ? 'activated' : 'deactivated')\n    if (titleChanged) said << ('title changed from ' + day)\n    if (personChanged) said << ((want.isEmpty() ? 'seat opened from ' : 'person changed from ') + day)\n    message = said.isEmpty()\n        ? ('Nothing changed - position ' + code + ' already matches.')\n        : ('Position ' + code + ' ' + said.join(', ') + '.')\n}\n\nint delExpected = deleteIds.size()\nreturn [ok: status == 'OK', status: status, message: message, positionCode: code,\n        posUpdates: posUpdates, attrUpdates: attrUpdates, asgUpdates: asgUpdates,\n        // an empty IN is a clean no-match; the sentinel keeps the filter's shape fixed\n        deleteIds: deleteIds.isEmpty() ? ['__none__'] : deleteIds,\n        posExpected: posUpdates.size(), attrExpected: attrUpdates.size(),\n        asgExpected: asgUpdates.size(), delExpected: delExpected,\n        changedFields: changed, titleChanged: titleChanged, personChanged: personChanged,\n        attributeId: attributeId, assignmentId: assignmentId]\n",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "posRows": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_FtPos.outputs.objects }}",
+            "items": "{{ n_FtPos.outputs.objects[0] }}"
+          },
+          "attrRows": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_FtAttr.outputs.objects }}",
+            "items": "{{ n_FtAttr.outputs.objects[0] }}"
+          },
+          "asgRows": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_FtAsg.outputs.objects }}",
+            "items": "{{ n_FtAsg.outputs.objects[0] }}"
+          },
+          "titleRows": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_FtTitle.outputs.objects }}",
+            "items": "{{ n_FtTitle.outputs.objects[0] }}"
+          },
+          "payeeRows": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_FtPayee.outputs.objects }}",
+            "items": "{{ n_FtPayee.outputs.objects[0] }}"
+          },
+          "attrMore": "{{ n_FtAttr.outputs.hasMore }}",
+          "asgMore": "{{ n_FtAsg.outputs.hasMore }}",
+          "historyLimit": 500,
+          "positionId": "{{ n_Norm.outputs.result.positionId }}",
+          "name": "{{ n_Norm.outputs.result.name }}",
+          "titleId": "{{ n_Norm.outputs.result.titleId }}",
+          "payeeId": "{{ n_Norm.outputs.result.payeeId }}",
+          "clearPayee": "{{ n_Norm.outputs.result.clearPayee }}",
+          "active": "{{ n_Norm.outputs.result.active }}",
+          "wantName": "{{ n_Norm.outputs.result.wantName }}",
+          "wantActive": "{{ n_Norm.outputs.result.wantActive }}",
+          "wantTitle": "{{ n_Norm.outputs.result.wantTitle }}",
+          "wantPerson": "{{ n_Norm.outputs.result.wantPerson }}",
+          "effEpoch": "{{ n_Norm.outputs.result.effEpoch }}",
+          "effDay": "{{ n_Norm.outputs.result.effDay }}"
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Refuse or decide every row to write, from what is stored now",
+      "title": "Plan the writes",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBad@root_id-1@n",
+      "id": "n_IfBlk",
+      "index": 11,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Plan.outputs.result.ok }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": false
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Did a check refuse the edit?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBlk@n_IfBad@root_id-1@n@y",
+      "id": "n_StBlk",
+      "index": 12,
+      "inputs": {
+        "result": {
+          "status": "{{ n_Plan.outputs.result.status }}",
+          "success": false,
+          "message": "{{ n_Plan.outputs.result.message }}",
+          "positionId": "{{ n_Norm.outputs.result.positionId }}",
+          "positionCode": "{{ n_Plan.outputs.result.positionCode }}",
+          "changedFields": [],
+          "titleChanged": false,
+          "personChanged": false,
+          "attributeId": "",
+          "assignmentId": "",
+          "effectiveStart": "{{ n_Norm.outputs.result.effDay }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Refused before writing anything",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceVersion": 864,
+        "resourceName": "storage_by_unifyapps_bulk_upsert_records_by_id",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBlk@n_IfBad@root_id-1@n@n",
+      "id": "n_WrPos",
+      "index": 13,
+      "inputs": {
+        "object_type": "Position",
+        "skipIfBlank": false,
+        "skipSchemaValidation": true,
+        "updates": "{{ n_Plan.outputs.result.posUpdates }}",
+        "unsetIfNull": false
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "The seat's own name and active flag",
+      "title": "Bulk upsert records by id",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceVersion": 864,
+        "resourceName": "storage_by_unifyapps_bulk_upsert_records_by_id",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBlk@n_IfBad@root_id-1@n@n",
+      "id": "n_WrAttr",
+      "index": 14,
+      "inputs": {
+        "object_type": "PositionAttribute",
+        "skipIfBlank": false,
+        "skipSchemaValidation": true,
+        "updates": "{{ n_Plan.outputs.result.attrUpdates }}",
+        "unsetIfNull": false
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Close the title row in force and open the new one",
+      "title": "Bulk upsert records by id",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceVersion": 864,
+        "resourceName": "storage_by_unifyapps_bulk_upsert_records_by_id",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBlk@n_IfBad@root_id-1@n@n",
+      "id": "n_WrAsg",
+      "index": 15,
+      "inputs": {
+        "object_type": "PayeePositionAssignment",
+        "skipIfBlank": false,
+        "skipSchemaValidation": true,
+        "updates": "{{ n_Plan.outputs.result.asgUpdates }}",
+        "unsetIfNull": false
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Close the assignment in force and open the new one",
+      "title": "Bulk upsert records by id",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "storage_by_unifyapps",
+        "resourceName": "storage_by_unifyapps_delete_records",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBlk@n_IfBad@root_id-1@n@n",
+      "id": "n_DelAsg",
+      "index": 16,
+      "inputs": {
+        "triggerInputCondition": {
+          "operator": "AND",
+          "filters": [
+            {
+              "property": "id",
+              "filter": {
+                "operator": "IN",
+                "value": "{{ n_Plan.outputs.result.deleteIds }}"
+              }
+            }
+          ]
+        },
+        "writeThroughSessionVariables": false,
+        "object_type": "PayeePositionAssignment",
+        "numberOfRecordsToDelete": "MULTIPLE",
+        "page": {
+          "limit": 10,
+          "offset": 0
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Remove an assignment emptied on the day it started",
+      "title": "Delete records",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "code_by_unifyapps",
+        "resourceName": "code_by_unifyapps_groovy",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBlk@n_IfBad@root_id-1@n@n",
+      "id": "n_Done",
+      "index": 17,
+      "inputs": {
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "ok": {
+              "type": "boolean",
+              "title": "ok"
+            },
+            "message": {
+              "type": "string",
+              "title": "message"
+            }
+          }
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "posCount": {
+              "type": "integer",
+              "title": "posCount"
+            },
+            "posExpected": {
+              "type": "integer",
+              "title": "posExpected"
+            },
+            "attrCount": {
+              "type": "integer",
+              "title": "attrCount"
+            },
+            "attrExpected": {
+              "type": "integer",
+              "title": "attrExpected"
+            },
+            "asgCount": {
+              "type": "integer",
+              "title": "asgCount"
+            },
+            "asgExpected": {
+              "type": "integer",
+              "title": "asgExpected"
+            },
+            "delCount": {
+              "type": "integer",
+              "title": "delCount"
+            },
+            "delExpected": {
+              "type": "integer",
+              "title": "delExpected"
+            }
+          }
+        },
+        "code": "// Did every planned write land?\n//\n// A bulk upsert answers `success: false` for an EMPTY batch and `success: true` with a\n// zero count for a malformed one (notes/runtime-facts.md, 2026-08-25), so its flag says\n// nothing. The count against what n_Plan meant to write is the only honest signal.\ndef arg = { String k -> binding.hasVariable(k) ? binding.getVariable(k) : null }\ndef n = { v -> (v == null || String.valueOf(v).trim().isEmpty()) ? 0 : new BigDecimal(String.valueOf(v).trim()).intValue() }\n\nList gaps = []\n[['position', 'posCount', 'posExpected'],\n ['title row', 'attrCount', 'attrExpected'],\n ['assignment', 'asgCount', 'asgExpected']].each { t ->\n    int got = n(arg(t[1]))\n    int meant = n(arg(t[2]))\n    if (got != meant) gaps << (t[0] + ' ' + got + ' of ' + meant)\n}\n// `count` is what delete_records reports. Compared only when the node answered one, so a\n// response without the key never turns a clean run into a false alarm.\nif (arg('delCount') != null && n(arg('delCount')) != n(arg('delExpected'))) {\n    gaps << ('removed assignment ' + n(arg('delCount')) + ' of ' + n(arg('delExpected')))\n}\n\nreturn [ok: gaps.isEmpty(),\n        message: gaps.isEmpty() ? '' : ('Some changes did not land (' + gaps.join('; ') + '). Reopen the position to see what is stored - a retry plans again from that.')]\n",
+        "compile_static": false,
+        "captureStdOutput": false,
+        "parameters": {
+          "posCount": "{{ n_WrPos.outputs.successCount }}",
+          "posExpected": "{{ n_Plan.outputs.result.posExpected }}",
+          "attrCount": "{{ n_WrAttr.outputs.successCount }}",
+          "attrExpected": "{{ n_Plan.outputs.result.attrExpected }}",
+          "asgCount": "{{ n_WrAsg.outputs.successCount }}",
+          "asgExpected": "{{ n_Plan.outputs.result.asgExpected }}",
+          "delCount": "{{ n_DelAsg.outputs.count }}",
+          "delExpected": "{{ n_Plan.outputs.result.delExpected }}"
+        }
+      },
+      "options": {
+        "disableLogging": false,
+        "enabledForReExecution": false,
+        "stepError": "STOP"
+      },
+      "skip": false,
+      "subTitle": "Compare what landed against what was planned",
+      "title": "Check the writes",
+      "type": "ACTION"
+    },
+    {
+      "context": {
+        "appName": "if_else",
+        "resourceName": "if_else_condition",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfBlk@n_IfBad@root_id-1@n@n",
+      "id": "n_IfWr",
+      "index": 18,
+      "inputs": {
+        "filters": [
+          {
+            "property": "{{ n_Done.outputs.result.ok }}",
+            "filter": {
+              "operator": "EQUAL",
+              "value": false
+            }
+          }
+        ],
+        "operator": "AND"
+      },
+      "skip": false,
+      "subTitle": "Did every planned write land?",
+      "title": "Condition",
+      "type": "IF_ELSE"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfWr@n_IfBlk@n_IfBad@root_id-1@n@n@y",
+      "id": "n_StPart",
+      "index": 19,
+      "inputs": {
+        "result": {
+          "status": "WRITE_INCOMPLETE",
+          "success": false,
+          "message": "{{ n_Done.outputs.result.message }}",
+          "positionId": "{{ n_Norm.outputs.result.positionId }}",
+          "positionCode": "{{ n_Plan.outputs.result.positionCode }}",
+          "changedFields": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Plan.outputs.result.changedFields }}",
+            "items": "{{ n_Plan.outputs.result.changedFields[0] }}"
+          },
+          "titleChanged": "{{ n_Plan.outputs.result.titleChanged }}",
+          "personChanged": "{{ n_Plan.outputs.result.personChanged }}",
+          "attributeId": "{{ n_Plan.outputs.result.attributeId }}",
+          "assignmentId": "{{ n_Plan.outputs.result.assignmentId }}",
+          "effectiveStart": "{{ n_Norm.outputs.result.effDay }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "Some writes did not land - say which, never report success",
+      "title": "Respond to automation",
+      "type": "STOP"
+    },
+    {
+      "context": {
+        "appName": "callables",
+        "resourceName": "callables_return_to_automation",
+        "type": "APPLICATION"
+      },
+      "debug": false,
+      "dirty": false,
+      "fallbackMode": "STOP",
+      "groupId": "n_IfWr@n_IfBlk@n_IfBad@root_id-1@n@n@n",
+      "id": "n_StOk",
+      "index": 20,
+      "inputs": {
+        "result": {
+          "status": "OK",
+          "success": true,
+          "message": "{{ n_Plan.outputs.result.message }}",
+          "positionId": "{{ n_Norm.outputs.result.positionId }}",
+          "positionCode": "{{ n_Plan.outputs.result.positionCode }}",
+          "changedFields": {
+            "ua:type": "mappedArray",
+            "source": "{{ n_Plan.outputs.result.changedFields }}",
+            "items": "{{ n_Plan.outputs.result.changedFields[0] }}"
+          },
+          "titleChanged": "{{ n_Plan.outputs.result.titleChanged }}",
+          "personChanged": "{{ n_Plan.outputs.result.personChanged }}",
+          "attributeId": "{{ n_Plan.outputs.result.attributeId }}",
+          "assignmentId": "{{ n_Plan.outputs.result.assignmentId }}",
+          "effectiveStart": "{{ n_Norm.outputs.result.effDay }}"
+        }
+      },
+      "skip": false,
+      "subTitle": "What was written",
+      "title": "Respond to automation",
+      "type": "STOP"
+    }
+  ],
+  "ownerUserId": 435691,
+  "settings": {
+    "enableNodeLevelLogging": true,
+    "enableRunLogging": true,
+    "enableVariableLogging": true,
+    "route": {
+      "default": false,
+      "tierName": "global"
+    }
+  },
+  "standard": false,
+  "tags": [
+    "icm"
+  ],
+  "version": 1
+}

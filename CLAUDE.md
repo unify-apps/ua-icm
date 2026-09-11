@@ -263,6 +263,33 @@ matters more across two environments, not less, since nothing says prod answers
 the way orbit does. `plan` prints the body without calling anything; `create`
 POSTs it.
 
+`scripts/ua-upload.mjs` — UPLOADS a local file into platform storage and prints
+the `fileDetails` object a CSV loop node reads. It exists because a bulk-upload
+automation takes a file, not rows, so its regression suite needs files already in
+storage. It writes a file, never a record, and refuses any storage provider but
+the NFS multipart one it speaks.
+
+`scripts/build-update-position.mjs` · `scripts/build-bulk-manage-positions.mjs` —
+generate those automations' definitions from their `.groovy` files, deriving every
+`groupId` from the edges. They call nothing on the platform.
+
+`scripts/build-calculate-credits.mjs` · `scripts/build-calculate-payouts.mjs` — the
+same, for the calculation engine's two stages. They call nothing on the platform.
+
+`scripts/push-calculate-credits.mjs` · `scripts/push-calculate-payouts.mjs` — UPDATE
+the existing draft of that automation with its build, then read it back and fail on
+any groupId, parameter or code drift. Draft only, never a deploy. `--env tool` required.
+
+`scripts/seed-calculate-credits.mjs` · `scripts/seed-na-sample.mjs` ·
+`scripts/seed-payouts-na.mjs` — CREATE the loudly-named TEST- record families the
+engine suites run against on tool (credit test bed; a slice of the real NA export;
+payout measures, quotas, rate table, rules). Idempotent by business key; never
+delete. `seed-payouts-na.mjs` also SETs `payoutRules` on the TEST plan and
+`creditTypes` on its TEST measures with `UPDATE_FIELDS`. `plan` writes nothing.
+
+`scripts/ua-records.mjs` — read-only record reader for any object type
+(`<Type> [--limit] [--where f=v] [--fields]`). Changes nothing.
+
 `scripts/field-types.mjs` — the ONE definition of how a field spec becomes a
 platform property, shared by the two above. Not a command.
 
